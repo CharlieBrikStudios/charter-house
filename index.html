@@ -1976,6 +1976,8 @@ body.rep #welcome .w-hero{font-size:clamp(30px,2.8vw,44px)!important;max-width:6
 .rep #view>.chh:first-child{margin-top:40px}
 .rep #view>.pane:first-of-type .sec.first{padding-top:10px}
 .rep #view .earlynote{margin:0 0 30px}
+html.coverlock,html.coverlock body{overflow:hidden!important}
+#welcome{overscroll-behavior:contain}
 .acred{margin:10px 0 0!important;font-size:12.5px!important;color:rgba(239,233,225,.7)!important;border-top:1px solid rgba(239,233,225,.15);padding-top:10px}
 .hq.own .ownby span{display:block;margin-top:4px;font-family:var(--sans);font-style:normal;font-size:12.5px;letter-spacing:.01em;color:rgba(239,233,225,.6)}
 .cfacts{list-style:none;margin:0;padding:0;border-top:1px solid var(--hair)}
@@ -2791,9 +2793,9 @@ document.addEventListener("click",e=>{
   if(d.lb!==undefined){openLB(d.lb,+d.i);return}
   if(t.matches(".room .pic")){openLB(null,0,ROOMS.map(r=>({src:r.img,cap:r.t+", CGI"})));LB.i=[...t.closest(".sec").querySelectorAll(".room .pic")].indexOf(t);drawLB();return}
   switch(t.id){
-    case "homeBtn":while(stack.length)closeTop();$("#welcome").classList.remove("out");document.body.classList.remove("inapp");try{sessionStorage.removeItem("chu-seen")}catch(e){}window.scrollTo(0,0);setTimeout(()=>$("#enter").focus(),50);break;
+    case "homeBtn":while(stack.length)closeTop();document.documentElement.classList.add("coverlock");$("#welcome").classList.remove("out");document.body.classList.remove("inapp");try{sessionStorage.removeItem("chu-seen")}catch(e){}window.scrollTo(0,0);setTimeout(()=>$("#enter").focus(),50);break;
     case "miniMap":openBuilding();setTimeout(()=>{const p=$("#pBld .p-scroll"),m=$("#pBld .smallmap");if(p&&m)p.scrollTo({top:m.offsetTop-120,behavior:RM?"auto":"smooth"})},380);break;
-    case "enter":$("#welcome").classList.add("out");document.body.classList.add("inapp");try{sessionStorage.setItem("chu-seen","1")}catch(e){}window.scrollTo(0,0);$(".tabs button").focus({preventScroll:true});break;
+    case "enter":$("#welcome").classList.add("out");document.body.classList.add("inapp");try{sessionStorage.setItem("chu-seen","1")}catch(e){}document.documentElement.classList.remove("coverlock");window.scrollTo(0,0);$(".tabs button").focus({preventScroll:true});[0,80,300,700].forEach(t=>setTimeout(()=>{if(scrollY>0&&!window.__userScrolled)scrollTo(0,0)},t));window.__userScrolled=false;addEventListener("wheel",()=>{window.__userScrolled=true},{once:true,passive:true});addEventListener("touchmove",()=>{window.__userScrolled=true},{once:true,passive:true});break;
     case "tog":S.open=!S.open;renderMain();$("#tog").focus();break;
     case "ctaRes":chooseDlg();break;
     case "wRes":$("#welcome").classList.add("out");document.body.classList.add("inapp");try{sessionStorage.setItem("chu-seen","1")}catch(e){}chooseDlg();break;
@@ -2816,7 +2818,7 @@ if(CLIENT){$("#wFor").textContent="Prepared for "+CLIENT;$("#introFor").textCont
 if(DRAFT)$("#draft").hidden=false;
 {const it=["Charter House","50–72 Churchgate","Stockport SK1 1YG","Private pre-launch","Completion late 2027"];$("#mq").innerHTML=[...it,...it,...it,...it].map(x=>`<span>${x}</span><i></i>`).join("")}
 try{if(sessionStorage.getItem("chu-seen")){$("#welcome").classList.add("out");document.body.classList.add("inapp")}}catch(e){}
-stamp();renderMain();window.scrollTo(0,0);
+stamp();renderMain();window.scrollTo(0,0);if(!document.body.classList.contains("inapp"))document.documentElement.classList.add("coverlock");
 
 /* ============ RESERVE: motion, sound and a little celebration ============ */
 const FX={ctx:null,
