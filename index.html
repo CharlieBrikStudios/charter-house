@@ -1630,6 +1630,53 @@ button,a{-webkit-tap-highlight-color:transparent}
 a.b{text-decoration:none}
 .b .wai{width:18px;height:18px;margin-right:8px;flex:none}
 
+/* Charlie's photo on the "I own here too" block, with his degree badge */
+.hq.own{grid-template-columns:250px 1fr!important;align-items:center}
+.ownv{position:relative;display:block!important;padding:0 26px 26px 0}
+.ownpic{width:100%;aspect-ratio:4/5;background:var(--charlie) center 18%/cover;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.ownv .stamp{position:absolute!important;right:-18px;bottom:-12px;width:132px!important;height:132px!important;margin:0!important;background:var(--dark);border-radius:50%;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.degbadge{position:absolute;left:-18px;top:16px;width:178px;z-index:3;background:#EFE8D8;color:#1F4A38;padding:12px 14px 11px;transform:rotate(-4deg);box-shadow:0 10px 24px rgba(0,0,0,.35);border:3px solid #1F4A38;text-align:center}
+.degbadge::before{content:"";position:absolute;inset:4px;border:1.5px dashed rgba(31,74,56,.55);pointer-events:none}
+.degbadge .db1{display:block;font:700 9px/1 var(--wide);font-stretch:125%;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.degbadge b{display:block;font:600 14.5px/1.15 var(--serif);margin:6px 0 5px;letter-spacing:-.01em}
+.degbadge .db2{display:block;font:italic 500 12.5px/1.2 var(--ital)}
+.degbadge em{display:inline-block;margin-top:7px;font:700 8.5px/1 var(--wide);font-stretch:125%;letter-spacing:.12em;text-transform:uppercase;font-style:normal;background:#1F4A38;color:#EFE8D8;padding:5px 7px}
+.hq.own .ownby{margin-top:18px;font-family:var(--ital);font-style:italic;color:rgba(239,233,225,.75);font-size:15px}
+@media (max-width:760px){.hq.own{grid-template-columns:1fr!important}.ownv{width:min(230px,70%)}.ownv .stamp{width:104px!important;height:104px!important;right:-26px}.degbadge{width:150px;left:-10px;top:10px;padding:10px 10px 9px}.degbadge b{font-size:12.5px}}
+
+/* keep the face clear: badge becomes a sash across the lower photo, stamp moves to the top corner */
+.ownv .stamp{top:-26px!important;bottom:auto!important;right:-30px!important;width:112px!important;height:112px!important}
+.degbadge{top:auto!important;bottom:40px!important;left:-18px!important;right:8px;width:auto!important;transform:rotate(-2.5deg)!important;text-align:left!important;padding:10px 12px 10px 14px!important}
+.degbadge b{font-size:13.5px!important;margin:4px 0 3px!important}
+.degbadge .db2{display:inline!important;margin-right:6px}
+.degbadge em{margin-top:6px!important}
+@media (max-width:760px){.ownv .stamp{width:92px!important;height:92px!important;right:-22px!important;top:-18px!important}.degbadge{bottom:34px!important}.degbadge b{font-size:12px!important}}
+
+.ownv .stamp{right:-46px!important;top:-34px!important}
+@media (max-width:760px){.ownv .stamp{right:-34px!important;top:-24px!important}}
+
+/* degree: a thin line under the signature instead of a badge on the photo */
+.degbadge{display:none!important}
+.ownv .stamp{top:auto!important;bottom:-12px!important;right:-18px!important;width:132px!important;height:132px!important}
+.credline{display:flex;flex-wrap:wrap;align-items:center;margin-top:10px;padding:7px 0;border-top:1px solid rgba(198,138,85,.35);border-bottom:1px solid rgba(198,138,85,.35);font:600 9.5px/1.4 var(--wide);font-stretch:125%;letter-spacing:.12em;text-transform:uppercase;color:rgba(239,233,225,.72)}
+.credline span{padding:0 12px}
+.credline span:first-child{padding-left:0}
+.credline span+span{border-left:1px solid rgba(198,138,85,.45)}
+.credline span:last-child{color:#E3A06B}
+@media (max-width:760px){.ownv .stamp{width:96px!important;height:96px!important;right:-26px!important;bottom:-10px!important}.credline{font-size:8.5px}.credline span{padding:2px 8px}}
+/* header: evenly spaced */
+.hdr .wrap{justify-content:space-between!important;gap:0!important}
+.hdr .wrap>*{margin-left:0!important;margin-right:0!important}
+
+/* degree: a stitched-on cream and green badge under the signature */
+.credline{display:inline-flex!important;flex-wrap:wrap;align-items:center;gap:6px 14px;position:relative;margin-top:14px!important;padding:9px 12px 9px 16px!important;background:#EFE8D8;border:2.5px solid #1F4A38!important;border-radius:4px;color:#1F4A38!important;transform:rotate(-.8deg);box-shadow:0 6px 16px rgba(0,0,0,.28);font:inherit!important;letter-spacing:normal!important;text-transform:none!important}
+.credline::before{content:"";position:absolute;inset:3px;border:1.5px dashed rgba(31,74,56,.55);border-radius:2px;pointer-events:none}
+.credline .c1{font:700 9px/1 var(--wide);font-stretch:125%;letter-spacing:.16em;text-transform:uppercase;opacity:.85;padding:0!important;border:0!important}
+.credline b{font:600 15px/1.2 var(--serif);letter-spacing:-.01em}
+.credline i{font:italic 500 14px/1.2 var(--ital)}
+.credline em{font:700 9px/1 var(--wide);font-stretch:125%;letter-spacing:.12em;text-transform:uppercase;font-style:normal;background:#1F4A38;color:#EFE8D8;padding:6px 8px;border-radius:2px}
+@media (max-width:760px){.credline{gap:4px 10px;padding:9px 10px 9px 12px!important}.credline b{font-size:13px}.credline i{font-size:12.5px}}
+
 
 /* ---- Charter House unit page ---- */
 .cmp.one{grid-template-columns:1fr}
@@ -1929,6 +1976,11 @@ body.rep #welcome .w-hero{font-size:clamp(30px,2.8vw,44px)!important;max-width:6
 .rep #view>.chh:first-child{margin-top:40px}
 .rep #view>.pane:first-of-type .sec.first{padding-top:10px}
 .rep #view .earlynote{margin:0 0 30px}
+.acred{margin:10px 0 0!important;font-size:12.5px!important;color:rgba(239,233,225,.7)!important;border-top:1px solid rgba(239,233,225,.15);padding-top:10px}
+.hq.own .ownby span{display:block;margin-top:4px;font-family:var(--sans);font-style:normal;font-size:12.5px;letter-spacing:.01em;color:rgba(239,233,225,.6)}
+.cfacts{list-style:none;margin:0;padding:0;border-top:1px solid var(--hair)}
+.cfacts li{display:flex;flex-direction:column;gap:2px;padding:12px 0;border-bottom:1px solid var(--hair)}
+.cfacts b{font-weight:600;font-size:15px}.cfacts span{color:var(--muted);font-size:13.5px}
 /* Charlie's face on the "I own here too" block */
 .hq.own{grid-template-columns:250px 1fr!important;align-items:center}
 .ownv{position:relative;display:block!important;padding:0 26px 26px 0}
@@ -1967,7 +2019,7 @@ body.rep #welcome .w-hero{font-size:clamp(30px,2.8vw,44px)!important;max-width:6
     </div>
     <div class="w-foot">
       <span class="logo mask" role="img" aria-label="BRIK Studios"></span>
-      <div class="agent-min"><div class="av ph" aria-hidden="true">C</div><div><div>Charlie Baxter, Sales Director</div><a href="tel:+447353164480">07353 164480</a> &nbsp; <a href="mailto:charlie@brik-studios.com">charlie@brik-studios.com</a></div></div>
+      <div class="agent-min"><div class="av ph" aria-hidden="true">C</div><div><div>Charlie Baxter, Co-founder and Sales Director</div><a href="tel:+447353164480">07353 164480</a> &nbsp; <a href="mailto:charlie@brik-studios.com">charlie@brik-studios.com</a></div></div>
     </div>
   </div>
 </section>
@@ -1979,10 +2031,11 @@ body.rep #welcome .w-hero{font-size:clamp(30px,2.8vw,44px)!important;max-width:6
   <button class="home" id="homeBtn" title="Back to home"><span class="logo mask" role="img" aria-label="BRIK Studios"></span><span class="homeTxt"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span class="hlong">Back to home</span><span class="hshort">Home</span></span></button>
   <span class="mask plogo lg5 hdrlogo" role="img" aria-label="Charter House"></span><span class="mask plogo lg6 hdrch" role="img" aria-label="Charter House"></span>
   <div class="agentwrap">
-    <button class="agent" id="agentBtn" aria-expanded="false" aria-controls="acard"><span class="av ph" aria-hidden="true">C</span><span><span class="nm">Charlie Baxter</span><span class="rl">Sales Director</span></span></button>
+    <button class="agent" id="agentBtn" aria-expanded="false" aria-controls="acard"><span class="av ph" aria-hidden="true">C</span><span><span class="nm">Charlie Baxter</span><span class="rl">Co-founder and Sales Director</span></span></button>
     <div class="acard" id="acard" role="dialog" aria-label="About Charlie Baxter">
       <div class="ahead"><div class="apic" role="img" aria-label="Charlie Baxter"></div><div><b>Charlie Baxter</b><span>Co-founder and Sales Director, BRIK Studios and BRIK Capital</span></div></div>
-      <ul class="afacts"><li><b>10 years</b><span>in property</span></li><li><b>Stockport</b><span>personal portfolio</span></li><li><b>Owns</b><span>at Albion House</span></li></ul>
+      <ul class="afacts"><li><b>10 years</b><span>in property</span></li><li><b>Cass</b><span>Business School</span></li><li><b>Owns</b><span>at Albion House</span></li></ul>
+      <p class="acred">BSc (Hons) Investment and Financial Risk Management, Cass Business School. Ranked 15th in Europe by the Financial Times (2017).</p>
       <p>I've picked this out for you personally. Message me any time and I'll come straight back to you.</p>
       <div class="abtns"><a class="ab wa" href="https://wa.me/447353164480?text=Hi%20Charlie%2C%20I%27m%20looking%20at%20the%20Charter%20House%20proposal%20and%20have%20a%20question." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" class="li"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1a4 4 0 0 1-2-2l1-1-1-2z"/></svg>WhatsApp me</a>
         <a class="ab" href="tel:+447353164480"><svg viewBox="0 0 24 24" class="li"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Call</a>
@@ -1991,10 +2044,9 @@ body.rep #welcome .w-hero{font-size:clamp(30px,2.8vw,44px)!important;max-width:6
     </div>
   </div>
   <div class="agent-c"><a href="tel:+447353164480">07353 164480</a><a href="mailto:charlie@brik-studios.com">charlie@brik-studios.com</a></div>
-  <div class="upd">Last updated<br><span id="upd"></span></div>
+  <span id="upd" hidden></span>
   <div class="hdr-ic">
-    <button class="ib" id="shareBtn" aria-label="Share proposal"><svg class="ic" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
-    <button class="ib" id="helpBtn" aria-label="Help"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6M12 17h.01"/></svg></button>
+        <button class="ib" id="helpBtn" aria-label="Help"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6M12 17h.01"/></svg></button>
   </div>
 </div></header>
 
@@ -2013,7 +2065,7 @@ body.rep #welcome .w-hero{font-size:clamp(30px,2.8vw,44px)!important;max-width:6
   </section>
 
   <section id="hqTop" class="hqtop" aria-label="Two minutes from BRIK"></section>
-  <nav class="tabs gtabs" role="tablist" aria-label="Report sections"><div class="tg on" data-g="opportunity"><button class="tgl" data-group="opportunity">The opportunity</button><div class="tgb"><button role="tab" data-tab="overview" aria-selected="true"><span class="tn0">01</span>Overview</button><button role="tab" data-tab="building" aria-selected="false"><span class="tn0">02</span>The building</button><button role="tab" data-tab="heritage" aria-selected="false"><span class="tn0">03</span>Heritage</button></div></div><div class="tg" data-g="intel"><button class="tgl" data-group="intel">Location and intel</button><div class="tgb"><button role="tab" data-tab="location" aria-selected="false"><span class="tn0">04</span>Location</button><button role="tab" data-tab="stockport" aria-selected="false"><span class="tn0">05</span>Why Stockport</button><button role="tab" data-tab="data" aria-selected="false"><span class="tn0">06</span>The data</button></div></div><div class="tg" data-g="invest"><button class="tgl" data-group="invest">Your investment</button><div class="tgb"><button role="tab" data-tab="returns" aria-selected="false"><span class="tn0">07</span>Returns</button><button role="tab" data-tab="units" aria-selected="false"><span class="tn0">08</span>Recommended units</button><button role="tab" data-tab="next" aria-selected="false"><span class="tn0">09</span>Next steps</button></div></div></nav>
+  <nav class="tabs gtabs" role="tablist" aria-label="Report sections"><div class="tg on" data-g="opportunity"><button class="tgl" data-group="opportunity">The opportunity</button><div class="tgb"><button role="tab" data-tab="overview" aria-selected="true"><span class="tn0">01</span>Overview</button><button role="tab" data-tab="building" aria-selected="false"><span class="tn0">02</span>The building</button><button role="tab" data-tab="heritage" aria-selected="false"><span class="tn0">03</span>Heritage</button></div></div><div class="tg" data-g="intel"><button class="tgl" data-group="intel">Location and intel</button><div class="tgb"><button role="tab" data-tab="location" aria-selected="false"><span class="tn0">04</span>Location</button><button role="tab" data-tab="stockport" aria-selected="false"><span class="tn0">05</span>Why Stockport</button><button role="tab" data-tab="data" aria-selected="false"><span class="tn0">06</span>The data</button></div></div><div class="tg" data-g="invest"><button class="tgl" data-group="invest">Your investment</button><div class="tgb"><button role="tab" data-tab="units" aria-selected="false"><span class="tn0">07</span>Recommended units</button><button role="tab" data-tab="returns" aria-selected="false"><span class="tn0">08</span>Returns</button><button role="tab" data-tab="next" aria-selected="false"><span class="tn0">09</span>Next steps</button></div></div></nav>
   <div id="view"></div>
 
   <section class="changes" id="chg"><span class="mask plogo lg7 chgmark" aria-hidden="true"></span>
@@ -2298,10 +2350,10 @@ const IC={
  build:'<svg viewBox="0 0 24 24" class="li"><path d="M3 21h18M5 21V9h14v12M9 21v-6h6v6M4 9l8-6 8 6"/></svg>'};
 function roofline(cls=""){return `<svg class="roof ${cls}" viewBox="0 0 400 200" role="img" aria-label="Charter House"><polyline class="rl" pathLength="1" points="10,190 10,70 46.7,30 83.3,70 120,30 156.7,70 193.3,30 230,70 230,40 390,40 390,190"/><path class="rl" pathLength="1" d="M282 190V150a18 18 0 0 1 36 0v40"/></svg>`}
 function hqStamp(cls=""){return `<div class="stamp ${cls}" aria-hidden="true"><svg viewBox="0 0 200 200"><defs><path id="sc${cls}" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs><text><textPath href="#sc${cls}" startOffset="0" textLength="486" lengthAdjust="spacing">I OWN HERE TOO — SAME DEVELOPER — SAME ARCHITECT —</textPath></text></svg><span class="logo mask"></span></div>`}
-function hqHTML(){return `<div class="hq own"><div class="hqv ownv"><div class="ownpic" role="img" aria-label="Charlie Baxter, Sales Director"></div>${hqStamp("a")}</div>
+function hqHTML(){return `<div class="hq own"><div class="hqv ownv"><div class="ownpic" role="img" aria-label="Charlie Baxter, Co-founder and Sales Director"></div>${hqStamp("a")}</div>
    <div><div class="cap">Skin in the game</div><h3 class="sh" style="font-size:clamp(28px,3.2vw,38px)!important;margin:6px 0 14px">I've bought into their last building myself.</h3>
     <p class="lead">I personally own an apartment at Albion House, Hall &amp; Co's previous Underbanks building. Same developer, same architect. That tells you everything about how I feel about their product.</p>
-    <ul class="hqlist"><li><b>Same developer</b><span>Hall &amp; Co: family-run since 1998, with 13 completed residential schemes.</span></li><li><b>Same architect</b><span>Ollier Smurthwaite, chosen by Stockport Council to lead the Underbanks' regeneration.</span></li><li><b>Supply is capped</b><span>Nothing over four storeys can be built in the conservation area, so new homes here stay rare.</span></li></ul><div class="ownby">Charlie Baxter, Sales Director</div></div></div>`}
+    <ul class="hqlist"><li><b>Same developer</b><span>Hall &amp; Co: family-run since 1998, with 13 completed residential schemes.</span></li><li><b>Same architect</b><span>Ollier Smurthwaite, chosen by Stockport Council to lead the Underbanks' regeneration.</span></li><li><b>Supply is capped</b><span>Nothing over four storeys can be built in the conservation area, so new homes here stay rare.</span></li></ul><div class="ownby">Charlie Baxter, Co-founder and Sales Director</div><div class="credline"><span class="c1">BSc (Hons)</span><b>Investment and Financial Risk Management</b><i>Cass Business School</i><em>15th in Europe, FT 2017</em></div></div></div>`}
 const SK=[["var(--skunderbanks)","The Underbanks"],["var(--skbridge)","Underbank bridge"],["var(--skmarket)","Stockport Market"],["var(--skviaduct)","The viaduct"],["var(--skhat)","Hat Works"],["var(--skarch)","Under the arches"],["var(--skroofs)","Old Town rooftops"],["var(--skpyramid)","The Pyramid"]];
 function skStrip(){return `<section class="sec skwrap"><div class="cap"><span>Stockport, through our lens</span><span>Our own photography</span></div>
   <div class="sk">${SK.map(([s,c],i)=>`<button class="skt ${i===0?"big":""}" style="background-image:${s}" data-sk="${i}" aria-label="${c}"><span>${c}</span></button>`).join("")}</div></section>`}
@@ -2463,13 +2515,16 @@ function howBlocks(){return `<section class="sec"><div class="cap"><span>How it 
  <div class="handsoff"><i class="mask hoscout" aria-hidden="true"></i><div><div class="cap">After completion</div><h3 class="big-h" style="color:#fff">We take care of it all.</h3><p>Tenant find, referencing, rent collection and day-to-day management, for 10% of the rent. You don't need to live nearby or lift a finger. And we're two minutes away at The Print House.</p></div></div>
 </section>`}
 const EARLY=`<div class="earlynote"><span class="pl"><i></i>Private pre-launch</span><p><b>These prime top-floor apartments are only available to you because you're early.</b> They're the best in the building, and they can sell at any time. Reserve today to take yours off the market.</p></div>`;
-const GROUPS=[["opportunity","The opportunity",["overview","building","heritage"]],["intel","Location and intel",["location","stockport","data"]],["invest","Your investment",["returns","units","next"]]];
-const GNEXT={opportunity:["intel","Location and intel","Next: the location and intel"],intel:["invest","Your investment","Look at the numbers"]};
+const GROUPS=[["opportunity","The opportunity",["overview","building","heritage"]],["intel","Location and intel",["location","stockport","data"]],["invest","Your investment",["units","returns","next"]]];
+const GNEXT={opportunity:["intel","Location and intel","Next: the location and intel"],intel:["invest","Your investment","See the recommended units"]};
 const groupOf=id=>GROUPS.find(g=>g[2].includes(id))||GROUPS[0];
 const T={overview:CH.overview,building:()=>CH.building().replace(/<\/section>$/,"")+galleryTab()+"</section>",heritage:CH.heritage,location:CH.location,stockport:CH.stockport,data:CH.data,
-  returns:()=>chh("07","Returns","Worked through for each recommended apartment, with a 75% buy-to-let mortgage.")+returnsTab()+longView(),
-  units:()=>chh("08","Recommended units","The top-floor apartments, the best in the building.")+EARLY+unitsTab(),
-  next:()=>chh("09","Next steps","How to reserve, what happens next, and how it runs completely hands off after completion.")+nextTab()+howBlocks()};
+  returns:()=>chh("08","Returns","Worked through for each recommended apartment, with a 75% buy-to-let mortgage.")+returnsTab()+longView(),
+  units:()=>chh("07","Recommended units","The top-floor apartments, the best in the building.")+EARLY+unitsTab(),
+  next:()=>chh("09","Next steps","How to reserve, what happens next, and how it runs completely hands off after completion.")+nextTab()+howBlocks()+CONTACT};
+const CONTACT=`<section class="sec"><div class="cap"><span>Keep in touch</span></div><div class="contact"><div class="pic" role="img" aria-label="Charlie Baxter"></div><div><h3 class="big-h" style="margin:0 0 14px">Have questions? I'll be glad to help.</h3>
+ <ul class="cfacts"><li><b>Charlie Baxter</b><span>Co-founder and Sales Director, BRIK Studios and BRIK Capital</span></li><li><b>BSc (Hons) Investment and Financial Risk Management</b><span>Cass Business School, ranked 15th in Europe by the Financial Times (2017)</span></li><li><b>10 years in property</b><span>with a personal property portfolio in Stockport, including an apartment at Albion House</span></li></ul>
+ <div class="row"><a class="b solid" href="https://wa.me/447353164480?text=${encodeURIComponent("Hi Charlie, I've been looking at Charter House and have a question.")}" target="_blank" rel="noopener">WhatsApp me</a><a class="b line" href="tel:+447353164480">07353 164480</a><a class="b line" href="mailto:charlie@brik-studios.com">charlie@brik-studios.com</a></div></div></div></section>`;
 const JUMP=`<div class="jump"><span>Want the numbers first?</span><button class="b line" data-goto="returns">Look at the numbers ${ARROW}</button></div>`;
 function groupCta(g){const n=GNEXT[g];if(!n)return"";const first=GROUPS.find(x=>x[0]===n[0])[2][0];return `<div class="nextcta"><div class="ncroof">${roofline()}</div><div class="nct"><span class="cap">Up next</span><b class="serif">${n[1]}</b></div><button class="b solid" data-goto="${first}">${n[2]} ${ARROW}</button></div>`}
 function markNav(id){document.querySelectorAll(".gtabs [data-tab]").forEach(t=>t.setAttribute("aria-selected",t.dataset.tab===id));document.querySelectorAll(".gtabs .tg").forEach(t=>t.classList.toggle("on",t.dataset.g===S.group))}
@@ -2480,10 +2535,13 @@ const navOff=()=>{const n=$(".gtabs");return (parseFloat(getComputedStyle(n).top
 let spyLock=0;
 function goTab(id){const g=groupOf(id),same=g[0]===S.group&&$("#t-"+id);S.tab=id;if(!same)renderMain();else markNav(id);
   const el=g[2][0]===id?$("#view"):$("#t-"+id);const y=el.getBoundingClientRect().top+scrollY-navOff()-6;
-  spyLock=Date.now()+900;scrollTo({top:Math.max(0,y),behavior:same&&!RM?"smooth":"auto"});
-  const b=document.querySelector(`.gtabs [data-tab="${id}"]`);if(b)b.scrollIntoView({block:"nearest",inline:"center"})}
+  spyLock=Date.now()+(same&&!RM?4000:300);scrollTo({top:Math.max(0,y),behavior:same&&!RM?"smooth":"auto"});
+  navTo(document.querySelector(`.gtabs [data-tab="${id}"]`))}
+function navTo(b){const n=$(".gtabs");if(!b||n.scrollWidth<=n.clientWidth+2)return;const x=b.getBoundingClientRect().left-n.getBoundingClientRect().left+n.scrollLeft-(n.clientWidth-b.offsetWidth)/2;n.scrollTo({left:Math.max(0,x),behavior:RM?"auto":"smooth"})}
+addEventListener("scrollend",()=>{spyLock=0});
+if("scrollRestoration" in history)history.scrollRestoration="manual";
 addEventListener("scroll",()=>{if(Date.now()<spyLock)return;const secs=[...document.querySelectorAll("#view .gsec")];if(!secs.length)return;const off=navOff()+60;let cur=secs[0].dataset.sec;
-  secs.forEach(s=>{if(s.getBoundingClientRect().top<off)cur=s.dataset.sec});if(cur!==S.tab){S.tab=cur;markNav(cur);const b=document.querySelector(`.gtabs [data-tab="${cur}"]`);if(b)b.scrollIntoView({block:"nearest",inline:"nearest"})}},{passive:true});
+  secs.forEach(s=>{if(s.getBoundingClientRect().top<off)cur=s.dataset.sec});if(cur!==S.tab){S.tab=cur;markNav(cur);navTo(document.querySelector(`.gtabs [data-tab="${cur}"]`))}},{passive:true});
 function callDlg(){window.open("https://wa.me/447353164480?text="+encodeURIComponent("Hi Charlie, I've been looking at Charter House. Could we book a call to talk it through?"),"_blank","noopener")}
 function changesDlg(){window.open("https://wa.me/447353164480?text="+encodeURIComponent("Hi Charlie, I've been looking at Charter House. Could you also show me:"),"_blank","noopener")}
 
@@ -2510,7 +2568,7 @@ function setSlide(panel,id,i){const slides=slidesOf(id),n=slides.length;i=(i+n)%
   car.classList.toggle("onlight",slides[i].k!=="cover");
   car.querySelector(".ctr").textContent=`${i+1} / ${n}`;car.querySelector(".capt").textContent=slides[i].cap;
   car.querySelectorAll(".dots i").forEach((el,k)=>{el.classList.toggle("on",k===i);el.classList.remove("run")});
-  panel.querySelectorAll(`[data-thumb="${id}"]`).forEach((el,k)=>{el.classList.toggle("on",k===i);el.setAttribute("aria-current",k===i);if(k===i)el.scrollIntoView({block:"nearest",inline:"nearest"})})}
+  panel.querySelectorAll(`[data-thumb="${id}"]`).forEach((el,k)=>{el.classList.toggle("on",k===i);el.setAttribute("aria-current",k===i);if(k===i){const p=el.parentElement;if(p&&p.scrollWidth>p.clientWidth)p.scrollTo({left:Math.max(0,el.offsetLeft-p.offsetLeft-(p.clientWidth-el.offsetWidth)/2),behavior:"smooth"})}})}
 /* slideshow: advances the top panel's gallery; pauses on hover, in the lightbox or a dialog */
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches, DUR=4500;let autoT=null;
 function topPanel(){for(let k=stack.length-1;k>=0;k--)if(stack[k].id!=="pSide")return stack[k];return null}
@@ -2720,7 +2778,7 @@ document.addEventListener("click",e=>{
   if(d.calc){S.calcU=d.calc;renderMain();return}
   if(d.pstep!==undefined){S.payStep=+d.pstep;renderMain();return}
   if(d.pick){closeDlg();S.req[d.pick]?cancelDlg(d.pick):reserveDlg(d.pick);return}
-  if(d.goreturns){S.calcU=d.goreturns;S.tab="returns";while(stack.length)closeTop();renderMain();$(".tabs").scrollIntoView({block:"start"});return}
+  if(d.goreturns){S.calcU=d.goreturns;S.tab="returns";while(stack.length)closeTop();goTab("returns");return}
   if(d.gi!==undefined){openLB(null,0,GALLERY.map(g=>({src:g.src,cap:g.cap})));LB.i=+d.gi;drawLB();return}
   if(d.gal){const i=GALLERY.findIndex(g=>g.src===d.gal);openLB(null,0,GALLERY.map(g=>({src:g.src,cap:g.cap})));LB.i=Math.max(0,i);drawLB();return}
   if(t.matches(".cmp .sl")){openUnit(t.dataset.lb);return}
@@ -2735,7 +2793,7 @@ document.addEventListener("click",e=>{
   switch(t.id){
     case "homeBtn":while(stack.length)closeTop();$("#welcome").classList.remove("out");document.body.classList.remove("inapp");try{sessionStorage.removeItem("chu-seen")}catch(e){}window.scrollTo(0,0);setTimeout(()=>$("#enter").focus(),50);break;
     case "miniMap":openBuilding();setTimeout(()=>{const p=$("#pBld .p-scroll"),m=$("#pBld .smallmap");if(p&&m)p.scrollTo({top:m.offsetTop-120,behavior:RM?"auto":"smooth"})},380);break;
-    case "enter":$("#welcome").classList.add("out");document.body.classList.add("inapp");try{sessionStorage.setItem("chu-seen","1")}catch(e){}$(".tabs button").focus();break;
+    case "enter":$("#welcome").classList.add("out");document.body.classList.add("inapp");try{sessionStorage.setItem("chu-seen","1")}catch(e){}window.scrollTo(0,0);$(".tabs button").focus({preventScroll:true});break;
     case "tog":S.open=!S.open;renderMain();$("#tog").focus();break;
     case "ctaRes":chooseDlg();break;
     case "wRes":$("#welcome").classList.add("out");document.body.classList.add("inapp");try{sessionStorage.setItem("chu-seen","1")}catch(e){}chooseDlg();break;
@@ -2758,7 +2816,7 @@ if(CLIENT){$("#wFor").textContent="Prepared for "+CLIENT;$("#introFor").textCont
 if(DRAFT)$("#draft").hidden=false;
 {const it=["Charter House","50–72 Churchgate","Stockport SK1 1YG","Private pre-launch","Completion late 2027"];$("#mq").innerHTML=[...it,...it,...it,...it].map(x=>`<span>${x}</span><i></i>`).join("")}
 try{if(sessionStorage.getItem("chu-seen")){$("#welcome").classList.add("out");document.body.classList.add("inapp")}}catch(e){}
-stamp();renderMain();
+stamp();renderMain();window.scrollTo(0,0);
 
 /* ============ RESERVE: motion, sound and a little celebration ============ */
 const FX={ctx:null,
