@@ -2062,7 +2062,7 @@ html.coverlock,html.coverlock body{overflow:hidden!important}
       <div class="addr">The opportunity: a very limited number of buy-to-let apartments in the Underbanks conservation area, on the corner of Harvey Street and Churchgate.</div>
     </div>
     <div class="headline hl2">
-      <div class="sub"><div class="cap">Completion</div><div class="yl">Late 2027</div><div class="hlnote">250-year lease<br>Exclusive to BRIK Studios</div></div>
+      <div class="sub"><div class="cap">Completion</div><div class="yl">Early 2028</div><div class="hlnote">250-year lease<br>Exclusive to BRIK Studios</div></div>
       <button class="minimap" data-goto="location" aria-label="Location: Charter House, Stockport. Go to the location section"><span class="mm"><i class="mmimg"></i><span class="pinx pl" style="--px:54.7%;--py:59.8%" aria-hidden="true"><i class="pulse"></i><span class="ptag">Charter House</span><span class="pcard"><i class="pdraw"></i><b>Charter House</b><span>50–72 Churchgate, Stockport</span><em class="hqtag">2 min from BRIK HQ</em></span></span></span><span class="cap mmcap">1 min to the Underbanks</span></button>
     </div>
   </section>
@@ -2104,7 +2104,7 @@ const DRAFT = false; // true shows a banner while plot details are placeholders
 
 /* ============ DATA (Plot 14 unit selection deck + ROI breakdown) ============ */
 const B={id:"ch",name:"Charter House",addr:"50–72 Churchgate, Stockport SK1 1YG"};
-const COMPLETION="Late 2027";
+const COMPLETION="Early 2028";
 /* One block per apartment you're recommending (one to three). */
 const U=[
  {id:"p24",name:"Plot 24",floor:"3rd floor (top), corner",bld:"Charter House",type:"2 bed, 2 bath",area:658,price:303000,rent:1600,
@@ -2134,7 +2134,7 @@ const GALLERY=[{src:"var(--rear)",cap:"Charter House, the corner"},{src:"var(--f
  {src:"var(--side)",cap:"The gable end"},{src:"var(--kitchen)",cap:"Kitchen and living"},{src:"var(--bed)",cap:"Bedroom"},
  {src:"var(--bath)",cap:"Bathroom"},{src:"var(--h_shop)",cap:"W. Harvey, prize medal saddler, archive"},
  {src:"var(--keyring)",cap:"The Charter House keyring"},{src:"var(--idboard)",cap:"The Charter House identity"},{src:"var(--under)",cap:"The Underbanks, a minute away"}];
-const ESS=[["Lease","250 years"],["Ground rent","Nil"],["Service charge","Estimated at £2.50 per sq ft per year"],["Build warranty","10 years"],["Exchange","20% within 28 days"],["Completion","Late 2027"],["Extras","A secure bike store for every apartment"],["Reservation","£3,000"],["Developer","Hall & Co"],["Architect","Ollier Smurthwaite"]];
+const ESS=[["Lease","250 years"],["Ground rent","Nil"],["Service charge","Estimated at £2.50 per sq ft per year"],["Build warranty","10 years"],["Exchange","20% within 28 days"],["Completion","Early 2028"],["Extras","A secure bike store for every apartment"],["Reservation","£3,000"],["Developer","Hall & Co"],["Architect","Ollier Smurthwaite"]];
 const ROOMS=[
  {t:"Kitchen and living",img:"var(--kitchen)",l:["Fully fitted kitchen with integrated dishwasher","Built-in electric oven, ceramic hob and extractor fan","Marble-effect quartz worktop and tiled splashback","LED lighting behind the cabinets","Premium LVT flooring","Washer dryer plinth, plumbed and wired, in the service cupboard"]},
  {t:"Bedroom",img:"var(--bed)",l:["LVT flooring","Matt sockets and fixtures","Wooden doors","Architraves and skirting in dark heritage colours"]},
@@ -2232,7 +2232,7 @@ const STEPS=[["Appraise","You've reviewed the development and the numbers.","Our
  ["Reserve","£3,000 takes it off the market.","£2,500 counts towards your 20% deposit and £500 is BRIK Studios' admin fee, part of which goes to charity. Pay by card or bank transfer.","key"],
  ["Legal process","Jawaad and our panel solicitor guide you through.","AML checks, then an introduction to our panel solicitor and, if you need one, our mortgage broker.","doc"],
  ["Exchange","20% deposit, within 28 days.","Contracts are exchanged and the apartment is legally yours to complete on.","pen"],
- ["Completion","Late 2027.","Pay the balance, collect your keys. We can help with mortgages, furniture and letting.","flag"]];
+ ["Completion","Early 2028.","Pay the balance, collect your keys. We can help with mortgages, furniture and letting.","flag"]];
 const SI={search:'<svg viewBox="0 0 24 24" class="li"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>',home:'<svg viewBox="0 0 24 24" class="li"><path d="M4 11l8-6 8 6v9H4z"/><path d="M10 20v-5h4v5"/></svg>',
  key:'<svg viewBox="0 0 24 24" class="li"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/></svg>',doc:'<svg viewBox="0 0 24 24" class="li"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg>',
  pen:'<svg viewBox="0 0 24 24" class="li"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>',flag:'<svg viewBox="0 0 24 24" class="li"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
@@ -2240,13 +2240,13 @@ const SI={search:'<svg viewBox="0 0 24 24" class="li"><circle cx="11" cy="11" r=
 function nextTab(){const u=defaultCalc(),c=calc(u),cur=Object.keys(S.req).some(k=>k!=="call")?2:1,ps=S.payStep||0;
   const STOPS=[{when:"Today",sub:"To reserve",title:"Reserve "+u.name,amt:PAY.total,rows:[["Reservation deposit, counts towards your 20%",PAY.deposit],["Admin fee to BRIK Studios, part donated to charity",PAY.admin]],note:"Takes "+u.name+" off the market straight away."},
    {when:"Within 28 days",sub:"On exchange",title:"Exchange contracts",amt:c.bal+LEGAL_EX,rows:[["Rest of your 20% deposit",c.bal],["Legal fees",LEGAL_EX]],note:"Your solicitor handles the paperwork; Jawaad keeps it moving."},
-   {when:"Late 2027",sub:"On completion",title:"Collect your keys",amt:c.top+c.st+LEGAL_COMP,rows:[["5% top-up, with a 75% mortgage",c.top],["Stamp duty*",c.st],["Legal fees",LEGAL_COMP]],note:"Your mortgage covers the remaining 75%."}];
+   {when:"Early 2028",sub:"On completion",title:"Collect your keys",amt:c.top+c.st+LEGAL_COMP,rows:[["5% top-up, with a 75% mortgage",c.top],["Stamp duty*",c.st],["Legal fees",LEGAL_COMP]],note:"Your mortgage covers the remaining 75%."}];
   const run=[PAY.total,PAY.total+c.bal+LEGAL_EX,c.comp];const st=STOPS[ps];
   return `<div class="pane">
   <section class="hero-next"><div><div class="cap">Next steps</div><h2 class="big-h">Reserve your apartment.</h2>
    <p class="lead">£3,000 takes your chosen apartment off the market today. £2,500 is your reservation deposit and counts towards your 20% deposit. £500 is BRIK Studios' admin fee, part of which goes to charity.</p>
    <div class="row">${U.map(x=>`<button class="b solid" data-req="${x.id}">${S.req[x.id]?"Reservation requested":"Reserve "+x.name}</button>`).join("")}<button class="b line" data-call>Book a call</button></div></div>
-   <figure class="keyfig"><div class="keyarch" role="img" aria-label="The Charter House keyring in a front door"></div><figcaption class="ital">Your keys, late 2027.</figcaption></figure></section>
+   <figure class="keyfig"><div class="keyarch" role="img" aria-label="The Charter House keyring in a front door"></div><figcaption class="ital">Your keys, early 2028.</figcaption></figure></section>
 
   <section class="nsec"><div class="nh"><h2 class="sh">The process</h2><span class="cap">Step ${cur+1} of 6</span></div>
    <ol class="proc">${STEPS.map((s,i)=>`<li tabindex="0" class="${i<cur?"done":i===cur?"now":""}"><span class="pn">${i<cur?"✓":i+1}</span><i class="pi">${SI[s[3]]}</i><b>${s[0]}</b><span class="ps">${s[1]}</span><span class="pd">${s[2]}</span>${i===cur?`<em>You are here</em>`:i===cur+1?`<em class="nx">Next</em>`:""}</li>`).join("")}</ol></section>
@@ -2408,7 +2408,7 @@ CH.overview=()=>`<section class="ch" id="overview">${chh("01","Investment overvi
  <div class="duo w" style="margin-top:52px"><div><div class="cap" style="margin-bottom:14px">Why it's rare</div><h3 class="big-h">Almost nothing new gets built here.</h3>
   <div class="body"><p class="lead">The Underbanks is a conservation area full of listed buildings, and nothing over four storeys can be built. That puts a hard cap on new homes, in the part of Stockport everyone wants to live. Charter House is launching exclusively through BRIK Studios, and you're seeing it at private pre-launch, before it goes public.</p>
   </div></div>
-  <div class="esspanel"><svg class="solid" viewBox="0 0 400 220" aria-hidden="true"><path d="M0 220V58L34 12L68 58L102 12L136 58L170 12L204 58V20H400V220H250V170A22 22 0 0 0 206 170V220Z"/></svg><div class="cap">The essentials</div><div class="rows big">${[["Lease","250 years"],["Service charge","Est. £2.50 per sq ft per year"],["Ground rent","Nil"],["Build warranty","10 years"],["Exchange","20% within 28 days"],["Completion","Late 2027"],["Extras","A secure bike store per apartment"]].map(([a,b])=>`<div><span>${a}</span><span>${b}</span></div>`).join("")}</div></div></div>
+  <div class="esspanel"><svg class="solid" viewBox="0 0 400 220" aria-hidden="true"><path d="M0 220V58L34 12L68 58L102 12L136 58L170 12L204 58V20H400V220H250V170A22 22 0 0 0 206 170V220Z"/></svg><div class="cap">The essentials</div><div class="rows big">${[["Lease","250 years"],["Service charge","Est. £2.50 per sq ft per year"],["Ground rent","Nil"],["Build warranty","10 years"],["Exchange","20% within 28 days"],["Completion","Early 2028"],["Extras","A secure bike store per apartment"]].map(([a,b])=>`<div><span>${a}</span><span>${b}</span></div>`).join("")}</div></div></div>
  <div class="duo w" style="margin-top:56px"><div><div class="cap" style="margin-bottom:14px">Exclusive to BRIK Studios</div><h3 class="big-h">We've gone deep on one neighbourhood.</h3>
   <div class="body"><p class="lead">Charter House is launching exclusively through BRIK Studios. Our relationship with Hall &amp; Co goes back several years.</p>
   <p class="muted" style="margin-top:14px">We don't dabble across the North West chasing whichever site is loudest. We've learned the Underbanks street by street, and built the network of developers, investors and tenants that comes with that focus. When clients want to know what's actually happening in the Underbanks, this is where they come.</p></div></div>
@@ -2462,7 +2462,7 @@ function roiBlock(){const n=S.yr,g=valueYear(n)-EX.price,inc=incomeTo(n),tot=(g+
   <div><div class="cap">Total return on ${gbp(M.cash)}</div><div class="v big">${Math.round(tot)}%</div></div><div><div class="cap">Annualised</div><div class="v big">${Math.round(tot/n)}%</div></div></div>`}
 function evidence(){const D=S.beds===1?{f:900,a:[1100,1250],c:1300,cf:"1-bed"}:{f:1100,a:[1300,1400],c:1600,cf:"2-bed"},mx=2000,w=v=>(v/mx*100).toFixed(1)+"%",lo=Math.round((D.a[0]/D.f-1)*100),hi=Math.round((D.a[1]/D.f-1)*100);
  return `<div class="seg2" role="group" aria-label="Apartment size"><button data-beds="1" aria-pressed="${S.beds===1}">1 bed</button><button data-beds="2" aria-pressed="${S.beds===2}">2 bed</button></div>
- <h3>St Marys Gate beat its forecast.</h3><p class="muted">Sold in Q1 2023 with a ${D.cf} rent forecast of ${gbp(D.f)} pcm. By May 2025, ${D.cf}s were letting for ${gbp(D.a[0])} to ${gbp(D.a[1])} pcm. Charter House's ${D.cf} forecast for late 2027 is ${gbp(D.c)} pcm.</p>
+ <h3>St Marys Gate beat its forecast.</h3><p class="muted">Sold in Q1 2023 with a ${D.cf} rent forecast of ${gbp(D.f)} pcm. By May 2025, ${D.cf}s were letting for ${gbp(D.a[0])} to ${gbp(D.a[1])} pcm. Charter House's ${D.cf} forecast for early 2028 is ${gbp(D.c)} pcm.</p>
  <div class="bars" role="img" aria-label="${D.cf} rents: St Marys Gate forecast ${gbp(D.f)}, achieved ${gbp(D.a[0])} to ${gbp(D.a[1])}, Charter House forecast ${gbp(D.c)}">
   <div class="bar"><span class="bl">St Marys Gate, forecast 2023</span><span class="bt"><i style="--v:${w(D.f)}"></i></span><b>${gbp(D.f)}</b></div>
   <div class="bar ach"><span class="bl">St Marys Gate, achieved 2025</span><span class="bt"><i style="--v:${w(D.f)}"></i><em style="--a:${w(D.f)};--b:${w(D.a[1])}"></em><span class="up" style="left:${w(D.f)}">+${lo}–${hi}%<small>above forecast</small></span></span><b>${gbp(D.a[0])}–${D.a[1].toLocaleString("en-GB")}</b></div>
@@ -2514,7 +2514,7 @@ function longView(){return `<section class="sec"><div class="cap"><span>The long
  <div class="tl2"><div class="tbox"><div class="cap">Rental growth</div><h4>Forecast at 4% a year</h4>${rentChart()}<p class="fine">Gross yield on £189,000 rises from 8.3% in year 1 to 9.7% in year 5.</p></div>
  <div class="tbox"><div class="cap">Capital growth and overall return</div><div class="seg2" role="group" aria-label="Exit year">${[5,10,15,20].map(y=>`<button data-yr="${y}" aria-pressed="${S.yr===y}">Year ${y}</button>`).join("")}</div>${capChart()}${roiBlock()}</div></div>
  <p class="fine">Capital growth assumes the apartment is worth £195,000 on completion and then rises 5% a year, as in our return on investment breakdown. Rental income assumes 4% rent growth, 10% management, a 75% interest-only mortgage at 4% and the service charge. Annualised return is the total return divided by the years held.</p></section>`}
-function howBlocks(){return `<section class="sec"><div class="cap"><span>How it works</span><span>What you're buying</span></div><div class="buy4">${[["key","You buy an apartment off-plan","A new top-floor apartment at Charter House, secured now at pre-launch prices, before the building completes."],["doc","250-year lease, nil ground rent","With a 10-year build warranty. Completion is expected late 2027."],["pen","Pay in stages","£3,000 today, the rest of your 20% deposit at exchange, then the balance on completion, usually with a 75% buy-to-let mortgage."],["flag","Completely hands off after","We find the tenant and manage the letting for 10% of the rent, which is already in every number in this report."]].map(([ic,t,d],i)=>`<div class="bt4 rise"><span class="n">${i+1}</span><i class="pi">${SI[ic]}</i><b>${t}</b><p>${d}</p></div>`).join("")}</div>
+function howBlocks(){return `<section class="sec"><div class="cap"><span>How it works</span><span>What you're buying</span></div><div class="buy4">${[["key","You buy an apartment off-plan","A new top-floor apartment at Charter House, secured now at pre-launch prices, before the building completes."],["doc","250-year lease, nil ground rent","With a 10-year build warranty. Completion is expected early 2028."],["pen","Pay in stages","£3,000 today, the rest of your 20% deposit at exchange, then the balance on completion, usually with a 75% buy-to-let mortgage."],["flag","Completely hands off after","We find the tenant and manage the letting for 10% of the rent, which is already in every number in this report."]].map(([ic,t,d],i)=>`<div class="bt4 rise"><span class="n">${i+1}</span><i class="pi">${SI[ic]}</i><b>${t}</b><p>${d}</p></div>`).join("")}</div>
  <div class="handsoff"><i class="mask hoscout" aria-hidden="true"></i><div><div class="cap">After completion</div><h3 class="big-h" style="color:#fff">We take care of it all.</h3><p>Tenant find, referencing, rent collection and day-to-day management, for 10% of the rent. You don't need to live nearby or lift a finger. And we're two minutes away at The Print House.</p></div></div>
 </section>`}
 const EARLY=`<div class="earlynote"><span class="pl"><i></i>Private pre-launch</span><p><b>These prime top-floor apartments are only available to you because you're early.</b> They're the best in the building, and they can sell at any time. Reserve today to take yours off the market.</p></div>`;
@@ -2583,7 +2583,7 @@ function buildingPanel(){const p=$("#pBld"),exp=p.dataset.exp==="1";
   p.innerHTML=`<div class="p-head"><span class="cap">Building</span><button class="ib" data-close aria-label="Close">${ICON.x}</button></div>
   <div class="p-scroll"><div class="p-body">
    ${carousel("b")}
-   <div class="ptitle"><div class="cap">Apartments, completing late 2027</div><h2>${B.name}</h2><div class="addr">${B.addr}</div></div>
+   <div class="ptitle"><div class="cap">Apartments, completing early 2028</div><h2>${B.name}</h2><div class="addr">${B.addr}</div></div>
    <div class="sec"><div class="cap"><span>Selected for you</span><span>${U.length}</span></div>
     <table class="mini"><thead><tr><th>Apartment</th><th>Floor</th><th>Type</th><th class="r">Sq ft</th><th class="r">Price</th><th></th></tr></thead><tbody>
     ${U.map(u=>`<tr class="${isOff(u.id)?"off":""}"><td><button class="oname" data-office="${u.id}">${u.name}</button></td><td>${u.floor}</td><td>${u.type}</td><td class="r">${sq(u.area)}</td><td class="r"><span class="price">${gbp(u.price)}</span></td><td><div class="acts">${reactBtns(u.id)}</div></td></tr>`).join("")}
@@ -2631,7 +2631,7 @@ function unitPanel(id){const u=find(id),p=$("#pOff");p.dataset.id=id;p.setAttrib
    <div class="sec lc"><div class="cap"><span>Returns at a glance</span><button class="txt" data-goreturns="${id}">Full breakdown</button></div>
     <div class="stats"><div><div class="cap">Rent forecast</div><div class="v">${gbp(u.rent)} <small>pcm</small></div></div><div><div class="cap">Gross yield</div><div class="v">${calc(u).yld.toFixed(1)}%</div></div><div><div class="cap">Net cash flow</div><div class="v">${gbp(calc(u).net)} <small>pcm</small></div></div></div></div>
    <div class="sec"><div class="cap"><span>Next steps</span></div>
-    <div class="body"><p>Reserve with ${gbp(PAY.total)} to take ${u.name} off the market: ${gbp(PAY.deposit)} counts towards your 20% deposit and ${gbp(PAY.admin)} is BRIK Studios' admin fee. You'll then exchange within 28 days, paying 20% (${gbp(u.dep)}), with the balance due on completion in late 2027. The lease is 250 years with nil ground rent and a 10-year build warranty.</p></div>
+    <div class="body"><p>Reserve with ${gbp(PAY.total)} to take ${u.name} off the market: ${gbp(PAY.deposit)} counts towards your 20% deposit and ${gbp(PAY.admin)} is BRIK Studios' admin fee. You'll then exchange within 28 days, paying 20% (${gbp(u.dep)}), with the balance due on completion in early 2028. The lease is 250 years with nil ground rent and a 10-year build warranty.</p></div>
     <div class="note">The service charge shown is an estimate, worked out at £2.50 per sq ft per year and shown monthly. Images are computer-generated and indicative; floor plans are not to scale.</div></div>
   </div></div>
   <div class="p-foot"><div class="who">${ONE?"":`<div class="bsub" style="margin:0">${idx} of ${U.length}</div>`}<div class="serif">${u.name}</div></div>${reactBtns(id)}${reqBtn(id)}</div>`;startAuto()}
@@ -2817,7 +2817,7 @@ document.addEventListener("keydown",e=>{
   if(!$("#lb").hidden&&(e.key==="ArrowLeft"||e.key==="ArrowRight")){LB.i=(LB.i+(e.key==="ArrowRight"?1:-1)+LB.slides.length)%LB.slides.length;drawLB()}});
 if(CLIENT){$("#wFor").textContent="Prepared for "+CLIENT;$("#introFor").textContent="Unit selection for "+CLIENT+", September 2026"}
 if(DRAFT)$("#draft").hidden=false;
-{const it=["Charter House","50–72 Churchgate","Stockport SK1 1YG","Private pre-launch","Completion late 2027"];$("#mq").innerHTML=[...it,...it,...it,...it].map(x=>`<span>${x}</span><i></i>`).join("")}
+{const it=["Charter House","50–72 Churchgate","Stockport SK1 1YG","Private pre-launch","Completion early 2028"];$("#mq").innerHTML=[...it,...it,...it,...it].map(x=>`<span>${x}</span><i></i>`).join("")}
 try{if(sessionStorage.getItem("chu-seen")){$("#welcome").classList.add("out");document.body.classList.add("inapp")}}catch(e){}
 stamp();renderMain();window.scrollTo(0,0);if(!document.body.classList.contains("inapp"))document.documentElement.classList.add("coverlock");
 
