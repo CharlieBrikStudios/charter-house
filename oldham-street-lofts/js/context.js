@@ -3,8 +3,8 @@
 // Positions are approximate, from Google Earth and the Ollier Smurthwaite site/context drawings.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxGeom, boxUV } from './building.js?v=1793396110';
-import { groundAt } from './world.js?v=1793396110';
+import { boxGeom, boxUV } from './building.js?v=1793404288';
+import { groundAt, letteringTexture } from './world.js?v=1793404288';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -138,15 +138,20 @@ function block(B, M, o) {
     const shape = new THREE.Shape([new THREE.Vector2(0, gy - 3), new THREE.Vector2(f.L, gy - 3), new THREE.Vector2(f.L, top), new THREE.Vector2(0, top)]);
     const nb = Math.floor((f.L - 0.8) / bay);
     const pad = (f.L - nb * bay) / 2;
-    const ops = [];
+    const ops = [], grpW = [];
     if (!skipFaces.includes(f.k)) for (let fl = 0; fl < floors; fl++) for (let b = 0; b < nb; b++) {
       if (fl === 0 && gf === 'none') continue;
-      const c = pad + bay * (b + 0.5);
-      const w = fl === 0 && gf === 'shop' ? bay * 0.85 : winW, hgt = fl === 0 && gf === 'shop' ? 2.4 : winH;
+      const c0 = pad + bay * (b + 0.5);
+      const w0 = fl === 0 && gf === 'shop' ? bay * 0.85 : winW, hgt = fl === 0 && gf === 'shop' ? 2.4 : winH;
       const v0 = gy + fl * fh + (fl === 0 && gf === 'shop' ? 0.35 : sill);
-      ops.push({ c, v0, v1: v0 + hgt, w });
-      const h = new THREE.Path(); h.moveTo(c - w / 2, v0); h.lineTo(c + w / 2, v0); h.lineTo(c + w / 2, v0 + hgt); h.lineTo(c - w / 2, v0 + hgt); h.lineTo(c - w / 2, v0);
-      shape.holes.push(h);
+      // paired windows either side of a slim brick pier (St Mary's Gate), or one window per bay
+      const pairs = o.pair && !(fl === 0 && gf === 'shop') ? [[c0 - w0 / 4 - 0.11, w0 / 2 - 0.1], [c0 + w0 / 4 + 0.11, w0 / 2 - 0.1]] : [[c0, w0]];
+      if (o.surround && pairs.length === 2) grpW.push({ c0, v0, v1: v0 + hgt, half: w0 / 2 + 0.06 });
+      for (const [c, w] of pairs) {
+        ops.push({ c, v0, v1: v0 + hgt, w });
+        const h = new THREE.Path(); h.moveTo(c - w / 2, v0); h.lineTo(c + w / 2, v0); h.lineTo(c + w / 2, v0 + hgt); h.lineTo(c - w / 2, v0 + hgt); h.lineTo(c - w / 2, v0);
+        shape.holes.push(h);
+      }
     }
     const g = new THREE.ExtrudeGeometry(shape, { depth: 0.35, bevelEnabled: false });
     // basis: x along d, y up, z inward
@@ -157,11 +162,33 @@ function block(B, M, o) {
       const gl = new THREE.PlaneGeometry(op.w - 0.08, op.v1 - op.v0 - 0.08); gl.rotateY(Math.PI); gl.translate(op.c, (op.v0 + op.v1) / 2, 0.16); gl.applyMatrix4(m);
       (R() < litChance ? litG : glassG).push(gl);
       const fw = 0.06;
-      for (const [a, b, c, d] of [[op.c - op.w / 2, op.v0, op.c + op.w / 2, op.v0 + fw], [op.c - op.w / 2, op.v1 - fw, op.c + op.w / 2, op.v1], [op.c - op.w / 2, op.v0, op.c - op.w / 2 + fw, op.v1], [op.c + op.w / 2 - fw, op.v0, op.c + op.w / 2, op.v1], [op.c - 0.025, op.v0, op.c + 0.025, op.v1], [op.c - op.w / 2, (op.v0 + op.v1) / 2 + 0.2, op.c + op.w / 2, (op.v0 + op.v1) / 2 + 0.25]]) {
+      const bars = [[op.c - op.w / 2, op.v0, op.c + op.w / 2, op.v0 + fw], [op.c - op.w / 2, op.v1 - fw, op.c + op.w / 2, op.v1], [op.c - op.w / 2, op.v0, op.c - op.w / 2 + fw, op.v1], [op.c + op.w / 2 - fw, op.v0, op.c + op.w / 2, op.v1]];
+      if (o.panes) {   // small-paned industrial glazing: a grid of slim bars
+        const [nx, ny] = o.panes;
+        for (let i = 1; i < nx; i++) { const x = op.c - op.w / 2 + (op.w * i) / nx; bars.push([x - 0.018, op.v0, x + 0.018, op.v1]); }
+        for (let i = 1; i < ny; i++) { const y = op.v0 + ((op.v1 - op.v0) * i) / ny; bars.push([op.c - op.w / 2, y - 0.018, op.c + op.w / 2, y + 0.018]); }
+      } else bars.push([op.c - 0.025, op.v0, op.c + 0.025, op.v1], [op.c - op.w / 2, (op.v0 + op.v1) / 2 + 0.2, op.c + op.w / 2, (op.v0 + op.v1) / 2 + 0.25]);
+      for (const [a, b, c, d] of bars) {
         const fg = boxGeom(a, b, 0.12, c, d, 0.19); fg.applyMatrix4(m); frameG.push(fg);
       }
       const s = boxGeom(op.c - op.w / 2 - 0.06, op.v0 - 0.08, -0.05, op.c + op.w / 2 + 0.06, op.v0, 0.2); s.applyMatrix4(m); boxUV(s, 1.2); B.add('stone', s);
       if (o.heads) { const hd = boxGeom(op.c - op.w / 2 - 0.1, op.v1, -0.03, op.c + op.w / 2 + 0.1, op.v1 + 0.22, 0.05); hd.applyMatrix4(m); boxUV(hd); B.add(o.heads, hd); }
+    }
+    if (grpW.length) {   // St Mary's Gate: a cream reconstituted-stone surround round each pair, with a stone mullion between,
+      // and the dark restraint-plate discs either side at mid height (as the drone footage)
+      M.smgSurround = M.smgSurround || new THREE.MeshStandardMaterial({ color: '#d6c8ad', roughness: 0.78 });
+      for (const q of grpW) {
+        const bx = (a, b2, c, d, z0 = -0.07) => { const gg = boxGeom(a, b2, z0, c, d, 0.02); gg.applyMatrix4(m); B.add(M.smgSurround, gg); };
+        bx(q.c0 - q.half - 0.15, q.v0 - 0.15, q.c0 - q.half, q.v1 + 0.15); bx(q.c0 + q.half, q.v0 - 0.15, q.c0 + q.half + 0.15, q.v1 + 0.15);
+        bx(q.c0 - q.half - 0.15, q.v1, q.c0 + q.half + 0.15, q.v1 + 0.15); bx(q.c0 - q.half - 0.15, q.v0 - 0.15, q.c0 + q.half + 0.15, q.v0);
+        bx(q.c0 - 0.16, q.v0, q.c0 + 0.16, q.v1, -0.03);
+        for (const sx of [-1, 1]) for (const dx of [-0.13, 0.13]) {
+          const dg = new THREE.CylinderGeometry(0.055, 0.055, 0.03, 12); dg.rotateX(Math.PI / 2); dg.translate(q.c0 + sx * (q.half + 0.5) + dx, q.v0 + (q.v1 - q.v0) * 0.45, -0.012); dg.applyMatrix4(m); B.add('timberBlack', dg);
+        }
+      }
+    }
+    if (o.piers && !skipFaces.includes(f.k)) for (let b = 0; b <= nb; b++) {   // brick pilasters between the bays
+      const x = pad + bay * b, pg = boxGeom(x - 0.24, gy - 0.5, -0.16, x + 0.24, gy + H - 0.08, 0.02); pg.applyMatrix4(m); boxUV(pg); B.add(mat, pg);
     }
     if (roof === 'flat') { const cp = boxGeom(-0.08, top - 0.1, -0.08, f.L + 0.08, top + 0.05, 0.43); cp.applyMatrix4(m); boxUV(cp, 1.2); B.add('stone', cp); }
     if (!skipFaces.includes(f.k)) for (const bv of bands) { const bb = boxGeom(-0.04, gy + bv, -0.05, f.L + 0.04, gy + bv + 0.18, 0.05); bb.applyMatrix4(m); boxUV(bb); B.add(o.bandMat || 'brick2', bb); }
@@ -294,7 +321,8 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
   }
 
   // ---------------- St Mary's Gate (completed, Hall & Co / Ollier Smurthwaite): L-shaped, 4 storeys, from the site plan
-  const smg = { floors: 4, fh: 3.05, mat: 'cBrickSmg', bay: 3.35, winW: 1.5, winH: 1.85, sill: 0.65, parapet: 1.0, frame: 'frame', heads: 'brick2', bands: [3.05, 6.1, 9.15, 12.1], litChance: 0.38 };
+  // as built (and in the Charter House CGI): warm red brick, paired windows in cream frames, stone heads and a stone band at every floor
+  const smg = { floors: 4, fh: 3.05, mat: 'cBrickSmg', bay: 3.35, winW: 2.3, winH: 1.85, sill: 0.65, parapet: 1.0, frame: 'cFrame', pair: true, surround: true, litChance: 0.38 };
   block(B, M, { ...smg, x0: -63.4, z0: 1.45, x1: -12.9, z1: 14.4, seed: 11 });
   block(B, M, { ...smg, x0: -22.6, z0: 14.4, x1: -12.9, z1: 18.6, seed: 12, skipFaces: ['N'] });
   {
@@ -565,5 +593,99 @@ export function buildCourtyard(M, forest, festoon) {
   const p1 = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.26), plate('CHURCHGATE')); p1.rotation.y = Math.PI; p1.position.set(2.0, 2.84, -0.075); group.add(p1);
   const p2 = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.26), plate('HARVEY STREET')); p2.rotation.y = -Math.PI / 2; p2.position.set(-0.075, 2.84, 1.6); group.add(p2);
   B.build(M, group);
+  return group;
+}
+
+// --------------------------------------------------------------------------------- Robinsons Unicorn Brewery: the street front
+// From the 2025 drone footage: the four-storey Frederic Robinson Ltd offices and the three-storey Unicorn Brewery range,
+// red brick with pilasters and big small-paned windows, white painted lettering in the parapets; a white rendered stair
+// tower in front; the red-and-cream striped turret with its flagpole; the brewhouse tower rising behind.
+// Built in street coordinates: s along the frontage from its west corner A, t back into the site.
+export function buildBreweryFront(M) {
+  const A = [-1.42, 44.82], E = [47.5, 71.36];
+  const L = Math.hypot(E[0] - A[0], E[1] - A[1]), d = [(E[0] - A[0]) / L, (E[1] - A[1]) / L], n = [-d[1], d[0]];
+  const gAt = (s, t) => groundY(A[0] + d[0] * s + n[0] * t, A[1] + d[1] * s + n[1] * t);
+  const group = new THREE.Group(); group.name = 'brewery_front';
+  group.position.set(A[0], 0, A[1]); group.rotation.y = Math.atan2(-d[1], d[0]);
+  const B = new Buckets();
+  M.deckCtx = M.deckCtx || new THREE.MeshStandardMaterial({ color: '#59575a', roughness: 0.9 });
+  if (!M.ctxLit) { const lt = litTexture(); M.ctxLit = new THREE.MeshStandardMaterial({ map: lt, emissiveMap: lt, color: '#6b5240', emissive: '#ffffff', emissiveIntensity: 0.6, roughness: 0.15, envMapIntensity: 1.2 }); }
+  const felt = new THREE.MeshStandardMaterial({ color: '#a9a7a3', roughness: 0.93 });
+  const lead = new THREE.MeshStandardMaterial({ color: '#5d6264', roughness: 0.6, metalness: 0.2 });
+  const g0 = Math.min(gAt(0, 0), gAt(24, 0)), g1 = Math.min(gAt(24, 0), gAt(42.6, 0)), g2 = Math.min(gAt(42.6, 0), gAt(55.6, 0));
+  // Frederic Robinson Ltd: 4 storeys, 7 bays to the street
+  const fr = block(B, M, { x0: 0, z0: 0, x1: 24, z1: 15, floors: 4, fh: 3.6, mat: 'cBrickOld', bay: 3.4, winW: 2.15, winH: 2.3, sill: 0.8, parapet: 1.8, frame: 'cFrame', base: g0, seed: 501, litChance: 0.18, panes: [3, 4], piers: true, bands: [14.32], bandMat: 'stone' });
+  // Unicorn Brewery range: 3 storeys
+  const un = block(B, M, { x0: 24, z0: 0, x1: 42.6, z1: 12.2, floors: 3, fh: 3.4, mat: 'cBrickOld', bay: 3.15, winW: 1.95, winH: 2.05, sill: 0.8, parapet: 1.6, frame: 'cFrame', base: g1, seed: 502, litChance: 0.12, panes: [3, 3], piers: true, bands: [10.12], bandMat: 'stone', skipFaces: ['W'] });
+  // two-storey range to the east end under a slate roof
+  block(B, M, { x0: 42.6, z0: 0, x1: 55.6, z1: 6.2, floors: 2, fh: 3.3, mat: 'cBrickOld', bay: 3.0, winW: 1.25, winH: 1.65, roof: 'pitched', frame: 'cFrame', heads: 'stone', base: g2, seed: 503, litChance: 0.1, skipFaces: ['W'] });
+  // light felt roofs with plant on the two front blocks
+  B.add(felt, boxGeom(0.35, fr.gy + 14.4 + 0.16, 0.35, 23.65, fr.gy + 14.4 + 0.2, 14.65));
+  B.add(felt, boxGeom(24.35, un.gy + 10.2 + 0.16, 0.35, 42.25, un.gy + 10.2 + 0.2, 11.85));
+  for (const [x, z, w, dd, h] of [[5, 10.5, 3.2, 2.4, 1.6], [11, 11.5, 1.6, 1.6, 1.1], [16, 9.8, 4.4, 2.2, 2.4], [3, 4.5, 1.0, 1.0, 0.9], [30, 8.5, 2.6, 2.0, 1.3], [37, 6.5, 1.4, 1.4, 1.0]]) {
+    const y = x < 24 ? fr.gy + 14.6 : un.gy + 10.4; B.add(lead, boxGeom(x, y, z, x + w, y + h, z + dd));
+  }
+  // painted lettering in the parapets
+  const letters = (text, x, y, w, h, o = {}) => {
+    const mat = new THREE.MeshStandardMaterial({ map: letteringTexture(text, o), transparent: true, alphaTest: 0.35, roughness: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); pl.rotation.y = Math.PI; pl.position.set(x, y, -0.03); pl.renderOrder = 3; group.add(pl);
+  };
+  letters('FREDERIC ROBINSON LTD', 12, fr.gy + 15.35, 22.2, 1.3);
+  letters('UNICORN BREWERY', 33.3, un.gy + 10.95, 17.2, 1.15, { font: '700 190px "Archivo", Arial, sans-serif' });
+  // white rendered stair tower standing forward of the offices
+  {
+    const gy = gAt(18.4, 0), h = 9.2;
+    B.add('whiteRender', boxGeom(15.6, gy - 1, -0.9, 21.2, gy + h, 0.2));
+    B.add('stone', boxGeom(15.5, gy + h, -1.0, 21.3, gy + h + 0.12, 0.25));
+    B.add('cGlass', boxGeom(17.9, gy + 1.2, -0.95, 18.9, gy + h - 1.4, -0.9));   // tall slot window up the stair
+    B.add('timberBlack', boxGeom(19.4, gy, -0.95, 20.7, gy + 2.3, -0.9));
+  }
+  // striped turret at the junction of the two blocks, with a pyramid cap and the flagpole
+  {
+    const tx = 22.2, tz = 3.8, gy = fr.gy + 14.4 + 1.8, H = 6.4, w = 3.4;
+    for (let i = 0, y = gy; y < gy + H - 0.01; i++) {
+      const hh = i % 2 ? 0.28 : 0.5, y1 = Math.min(gy + H, y + hh);
+      const g = boxGeom(tx - w / 2, y, tz - w / 2, tx + w / 2, y1, tz + w / 2); boxUV(g); B.add(i % 2 ? 'stone' : 'cBrickOld', g); y = y1;
+    }
+    for (const [ax, az, rot] of [[0, -1, 0], [0, 1, 0], [-1, 0, 1], [1, 0, 1]]) {   // louvred openings
+      const o = rot ? boxGeom(tx + ax * (w / 2 + 0.01) - 0.02, gy + 2.6, tz - 0.55, tx + ax * (w / 2 + 0.01) + 0.02, gy + 4.6, tz + 0.55) : boxGeom(tx - 0.55, gy + 2.6, tz + az * (w / 2 + 0.01) - 0.02, tx + 0.55, gy + 4.6, tz + az * (w / 2 + 0.01) + 0.02);
+      B.add('timberBlack', o);
+    }
+    B.add('stone', boxGeom(tx - w / 2 - 0.2, gy + H, tz - w / 2 - 0.2, tx + w / 2 + 0.2, gy + H + 0.3, tz + w / 2 + 0.2));
+    const cap = new THREE.ConeGeometry(w * 0.78, 2.6, 4, 1); cap.rotateY(Math.PI / 4); cap.translate(tx, gy + H + 0.3 + 1.3, tz); boxUV(cap, 2.6); B.add('cSlate', cap);
+    const fin = new THREE.SphereGeometry(0.16, 10, 8); fin.translate(tx, gy + H + 3.0, tz); B.add(lead, fin);
+    const pole = new THREE.CylinderGeometry(0.05, 0.075, 6.5, 8); pole.translate(tx, gy + H + 3.1 + 3.25, tz); B.add('cFrame', pole);
+    const fc = document.createElement('canvas'); fc.width = 160; fc.height = 100; { const x = fc.getContext('2d'); x.fillStyle = '#f2efe8'; x.fillRect(0, 0, 160, 100); x.fillStyle = '#a3171c'; x.font = 'bold 64px Georgia, serif'; x.textAlign = 'center'; x.fillText('R', 80, 72); }
+    const ft = new THREE.CanvasTexture(fc); ft.colorSpace = THREE.SRGBColorSpace;
+    const flag = new THREE.PlaneGeometry(1.9, 1.15, 8, 1); const fp = flag.attributes.position;
+    for (let i = 0; i < fp.count; i++) { const u = (fp.getX(i) + 0.95) / 1.9; fp.setZ(i, Math.sin(u * 5.2) * 0.12 * u); }
+    flag.computeVertexNormals(); flag.translate(tx + 0.98, gy + H + 8.6, tz);
+    group.add(new THREE.Mesh(flag, new THREE.MeshStandardMaterial({ map: ft, side: THREE.FrontSide, roughness: 0.9 })));
+    const fb = ft.clone(); fb.wrapS = THREE.RepeatWrapping; fb.repeat.x = -1; fb.offset.x = 1; fb.needsUpdate = true;   // reads the right way round from behind too
+    group.add(new THREE.Mesh(flag, new THREE.MeshStandardMaterial({ map: fb, side: THREE.BackSide, roughness: 0.9 })));
+  }
+  // the brewhouse: a tall tower brewery behind the front, hipped slate roof and a louvred ventilator lantern
+  {
+    const gy = gAt(34.5, 21.7), x0 = 29, z0 = 16.2, x1 = 40, z1 = 27.2;
+    const t = block(B, M, { x0, z0, x1, z1, floors: 6, fh: 3.9, mat: 'cBrickOld', bay: 2.7, winW: 1.25, winH: 2.5, sill: 0.9, parapet: 0, frame: 'cFrame', heads: 'stone', base: gy, seed: 504, litChance: 0.08, panes: [2, 4], piers: true, bands: [3.9, 23.2], bandMat: 'stone', roof: 'flat' });
+    const eh = gy + 23.4, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+    B.add('stone', boxGeom(x0 - 0.35, eh - 0.1, z0 - 0.35, x1 + 0.35, eh + 0.25, z1 + 0.35));
+    const roof = new THREE.ConeGeometry((x1 - x0) * 0.74, 4.6, 4, 1, true); roof.rotateY(Math.PI / 4); roof.translate(cx, eh + 0.25 + 2.3, cz); boxUV(roof, 2.6); B.add('cSlate', roof);
+    const ly = eh + 2.9, lw = 3.6, lh = 2.8;
+    B.add('timberBlack', boxGeom(cx - lw / 2 + 0.25, ly, cz - lw / 2 + 0.25, cx + lw / 2 - 0.25, ly + lh, cz + lw / 2 - 0.25));
+    for (let k = 0; k < 9; k++) {   // louvre slats on all four faces
+      const y = ly + 0.2 + k * 0.29;
+      B.add('cFrame', boxGeom(cx - lw / 2, y, cz - lw / 2, cx + lw / 2, y + 0.07, cz - lw / 2 + 0.2));
+      B.add('cFrame', boxGeom(cx - lw / 2, y, cz + lw / 2 - 0.2, cx + lw / 2, y + 0.07, cz + lw / 2));
+      B.add('cFrame', boxGeom(cx - lw / 2, y, cz - lw / 2, cx - lw / 2 + 0.2, y + 0.07, cz + lw / 2));
+      B.add('cFrame', boxGeom(cx + lw / 2 - 0.2, y, cz - lw / 2, cx + lw / 2, y + 0.07, cz + lw / 2));
+    }
+    for (const [ax, az] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) B.add('cFrame', boxGeom(cx + ax * lw / 2 - 0.12, ly, cz + az * lw / 2 - 0.12, cx + ax * lw / 2 + 0.12, ly + lh, cz + az * lw / 2 + 0.12));
+    const lc = new THREE.ConeGeometry(lw * 0.82, 1.9, 4, 1); lc.rotateY(Math.PI / 4); lc.translate(cx, ly + lh + 0.95, cz); boxUV(lc, 2.6); B.add(lead, lc);
+    const vane = new THREE.CylinderGeometry(0.04, 0.04, 2.2, 6); vane.translate(cx, ly + lh + 2.6, cz); B.add(lead, vane);
+    B.add(lead, boxGeom(cx - 0.02, ly + lh + 3.0, cz - 0.6, cx + 0.02, ly + lh + 3.35, cz + 0.6));
+  }
+  B.build(M, group);
+  group.traverse(o => { if (o.isMesh) o.name = 'brew_' + o.name; });
   return group;
 }

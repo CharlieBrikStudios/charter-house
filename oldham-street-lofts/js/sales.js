@@ -218,6 +218,13 @@ export const AREA_HEADLINE = [
 const r25 = (x) => Math.round(x / 25) * 25;
 export function rentFor(u, ph) {
   let r, why = [];
+  if (ph === 'ubl') {   // Underbank Lofts: Investment Report forecast (Oct 2026) 1 bed £1,250–1,300, 2 bed £1,500–1,550
+    if (u.beds === 2) return { pcm: 1500, why: ['two-bed, Investment Report forecast'] };
+    r = 1250;
+    if (u.plot === 13) { r += 25; why.push('top-floor corner, vaulted, extra eaves space'); }
+    if (u.plot === 1) why.push('the largest one-bed, lower ground');
+    return { pcm: r, why };
+  }
   if (ph === 'osl') {   // Oldham Street Lofts: Brik forecast £875 pcm for a one-bed at completion (late 2027)
     if (u.beds === 3) return { pcm: 1350, why: ['three-bed townhouse, Brik estimate'] };
     r = 875;
@@ -275,4 +282,32 @@ export const OSL_PROOF = [
   { k: 'Transport', v: 'Hyde Central station a 9-minute walk; Manchester 7.5 miles, Stockport 5 miles.' },
   { k: 'Build', v: 'New build by Ollier Smurthwaite Architects (planning 24/00783/FUL), with a 10-year build warranty. Completion expected late 2027.' },
   { k: 'Early access', v: 'This is the private preview, before the November launch to the full database.' },
+];
+
+// ---------------------------------------------------------------- Underbank Lofts (St Petersgate): the last two
+export const UBL_PICKS = { 1: 'The largest one-bed', 13: 'Top-floor corner' };
+export function ublPitch(u) {
+  const p = { badge: UBL_PICKS[u.plot] || null, head: '', points: [], supply: null };
+  if (u.plot === 1) {
+    p.head = 'The largest one-bed at Underbank Lofts, and one of only two homes left.';
+    p.points = ['484 sq ft with 2.5 m ceilings in the converted 1872 Institute building.',
+      'Two big original sash windows onto the sunken garden light well: light and privacy below the residents’ garden.',
+      'Open-plan kitchen and living, a double bedroom, shower room, utility and store.',
+      '£195,000 · forecast £1,250 pcm, about 7.7% gross.'];
+  } else if (u.plot === 13) {
+    p.head = 'The top-floor corner under the roof of the 1872 building: vaulted ceilings and four conservation rooflights.';
+    p.points = ['398 sq ft at full height and 660 sq ft in all, including the eaves room.',
+      'Dual aspect over St Petersgate and the garden towards High Street.',
+      'Open-plan kitchen and living in the corner, a double bedroom, two shower rooms.',
+      '£205,000 · forecast £1,250–£1,300 pcm, about 7.3–7.6% gross.'];
+  } else {
+    p.head = 'Sold.'; p.points = ['Only Plots 1 and 13 remain at Underbank Lofts.'];
+  }
+  return p;
+}
+export const UBL_PROOF = [
+  { k: 'Rents', v: 'One-beds forecast at £1,250–£1,300 pcm (Investment Report, Oct 2026). Achieved at St Mary’s Gate nearby, May 2025: £1,100–£1,150.' },
+  { k: 'The building', v: 'The 1872 Institute for the Blind, the Deaf and the Dumb by T. H. Allen, in the St Peter’s Conservation Area, with a new-build extension on High Street.' },
+  { k: 'Terms', v: '999-year lease, nil ground rent, service charge £1.99 per sq ft, 10-year build warranty. Completion Q4 2026.' },
+  { k: 'Only two left', v: '23 of the 25 apartments are sold. Plot 1 and Plot 13 are the last.' },
 ];
