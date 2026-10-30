@@ -159,8 +159,9 @@ body:has(#buildbar:not([hidden])) #panel, body:has(#buildbar:not([hidden])) .cre
 body:has(#buildbar:not([hidden])) #navpad { right: var(--gr); }
 /* 360° walk-around and the walk to the front door */
 .views .v360 { color: var(--brass); font-weight: 600; }
-#tourui { position: fixed; inset: 0; z-index: 15; pointer-events: none; opacity: 0; transition: opacity .45s; }
-#tourui.on { opacity: 1; }
+#tourui { position: fixed; inset: 0; z-index: 15; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .45s, visibility .45s; }
+#tourui.on { opacity: 1; visibility: visible; }
+#tourui:not(.on) * { pointer-events: none !important; }   /* hidden, it must never swallow clicks meant for the panel */
 #tourui::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(12,9,7,.66), transparent 30%), linear-gradient(to bottom, rgba(12,9,7,.35), transparent 18%); }
 #tourui > * { position: absolute; pointer-events: auto; }
 #tourui .ttop { top: calc(var(--gt) + 18px); left: var(--gx); right: var(--gr); display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none; }

@@ -100,7 +100,7 @@ export function walkMaterials(tex, base) {
   const herr = herringboneTexture();
   const m = {
     floor: new THREE.MeshPhysicalMaterial({ map: herr, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.32, envMapIntensity: 0.9 }),
-    ceiling: new THREE.MeshStandardMaterial({ color: '#f6f2ea', roughness: 0.92, emissive: new THREE.Color('#efe6d8'), emissiveIntensity: 0.2 }),   // bounce light off the floor and walls
+    ceiling: new THREE.MeshStandardMaterial({ color: '#f6f2ea', roughness: 0.92, emissive: new THREE.Color('#efe6d8'), emissiveIntensity: 0.55 }),   // bounce light off the floor and walls
     white: new THREE.MeshStandardMaterial({ color: '#f3efe7', roughness: 0.6 }),
     oak: new THREE.MeshPhysicalMaterial({ color: '#b98d5f', roughness: 0.45, clearcoat: 0.3 }),
     brass: new THREE.MeshStandardMaterial({ color: '#d1ab66', metalness: 1, roughness: 0.22 }),

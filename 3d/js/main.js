@@ -42,10 +42,10 @@ const canvas = $('#stage');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false, preserveDrawingBuffer: false });
 const glInfo = (() => { try { const gl = renderer.getContext(); const e = gl.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : ''; } catch (e) { return ''; } })();
 const software = /swiftshader|llvmpipe|software/i.test(glInfo);
-const strongGPU = /nvidia|geforce|rtx|radeon rx|apple m\d (pro|max|ultra)|apple gpu/i.test(glInfo) && !/intel/i.test(glInfo);
+const strongGPU = /nvidia|geforce|rtx|radeon rx|apple m\d|apple gpu|metal renderer: apple/i.test(glInfo) && !/intel/i.test(glInfo);
 let Q = software ? 'low' : (isTouch || small) ? 'medium' : strongGPU && (navigator.hardwareConcurrency || 4) >= 8 ? 'high' : 'medium';
 try { const q = new URLSearchParams(location.search).get('q'); if (q) Q = q; } catch (e) {}
-const DPR = Q === 'high' ? Math.min(devicePixelRatio, 1.5) : Q === 'medium' ? Math.min(devicePixelRatio, 1.25) : 1;
+const DPR = Q === 'high' ? Math.min(devicePixelRatio, 2) : Q === 'medium' ? Math.min(devicePixelRatio, 1.75) : 1;   // sharp on retina screens
 renderer.setPixelRatio(DPR);
 renderer.setSize(innerWidth, innerHeight, false);
 renderer.shadowMap.enabled = true;
@@ -105,6 +105,16 @@ scene.add(sun, sun.target);
 const hemi = new THREE.HemisphereLight('#bcd2ec', '#5b4c40', 0.55); scene.add(hemi);
 // even, all-round daylight: a flat ambient on top of the sky/ground light, so no face of any building sits in a dark shadow
 const amb = new THREE.AmbientLight('#fffaf2', 0); scene.add(amb);
+// inside an apartment the even outdoor fill is far too much: daylight comes in through the windows instead
+let interiorLit = false;
+function setInteriorLighting(on) {
+  interiorLit = on; const P = PRESETS[tod];
+  amb.intensity = on ? 0 : (P.amb ?? 0);
+  if (on) { hemi.color.set('#c4d8f0'); hemi.groundColor.set('#7a6650'); hemi.intensity = tod === 'dusk' ? 0.3 : 0.55; sun.intensity = tod === 'day' ? 5.2 : P.I; }
+  else { hemi.color.set(P.hemi[0]); hemi.groundColor.set(P.hemi[1]); hemi.intensity = P.hemi[2]; sun.intensity = P.I; }
+  baseExposure = on && tod === 'day' ? 0.66 : P.exp; if (!on) renderer.toneMappingExposure = baseExposure;
+  scene.environmentIntensity = on ? Math.min(P.env, 0.5) : P.env;
+}
 // soft overhead fill that fades in when a floor is opened, so the furnished plan reads brightly
 const fill = new THREE.DirectionalLight('#fff7ee', 0); fill.position.set(4, 60, 2); fill.target.position.set(11, 0, 10); scene.add(fill, fill.target);
 
@@ -284,7 +294,7 @@ async function build() {
       xp.push({ pts: [[12.4, -0.04, 15.2], [21.6, -0.04, 15.2]], kind: 'stroll' });
       for (const f of [1, 2]) xp.push({ pts: [[12.4, f * FLOOR_H + 0.02, 11.75], [20.3, f * FLOOR_H + 0.02, 11.75]], kind: 'walk' });
     }
-    crowd = buildCrowd(THREE, { roads: RJ.roads, groundAt, focus: IS_PH ? [-40, 205] : [8, 4], radius: 230, extraPaths: xp, blds: W.bld, seed: IS_PH ? 7 : 3, quality: Q === 'low' ? 'low' : 'high', pavementLift: IS_PH ? 0.05 : 0.14 });
+    crowd = buildCrowd(THREE, { roads: RJ.roads, groundAt, focus: IS_PH ? [-40, 205] : [8, 4], radius: 230, extraPaths: xp, blds: W.bld, seed: IS_PH ? 7 : 3, quality: Q === 'high' ? 'high' : 'low', pavementLift: IS_PH ? 0.05 : 0.14 });
     scene.add(crowd.group);
   } catch (e) { console.warn('crowd', e); }
   // lamp glows + festoon bulbs (bloom picks these up in the evening)
@@ -332,7 +342,8 @@ function applyTOD(name) {
   sun.position.copy(sun.target.position).addScaledVector(SUN_DIR, 140);
   sun.color.set(P.col); sun.intensity = P.I;
   hemi.color.set(P.hemi[0]); hemi.groundColor.set(P.hemi[1]); hemi.intensity = P.hemi[2];
-  amb.intensity = P.amb ?? 0; sun.shadow.intensity = P.shadowK ?? 1;   // (fading the shadow keeps every shader as compiled)
+  amb.intensity = P.amb ?? 0; sun.shadow.intensity = P.shadowK ?? 1;
+  if (interiorLit) setInteriorLighting(true);   // (fading the shadow keeps every shader as compiled)
   { const eg = envScene.getObjectByName('envGround'); if (eg) eg.material.color.set(P.envG || '#3a3330'); }
   renderer.toneMappingExposure = P.exp; baseExposure = P.exp;
   const grad = !!P.grad;
@@ -663,7 +674,8 @@ function stepInside(plot) {
   apt = getApartment(u); scene.add(apt.group);
   hideForInterior(u, true);
   apt.group.userData.lights.slice(0, aptLights.length).forEach((L, i) => { aptLights[i].position.copy(L.pos); aptLights[i].distance = L.d; aptLights[i].userData.I = L.I; });
-  // reflections from inside the apartment itself
+  // reflections from inside the apartment itself, lit as the interior (not the even outdoor fill)
+  setInteriorLighting(true);
   const gWas = CH.meshes.glass.visible; CH.meshes.glass.visible = false;
   aptLights.forEach(l => l.intensity = (l.userData.I || 0) * lampScale());
   aptCube.position.copy(apt.spawn); aptCube.update(renderer, scene);
@@ -687,7 +699,7 @@ function stepInside(plot) {
   $('#panel').classList.add('hide'); $('#ui').style.visibility = 'hidden'; $('#labels').style.visibility = 'hidden';
   const P = flyPath(pts, [[0, controls.target.clone()], [0.42, winC], [0.78, winC.clone().addScaledVector(n, -2)], [1, into]], reduceMotion || window.__fastFlights ? 0.01 : 4.2, () => openWalk(u));
   P.onT = (k) => {
-    if (k > 0.62 && CH.meshes.glass.visible) { CH.meshes.glass.visible = false; if (CH.meshes.slate) CH.meshes.slate.visible = false;   /* the pitched roofs would cut through the top-floor ceilings */ windUniforms.uNear.value = 1.2; setInteriorEnv(aptEnv.texture); }
+    if (k > 0.62 && CH.meshes.glass.visible) { setInteriorLighting(true); CH.meshes.glass.visible = false; if (CH.meshes.slate) CH.meshes.slate.visible = false;   /* the pitched roofs would cut through the top-floor ceilings */ windUniforms.uNear.value = 1.2; setInteriorEnv(aptEnv.texture); }
     renderer.toneMappingExposure = baseExposure * (1 + 0.45 * THREE.MathUtils.smoothstep(k, 0.6, 0.95));
     camera.near = k > 0.5 ? 0.05 : 0.25; camera.fov = THREE.MathUtils.lerp(baseFov(), 64, THREE.MathUtils.smoothstep(k, 0.55, 1)); camera.updateProjectionMatrix();
   };
@@ -714,7 +726,7 @@ $('#in-rooms').addEventListener('click', (e) => {
 });
 function restoreFromInterior() {
   const u = unitByPlot.get(S.plot);
-  walker.stop(); pathFlight = null;
+  walker.stop(); pathFlight = null; setInteriorLighting(false);
   if (apt) { scene.remove(apt.group); }
   aptLights.forEach(l => { l.intensity = 0; l.position.set(0, -50, 0); });
   setInteriorEnv(null);
@@ -786,7 +798,7 @@ function seeView(plot, idx = 0) {
   const cur = CH.group.getObjectByName('curtains'); if (cur) cur.visible = false;
   windUniforms.uNear.value = 1.2;
   camera.fov = 58; camera.near = 0.05; camera.updateProjectionMatrix();
-  renderer.toneMappingExposure = PRESETS[tod].exp * 1.3;   // eyes adjust looking out of a window
+  renderer.toneMappingExposure = PRESETS[tod].exp * 1.05;   // eyes adjust looking out of a window
   const tgt = eye.clone().add(w.normal);
   flight = null; camera.position.copy(eye); camera.lookAt(tgt); controls.target.copy(tgt);
   const facing = compassWord(w.normal);
@@ -894,6 +906,7 @@ function renderPanel() {
       ${pitchHTML(u, canBuy)}
       <div class="acts">
         <button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : 'Step inside'}</button>
+        ${!IS_PH && u.type === '2A' && SPOTS.some(x => x.id === 'apt24-living') ? `<button class="btn brass wide" data-act="pano">Photoreal 360° inside</button>` : ''}
         <button class="btn ghost walkdoor" data-act="door"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M6 21V4h10l2 2v15"/><path d="M4 21h16"/><circle cx="14" cy="13" r="1"/></svg>Walk to the front door</button>
         <button class="btn ghost" data-act="view">See the view</button>
         <button class="btn ghost" data-act="plan">Floor plan</button>
@@ -935,6 +948,7 @@ $('#panel').addEventListener('click', (e) => {
   if (b.dataset.act === 'explore') return toExplore();
   if (b.dataset.act === 'floor') return toFloor(+b.dataset.floor);
   if (b.dataset.act === 'door') return walkToDoor(S.plot);
+  if (b.dataset.act === 'pano') return goSpot(SPOTS.findIndex(x => x.id === 'apt24-living'));
   if (b.dataset.act === 'inside') return IS_PH ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))) : stepInside(S.plot);
   if (b.dataset.act === 'view') return seeView(S.plot);
   if (b.dataset.act === 'plan') { showPlan('card'); $('#zoomplan').classList.add('on'); return; }
@@ -1425,7 +1439,7 @@ function updateLabels() {
 // ------------------------------------------------------------------ adaptive quality
 // Watches the real frame time and steps quality down (then gently back up) to stay smooth on any device.
 let curDPR = DPR, adaptAcc = 0, adaptN = 0, adaptCool = 0, gtaoTried = false;
-const minDPR = Math.min(DPR, 0.85);
+const minDPR = Math.min(DPR, 1.15);   // never drop to a blurry picture
 function setDPR(d) { curDPR = d; renderer.setPixelRatio(d); composer.setPixelRatio(d); onResize(); }
 function adapt(rawDt) {
   if (!CH || S.mode === 'inside' || document.hidden || rawDt > 0.5) return;
@@ -1534,6 +1548,7 @@ const tour = createTour({ camera, fader: $('#tfade') });
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const eyeAt = (x, z, h = 1.65) => V3(x, groundAt(x, z) + h, z);
 let SPOTS = [], spotPins = [], clayForTour = false;
+const PANOS = [];   // panoramas present in assets/pano (filled in when they are rendered)
 const T = { spot: -1, prev: null, door: null };
 function buildSpots() {
   if (IS_PH) {
@@ -1563,6 +1578,9 @@ function buildSpots() {
       { id: 'market', name: 'Market Place', at: eyeAt(-178, -13), look: V3(-205, 10, -10), note: 'The 1861 Market Hall, two minutes’ walk from your front door.', glide: false },
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
+    // photoreal path-traced 360s inside the top-floor corner two-bed (rendered offline; typical of the 2A apartments 10, 17 and 24)
+    const ap = [['apt24-living', 'Inside Apt 24 · living', [3.425, 10.206, 2.725], [3.445, 9.936, 1.522], 'ch24_0'], ['apt24-bed', 'Inside Apt 24 · bedroom', [8.625, 10.206, 3.025], [9.022, 9.936, 1.348], 'ch24_1'], ['apt24-bath', 'Inside Apt 24 · shower room', [5.125, 10.206, 5.525], [5.098, 9.886, 5.433], 'ch24_3']];
+    for (const [id, name, a, l, f] of ap) if (PANOS.includes(f)) SPOTS.push({ id, name, at: V3(...a), look: V3(...l), pano: `pano/${f}.jpg`, glide: false, note: 'Photoreal render of the top-floor corner two-bed: oak herringbone floors, panelled walls, brass and marble (indicative finish). Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
