@@ -296,6 +296,7 @@ async function build() {
     }
     crowd = buildCrowd(THREE, { roads: RJ.roads, groundAt, focus: IS_PH ? [-40, 205] : [8, 4], radius: 230, extraPaths: xp, blds: W.bld, seed: IS_PH ? 7 : 3, quality: Q === 'high' ? 'high' : 'low', pavementLift: IS_PH ? 0.05 : 0.14 });
     scene.add(crowd.group);
+    crowd.group.visible = false; crowd = null;   // no people for now (demo)
   } catch (e) { console.warn('crowd', e); }
   // lamp glows + festoon bulbs (bloom picks these up in the evening)
   const bulbGeo = new THREE.SphereGeometry(0.045, 8, 6);
