@@ -465,6 +465,9 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
 .status.sold { background: rgba(227,36,43,.16) !important; color: #ff6b6f !important; }
 .tag.sold .pin { background: #e3242b !important; box-shadow: 0 0 0 4px rgba(227,36,43,.25) !important; }
 .tag.sold .b em { color: #ff8a8d; }
+.winpin { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 5px; padding: 5px 9px 5px 7px; border-radius: 999px; background: rgba(20,16,14,.82); border: 1px solid var(--brass); color: var(--brass); font: 600 11.5px/1 var(--f-ui, system-ui), sans-serif; pointer-events: auto; cursor: pointer; z-index: 3; box-shadow: 0 6px 18px -6px rgba(0,0,0,.6); }
+.winpin svg { width: 15px; height: 15px; }
+.winpin:hover { background: var(--brass); color: #1a1410; }
 /* demo build: compact plot tab, details in a pop-up, no action/WhatsApp buttons */
 .btn.wa, a[href*="wa.me"], a[href*="whatsapp"] { display: none !important; }
 #panel.compact { bottom: auto !important; height: auto !important; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }
@@ -597,6 +600,6 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1793367885"></script>
+<script type="module" src="js/main.js?v=1793367991"></script>
 
 </body></html>

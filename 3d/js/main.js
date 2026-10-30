@@ -9,21 +9,21 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793367885';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793367885';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793367885';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793367885';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793367885';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793367885';
-import { buildFar, hazeUniforms } from './far.js?v=1793367885';
-import { Forest, windUniforms } from './trees.js?v=1793367885';
-import { Interior } from './interior.js?v=1793367885';
-import { buildFurniture, LAYOUTS } from './furniture.js?v=1793367885';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793367885';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793367885';
-import { createTour } from './tour.js?v=1793367885';
-import { buildCrowd } from './crowd.js?v=1793367885';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793367885';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793367991';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793367991';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793367991';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793367991';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793367991';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793367991';
+import { buildFar, hazeUniforms } from './far.js?v=1793367991';
+import { Forest, windUniforms } from './trees.js?v=1793367991';
+import { Interior } from './interior.js?v=1793367991';
+import { buildFurniture, LAYOUTS } from './furniture.js?v=1793367991';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793367991';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793367991';
+import { createTour } from './tour.js?v=1793367991';
+import { buildCrowd } from './crowd.js?v=1793367991';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793367991';
 const pitch = IS_PH ? phPitch : chPitch, PICKS = IS_PH ? PH_PICKS : CH_PICKS;
 const AREA_CARDS = ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || c.id !== 'charter');   // the area edition pins every Brik site
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
@@ -562,7 +562,8 @@ function unitView(u) {
   const out = new THREE.Vector3(c.x - 15, 0, c.z - 15);
   if (c.x > 12) out.set(c.x - 8, 0, c.z - 20);
   if (c.z > 12) out.set(c.x - 20, 0, c.z - 6);
-  return { pos: new THREE.Vector3(out.x, y + 17, out.z), tgt: c };
+  const near = c.clone().lerp(new THREE.Vector3(out.x, c.y, out.z), 0.32);   // close in, looking down into the flat
+  return { pos: new THREE.Vector3(near.x, y + 11.5, near.z), tgt: c };
 }
 function primaryWindow(u) {
   const ws = CH.windows.filter(w => w.plot === u.plot);
@@ -610,7 +611,7 @@ function toUnit(plot, fly = true) {
   const u = unitByPlot.get(plot); if (!u) return;
   dropOverlays();
   if (S.floor !== u.floor) { S.floor = u.floor; setCut(SY() + u.floor * FH + 1.32); showPlates(u.floor); buildUnitTags(u.floor); }
-  S.mode = 'unit'; S.plot = plot;
+  S.mode = 'unit'; S.plot = plot; buildWinPins(u);
   if (!IS_PH) setTimeout(() => prebuildApartment(plot), 1800);
   if (fly) { const v = unitView(u); flyTo(v.pos, v.tgt, 1.5); }
   renderPanel(); setHash('plot-' + plot);
@@ -792,10 +793,12 @@ function viewDirs(u) {
   }
   return out;
 }
-function seeView(plot, idx = 0) {
+function seeView(plot, idx = 0, wo = null) {
   if (filmOn) endFilm(true);
   if (S.inside) dropOverlays();
-  const u = unitByPlot.get(plot); const dirs = viewDirs(u); const w = (dirs[idx] || {}).w || primaryWindow(u); if (!w) return;
+  const u = unitByPlot.get(plot); const dirs = viewDirs(u);
+  if (wo) { const j = dirs.findIndex(d => d.w === wo); if (j >= 0) { idx = j; wo = null; } else { const a = Math.atan2(wo.normal.x, wo.normal.z); const k = dirs.findIndex(d => !d.target && Math.abs(Math.atan2(d.w.normal.x, d.w.normal.z) - a) < 0.4); idx = k >= 0 ? k : 0; } }
+  const w = wo || (dirs[idx] || {}).w || primaryWindow(u); if (!w) return;
   $('#vw-dirs').innerHTML = dirs.length > 1 ? dirs.map((d, i) => `<button class="chip" data-i="${i}" aria-pressed="${i === idx}">${d.label}</button>`).join('') : '';
   $('#vw-dirs').onclick = (e) => { const b = e.target.closest('[data-i]'); if (b) seeView(plot, +b.dataset.i); };
   S.plot = plot; setCut(999); CUT.constant = 999; showPlates(null); clearUnitTags();
@@ -803,7 +806,7 @@ function seeView(plot, idx = 0) {
   S.mode = 'view'; controls.enabled = false;
   const eye = w.pos.clone().addScaledVector(w.normal, 0.3); eye.y = SY() + u.floor * FH + 1.5;   // at the glass, so nothing blocks the view
   look.base.copy(eye); look.dir.copy(w.normal); look.yaw = look.ty = 0; look.pitch = look.tp = -0.04;
-  const D = dirs[idx];
+  const D = wo ? null : dirs[idx];
   if (D && D.target) { look.dir.copy(D.target).sub(eye).setY(0).normalize(); look.pitch = look.tp = -0.12; }   // looking down the street from the top floor
   CH.meshes.glass.visible = false;
   const cur = CH.group.getObjectByName('curtains'); if (cur) cur.visible = false;
@@ -1030,7 +1033,21 @@ function buildFloorGlow() {
 
 // ------------------------------------------------------------------ floor-mode unit overlays + tags
 let unitTagGroup = null, unitTags = [];
+let winPins = [];
+function clearWinPins() { winPins.forEach(p => p.el.remove()); winPins = []; }
+function buildWinPins(u) {
+  clearWinPins(); if (IS_PH) return;
+  CH.windows.filter(w => w.plot === u.plot).forEach((w) => {
+    const el = document.createElement('button'); el.className = 'winpin'; el.setAttribute('aria-label', 'View from this window');
+    el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M12 3v18M5 12h14"/></svg><span>View</span>';
+    el.onclick = (e) => { e.stopPropagation(); seeView(u.plot, 0, w); };
+    $('#labels').appendChild(el);
+    const p = w.pos.clone().addScaledVector(w.normal, -0.25); p.y = SY() + u.floor * FH + 1.0;
+    winPins.push({ el, p });
+  });
+}
 function clearUnitTags() {
+  clearWinPins();
   if (unitTagGroup) { scene.remove(unitTagGroup); unitTagGroup.traverse(o => o.geometry && o.geometry.dispose()); unitTagGroup = null; }
   unitTags.forEach(t => t.el.remove()); unitTags = [];
 }
@@ -1069,8 +1086,8 @@ function buildUnitTags(f) {
     el.onpointerenter = () => { S.hoverPlot = u.plot; }; el.onpointerleave = () => { S.hoverPlot = null; };
     $('#labels').appendChild(el);
     const tp = new THREE.Vector3((x0 + x1) / 2, y + 0.2, (z0 + z1) / 2); if (IS_PH) tp.applyMatrix4(CH.group.matrixWorld);
-    const vg = new THREE.BoxGeometry(x1 - x0 - 2 * i + 0.1, 1.34, z1 - z0 - 2 * i + 0.1); vg.translate((x0 + x1) / 2, f * FH + 0.75, (z0 + z1) / 2);
-    const veil = new THREE.Mesh(vg, new THREE.MeshBasicMaterial({ color: '#2b2723', transparent: true, opacity: 0, depthWrite: false, toneMapped: false })); veil.renderOrder = 8; veil.visible = false; unitTagGroup.add(veil);
+    const vg = new THREE.BoxGeometry(x1 - x0 - 2 * i + 0.1, 1.12, z1 - z0 - 2 * i + 0.1); vg.translate((x0 + x1) / 2, f * FH + 0.64, (z0 + z1) / 2);
+    const veil = new THREE.Mesh(vg, new THREE.MeshBasicMaterial({ color: '#2b2723', transparent: true, opacity: 0, depthWrite: false, toneMapped: false, side: THREE.DoubleSide })); veil.renderOrder = 8; veil.visible = false; unitTagGroup.add(veil);
     unitTags.push({ el, plot: u.plot, p: tp, mesh, edge, veil });
   }
   if (IS_PH) { unitTagGroup.position.copy(CH.group.position); unitTagGroup.quaternion.copy(CH.group.quaternion); }
@@ -1447,6 +1464,11 @@ function updateLabels() {
     if (l === cardL) { if (op > 0.05) positionCard(); else if (!cardPinned) hideCard(); }
   }
   const panelOpen = !$('#panel').classList.contains('hide') && w > 760;
+  for (const p of winPins) {
+    tmpV.copy(p.p).project(camera);
+    const sx = (tmpV.x + 1) / 2 * w, sy = (1 - tmpV.y) / 2 * h, vis = S.mode === 'unit' && tmpV.z < 1 && !(panelOpen && sx > w - 410) && sy > 64 && sx > 80;
+    p.el.style.display = vis ? '' : 'none'; if (vis) { p.el.style.left = sx + 'px'; p.el.style.top = sy + 'px'; }
+  }
   const placed = [];
   for (const t of unitTags) {
     tmpV.copy(t.p).project(camera);
@@ -1622,7 +1644,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793367885`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793367991`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -1852,7 +1874,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793367885').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793367991').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
