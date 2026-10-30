@@ -9,22 +9,22 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793384463';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793384463';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793384463';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793384463';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793384463';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793384463';
-import { buildFar, hazeUniforms } from './far.js?v=1793384463';
-import { Forest, windUniforms } from './trees.js?v=1793384463';
-import { Interior } from './interior.js?v=1793384463';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793384463';
-import { buildPHFitout } from './phfit.js?v=1793384463';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793384463';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793384463';
-import { createTour } from './tour.js?v=1793384463';
-import { buildCrowd } from './crowd.js?v=1793384463';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793384463';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793385625';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793385625';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793385625';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793385625';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793385625';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793385625';
+import { buildFar, hazeUniforms } from './far.js?v=1793385625';
+import { Forest, windUniforms } from './trees.js?v=1793385625';
+import { Interior } from './interior.js?v=1793385625';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793385625';
+import { buildPHFitout } from './phfit.js?v=1793385625';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793385625';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793385625';
+import { createTour } from './tour.js?v=1793385625';
+import { buildCrowd } from './crowd.js?v=1793385625';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793385625';
 const pitch = IS_PH ? phPitch : chPitch, PICKS = IS_PH ? PH_PICKS : CH_PICKS;
 const AREA_CARDS = ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || (c.id !== 'charter' && c.id !== 'print'));   // the area edition pins every Brik site (Charter House demo: no Print House tag)
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
@@ -1832,7 +1832,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793384463`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793385625`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2066,7 +2066,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793384463').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793385625').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
