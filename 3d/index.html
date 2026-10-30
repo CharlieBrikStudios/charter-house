@@ -501,6 +501,16 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
 body { -webkit-user-select: none; user-select: none; }   /* no accidental blue text selection while dragging */
 input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-select: text; }
 #panel .angle[aria-pressed="true"] { border-color: var(--brass); color: var(--brass); }
+#photobox { position: fixed; inset: 0; z-index: 80; display: none; flex-direction: column; background: rgba(8,6,5,.94); }
+#photobox.on { display: flex; }
+#photobox .pb-top { position: relative; display: flex; align-items: center; gap: 16px; height: 62px; padding: 0 64px 0 max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid rgba(216,180,118,.25); }
+#photobox .pb-top img { height: 38px; width: auto; }
+#photobox .pb-cap { color: rgba(255,248,236,.75); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+#photobox .pb-close { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; font-size: 24px; color: var(--ink); background: rgba(255,255,255,.08); }
+#photobox .pb-stage { flex: 1; overflow: hidden; display: grid; place-items: center; cursor: grab; touch-action: none; }
+#photobox .pb-img { max-width: 100%; max-height: 100%; transform-origin: center; transition: transform .08s linear; user-select: none; -webkit-user-drag: none; }
+#photobox .pb-hint { text-align: center; padding: 8px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,248,236,.5); }
+#panel .photo { gap: 8px; }
 /* demo build: compact plot tab, details in a pop-up, no action/WhatsApp buttons */
 .btn.wa, a[href*="wa.me"], a[href*="whatsapp"] { display: none !important; }
 #panel.compact { bottom: auto !important; height: auto !important; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }
@@ -633,6 +643,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1793378963"></script>
+<script type="module" src="js/main.js?v=1793380036"></script>
 
 </body></html>

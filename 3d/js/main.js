@@ -9,21 +9,21 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793378963';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793378963';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793378963';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793378963';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793378963';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793378963';
-import { buildFar, hazeUniforms } from './far.js?v=1793378963';
-import { Forest, windUniforms } from './trees.js?v=1793378963';
-import { Interior } from './interior.js?v=1793378963';
-import { buildFurniture, LAYOUTS } from './furniture.js?v=1793378963';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793378963';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793378963';
-import { createTour } from './tour.js?v=1793378963';
-import { buildCrowd } from './crowd.js?v=1793378963';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793378963';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793380036';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793380036';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793380036';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793380036';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793380036';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793380036';
+import { buildFar, hazeUniforms } from './far.js?v=1793380036';
+import { Forest, windUniforms } from './trees.js?v=1793380036';
+import { Interior } from './interior.js?v=1793380036';
+import { buildFurniture, LAYOUTS } from './furniture.js?v=1793380036';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793380036';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793380036';
+import { createTour } from './tour.js?v=1793380036';
+import { buildCrowd } from './crowd.js?v=1793380036';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793380036';
 const pitch = IS_PH ? phPitch : chPitch, PICKS = IS_PH ? PH_PICKS : CH_PICKS;
 const AREA_CARDS = ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || (c.id !== 'charter' && c.id !== 'print'));   // the area edition pins every Brik site (Charter House demo: no Print House tag)
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
@@ -874,6 +874,27 @@ function renderBack() {
   if (S.mode === 'unit') { const u = unitByPlot.get(S.plot); $('#backlbl').textContent = `Back to level ${floorWord(u.floor)}`; }
 }
 const NO_INSIDE = true;   // demo meeting: Step inside switched off (interiors, panoramas and code all kept; set false to bring it back)
+const FLOOR_PHOTO = {};
+if (!IS_PH) for (let f = 0; f < 4; f++) fetch(BASE + 'floors/floor' + f + '.jpg', { method: 'HEAD', cache: 'no-store' }).then(r => { if (r.ok) { FLOOR_PHOTO[f] = BASE + 'floors/floor' + f + '.jpg?v=' + (r.headers.get('last-modified') || '').replace(/\W/g, ''); if (S.mode === 'floor' && S.floor === f) renderPanel(); } }).catch(() => {});
+function openPhoto(f) {
+  let d = $('#photobox');
+  if (!d) {
+    d = document.createElement('div'); d.id = 'photobox'; d.setAttribute('role', 'dialog');
+    d.innerHTML = '<div class="pb-top"><img src="' + BASE + 'brand_charterhouse.png" alt="Charter House"><span class="pb-cap"></span><button class="pb-close" aria-label="Close">×</button></div><div class="pb-stage"><img class="pb-img" alt=""></div><div class="pb-hint">Scroll or pinch to zoom · drag to look round</div>';
+    document.body.appendChild(d);
+    const st = d.querySelector('.pb-stage'), im = d.querySelector('.pb-img'); let z = 1, tx = 0, ty = 0, drag = null;
+    const apply = () => { im.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`; };
+    d.reset = () => { z = 1; tx = ty = 0; apply(); };
+    st.addEventListener('wheel', (e) => { e.preventDefault(); const r = st.getBoundingClientRect(), cx = e.clientX - r.left - r.width / 2 - tx, cy = e.clientY - r.top - r.height / 2 - ty; const nz = Math.min(5, Math.max(1, z * (e.deltaY < 0 ? 1.18 : 1 / 1.18))); tx -= cx * (nz / z - 1); ty -= cy * (nz / z - 1); z = nz; if (z === 1) tx = ty = 0; apply(); }, { passive: false });
+    st.addEventListener('pointerdown', (e) => { drag = { x: e.clientX - tx, y: e.clientY - ty }; st.setPointerCapture(e.pointerId); });
+    st.addEventListener('pointermove', (e) => { if (drag && z > 1) { tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply(); } });
+    st.addEventListener('pointerup', () => { drag = null; });
+    st.addEventListener('dblclick', (e) => { if (z > 1) d.reset(); else { z = 2.5; apply(); } });
+    d.querySelector('.pb-close').onclick = () => d.classList.remove('on');
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') d.classList.remove('on'); });
+  }
+  d.querySelector('.pb-img').src = FLOOR_PHOTO[f]; d.querySelector('.pb-cap').textContent = `${FLOORS[f].name} · photoreal cut-away`; d.reset(); d.classList.add('on');
+}
 let UDET = '';
 function openDetails() {
   let d = $('#udet'); if (!d) { d = document.createElement('div'); d.id = 'udet'; d.setAttribute('role', 'dialog'); document.body.appendChild(d); d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('.uclose')) d.classList.remove('on'); else { const b = e.target.closest('[data-plot]'); if (b) { d.classList.remove('on'); toUnit(+b.dataset.plot); } } }); }
@@ -926,6 +947,7 @@ function renderPanel() {
       <div class="levelbig" style="border-top:0;padding-top:0"><span class="lv">Level</span><span class="n num">${floorWord(f)}</span>
         <div class="meta"><span>${FLOORS[f].name}${FLOORS[f].note ? ' · ' + FLOORS[f].note.toLowerCase() : ''}</span><span><b>${fa.length}</b> of ${fu.length} available</span></div></div>
       <p style="margin:0;color:var(--ink-2);font-size:13.5px">The floor is opened up to the real Ollier Smurthwaite plan. Click an apartment on the model or below.</p>
+      ${FLOOR_PHOTO[f] ? `<button class="btn brass wide photo" data-act="photo" data-floor-photo="${f}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg>Photoreal view of this floor</button>` : ''}
       <div class="units">${fu.slice().sort((a, b) => a.plot - b.plot).map(u => unitRow(u)).join('')}</div>
       <div class="floors" style="grid-template-columns:repeat(${FLOORS.length},1fr)">${FLOORS.map(F => F.id).map(k => `<button class="fbtn" style="grid-template-columns:1fr;text-align:center;padding:8px" data-floor="${k}" ${k === f ? 'aria-current="true"' : ''}><span class="k">${floorWord(k)}</span></button>`).join('')}</div>
     </div>
@@ -992,6 +1014,7 @@ function unitRow(u) {
 $('#panel').addEventListener('click', (e) => {
   const b = e.target.closest('[data-floor],[data-plot],[data-act]'); if (!b) return;
   if (b.dataset.act === 'details') return openDetails();
+  if (b.dataset.act === 'photo') return openPhoto(+b.dataset.floorPhoto);
   if (b.dataset.act === 'angle') { viewAlt = +b.dataset.a; const v = unitView(unitByPlot.get(S.plot)); flyTo(v.pos, v.tgt, 1.1); document.querySelectorAll('#panel [data-act=angle]').forEach(x => x.setAttribute('aria-pressed', x.dataset.a === b.dataset.a)); return; }
   if (b.dataset.act === 'explore') return toExplore();
   if (b.dataset.act === 'floor') return toFloor(+b.dataset.floor);
@@ -1804,7 +1827,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793378963`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793380036`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2038,7 +2061,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793378963').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793380036').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
@@ -2111,4 +2134,4 @@ function waitForTextures() {
 }
 
 // expose for testing
-window.__CH = { getApartment, UNITS, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT };
+window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT };
