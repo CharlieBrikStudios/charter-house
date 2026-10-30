@@ -8,7 +8,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FLOOR_H as FH } from './data.js';
 
 const RES = 0.05;              // occupancy grid resolution (m)
-const EYE = 1.62;              // eye height
+const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
 const CEIL = FH - 0.11;        // ceiling height above the floor finish
 const OUTLINE = [[0, 0], [10.9, 0], [10.9, -0.34], [22.61, -0.34], [22.61, 11.03], [11.7, 11.03], [11.7, 21.27], [0.34, 21.27], [0.34, 9.2], [0, 9.2]];
 const T_EXT = 0.4;

@@ -43,7 +43,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPrefer
 const glInfo = (() => { try { const gl = renderer.getContext(); const e = gl.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : ''; } catch (e) { return ''; } })();
 const software = /swiftshader|llvmpipe|software/i.test(glInfo);
 const strongGPU = /nvidia|geforce|rtx|radeon rx|apple m\d|apple gpu|metal renderer: apple/i.test(glInfo) && !/intel/i.test(glInfo);
-let Q = software ? 'low' : (isTouch || small) ? 'medium' : strongGPU && (navigator.hardwareConcurrency || 4) >= 8 ? 'high' : 'medium';
+let Q = software ? 'low' : (isTouch || small) ? (strongGPU ? 'high' : 'medium') : 'high';   // ultra-sharp by default; adapt() steps down on a slow machine
 try { const q = new URLSearchParams(location.search).get('q'); if (q) Q = q; } catch (e) {}
 const DPR = Q === 'high' ? Math.min(devicePixelRatio, 2) : Q === 'medium' ? Math.min(devicePixelRatio, 1.75) : 1;   // sharp on retina screens
 renderer.setPixelRatio(DPR);
@@ -96,7 +96,7 @@ let mi = 0; const msgTimer = setInterval(() => { lmsg.textContent = msgs[++mi % 
 // ------------------------------------------------------------------ lights + sky
 const sun = new THREE.DirectionalLight('#ffd3a0', 4);
 sun.castShadow = true;
-const SM = Q === 'low' ? 1024 : 2048;
+const SM = Q === 'low' ? 1024 : Q === 'high' ? 4096 : 2048;
 sun.shadow.mapSize.set(SM, SM);
 const sc = sun.shadow.camera; sc.left = -46; sc.right = 46; sc.top = 46; sc.bottom = -46; sc.near = 1; sc.far = 260;
 sun.shadow.bias = -0.00025; sun.shadow.normalBias = 0.035;
@@ -110,7 +110,7 @@ let interiorLit = false;
 function setInteriorLighting(on) {
   interiorLit = on; const P = PRESETS[tod];
   amb.intensity = on ? 0 : (P.amb ?? 0);
-  if (on) { hemi.color.set('#c4d8f0'); hemi.groundColor.set('#7a6650'); hemi.intensity = tod === 'dusk' ? 0.3 : 0.55; sun.intensity = tod === 'day' ? 5.2 : P.I; }
+  if (on) { hemi.color.set('#c4d8f0'); hemi.groundColor.set('#8a7660'); hemi.intensity = tod === 'dusk' ? 0.35 : 0.72; sun.intensity = tod === 'day' ? 5.2 : P.I; }
   else { hemi.color.set(P.hemi[0]); hemi.groundColor.set(P.hemi[1]); hemi.intensity = P.hemi[2]; sun.intensity = P.I; }
   baseExposure = on && tod === 'day' ? 0.66 : P.exp; if (!on) renderer.toneMappingExposure = baseExposure;
   scene.environmentIntensity = on ? Math.min(P.env, 0.5) : P.env;
@@ -701,7 +701,7 @@ function stepInside(plot) {
   P.onT = (k) => {
     if (k > 0.62 && CH.meshes.glass.visible) { setInteriorLighting(true); CH.meshes.glass.visible = false; if (CH.meshes.slate) CH.meshes.slate.visible = false;   /* the pitched roofs would cut through the top-floor ceilings */ windUniforms.uNear.value = 1.2; setInteriorEnv(aptEnv.texture); }
     renderer.toneMappingExposure = baseExposure * (1 + 0.45 * THREE.MathUtils.smoothstep(k, 0.6, 0.95));
-    camera.near = k > 0.5 ? 0.05 : 0.25; camera.fov = THREE.MathUtils.lerp(baseFov(), 64, THREE.MathUtils.smoothstep(k, 0.55, 1)); camera.updateProjectionMatrix();
+    camera.near = k > 0.5 ? 0.05 : 0.25; camera.fov = THREE.MathUtils.lerp(baseFov(), 78, THREE.MathUtils.smoothstep(k, 0.55, 1)); camera.updateProjectionMatrix();
   };
   setHash('inside-' + plot);
 }
@@ -757,7 +757,7 @@ function closeInterior() {
       restoreFromInterior(); S.mode = 'unit'; S.floor = null; toUnit(u.plot, false);
       camera.position.copy(v.pos); controls.target.copy(v.tgt); controls.enabled = true; camera.lookAt(v.tgt);
     });
-    P.onT = (k) => { if (k > 0.25 && !CH.meshes.glass.visible) { CH.meshes.glass.visible = true; if (CH.meshes.slate) CH.meshes.slate.visible = true; windUniforms.uNear.value = 9; setInteriorEnv(null); } renderer.toneMappingExposure = baseExposure * (1 + 0.45 * (1 - THREE.MathUtils.smoothstep(k, 0.05, 0.4))); camera.fov = THREE.MathUtils.lerp(64, baseFov(), THREE.MathUtils.smoothstep(k, 0.1, 0.8)); camera.updateProjectionMatrix(); };
+    P.onT = (k) => { if (k > 0.25 && !CH.meshes.glass.visible) { CH.meshes.glass.visible = true; if (CH.meshes.slate) CH.meshes.slate.visible = true; windUniforms.uNear.value = 9; setInteriorEnv(null); } renderer.toneMappingExposure = baseExposure * (1 + 0.45 * (1 - THREE.MathUtils.smoothstep(k, 0.05, 0.4))); camera.fov = THREE.MathUtils.lerp(78, baseFov(), THREE.MathUtils.smoothstep(k, 0.1, 0.8)); camera.updateProjectionMatrix(); };
   }, 260);
 }
 
@@ -781,7 +781,13 @@ function viewDirs(u) {
   // The Print House: read the window's face off the plan (n is the plan normal: -v the St Joseph's side, -u Fletcher Street)
   const hint = IS_PH ? (n, w) => { const [pu, pv] = w.n; return pv < -0.5 ? 'to St Joseph\u2019s Church and the primary school' : pu < -0.5 ? 'along Fletcher Street, over the hedge and cobbled wall' : pu > 0.5 && w.id && w.id[0] === 'S' ? 'out of the quiet end of the block, towards St Joseph\u2019s' : 'over the residents\u2019 garden'; }
     : (n) => n.x < -0.7 ? 'across Harvey Street to St Mary\u2019s Gate, with St Mary\u2019s tower above the rooftops' : n.z < -0.7 ? 'across Churchgate to the play park and the big trees' : 'over the residents\u2019 courtyard garden';
-  return [...seen.values()].map(list => { const w = list[Math.floor(list.length / 2)]; return { w, label: compassWord(w.normal).replace(/^./, c => c.toUpperCase()), hint: hint(w.normal, w) }; });
+  const out = [...seen.values()].map(list => { const w = list[Math.floor(list.length / 2)]; return { w, label: compassWord(w.normal).replace(/^./, c => c.toUpperCase()), hint: hint(w.normal, w) }; });
+  // the corner apartments' end window: the view straight down Churchgate to St Mary's and the Market Hall (Charlie's selling point)
+  if (!IS_PH && (u.type === '2A' || u.type === '1D') && PLACES.tower) {
+    const end = ws.filter(w => w.normal.x < -0.7).sort((a, b) => a.pos.z - b.pos.z)[0];
+    if (end) out.unshift({ w: end, label: 'Down Churchgate', hint: 'straight down Churchgate to St Mary\u2019s Church and the Market Hall', target: new THREE.Vector3(...PLACES.tower) });
+  }
+  return out;
 }
 function seeView(plot, idx = 0) {
   if (filmOn) endFilm(true);
@@ -794,17 +800,19 @@ function seeView(plot, idx = 0) {
   S.mode = 'view'; controls.enabled = false;
   const eye = w.pos.clone().addScaledVector(w.normal, 0.3); eye.y = SY() + u.floor * FH + 1.5;   // at the glass, so nothing blocks the view
   look.base.copy(eye); look.dir.copy(w.normal); look.yaw = look.ty = 0; look.pitch = look.tp = -0.04;
+  const D = dirs[idx];
+  if (D && D.target) { look.dir.copy(D.target).sub(eye).setY(0).normalize(); look.pitch = look.tp = 0.06; }
   CH.meshes.glass.visible = false;
   const cur = CH.group.getObjectByName('curtains'); if (cur) cur.visible = false;
   windUniforms.uNear.value = 1.2;
   camera.fov = 58; camera.near = 0.05; camera.updateProjectionMatrix();
   renderer.toneMappingExposure = PRESETS[tod].exp * 1.05;   // eyes adjust looking out of a window
-  const tgt = eye.clone().add(w.normal);
+  const tgt = eye.clone().add(look.dir);
   flight = null; camera.position.copy(eye); camera.lookAt(tgt); controls.target.copy(tgt);
   const facing = compassWord(w.normal);
   $('#vw-kicker').textContent = `Plot ${u.plot} · ${FLOORS[u.floor].name} · facing ${facing}`;
   $('#vw-title').textContent = 'The view from your window';
-  $('#vw-text').textContent = dirs[idx] ? `Looking ${compassWord(w.normal)}, ${dirs[idx].hint}.` : u.view + '.';
+  $('#vw-text').textContent = dirs[idx] ? (dirs[idx].target ? `From the end window, looking ${dirs[idx].hint}.` : `Looking ${compassWord(w.normal)}, ${dirs[idx].hint}.`) : u.view + '.';
   $('#viewui').classList.add('on'); $('#viewui').setAttribute('aria-hidden', 'false');
   $('#panel').classList.add('hide'); $('#ui').style.visibility = 'hidden';
   S.view = true; setHash('view-' + plot);
@@ -905,8 +913,8 @@ function renderPanel() {
       <p class="aspect">${u.view}.</p>
       ${pitchHTML(u, canBuy)}
       <div class="acts">
-        <button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : 'Step inside'}</button>
-        ${!IS_PH && u.type === '2A' && SPOTS.some(x => x.id === 'apt24-living') ? `<button class="btn brass wide" data-act="pano">Photoreal 360° inside</button>` : ''}
+        <button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : SPOTS.some(x => x.pano && x.type === u.type) ? 'Step inside · photoreal 360°' : 'Step inside'}</button>
+        ${SPOTS.some(x => x.pano && x.type === u.type) ? `<button class="btn ghost wide" data-act="walk3d">Walk round it in 3D</button>` : ''}
         <button class="btn ghost walkdoor" data-act="door"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M6 21V4h10l2 2v15"/><path d="M4 21h16"/><circle cx="14" cy="13" r="1"/></svg>Walk to the front door</button>
         <button class="btn ghost" data-act="view">See the view</button>
         <button class="btn ghost" data-act="plan">Floor plan</button>
@@ -948,7 +956,8 @@ $('#panel').addEventListener('click', (e) => {
   if (b.dataset.act === 'explore') return toExplore();
   if (b.dataset.act === 'floor') return toFloor(+b.dataset.floor);
   if (b.dataset.act === 'door') return walkToDoor(S.plot);
-  if (b.dataset.act === 'pano') return goSpot(SPOTS.findIndex(x => x.id === 'apt24-living'));
+  if (b.dataset.act === 'walk3d') return stepInside(S.plot);
+  if (b.dataset.act === 'inside' && !IS_PH) { const u = unitByPlot.get(S.plot), i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; return; } }
   if (b.dataset.act === 'inside') return IS_PH ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))) : stepInside(S.plot);
   if (b.dataset.act === 'view') return seeView(S.plot);
   if (b.dataset.act === 'plan') { showPlan('card'); $('#zoomplan').classList.add('on'); return; }
@@ -1380,7 +1389,7 @@ function updateLabels() {
   const w = innerWidth, h = innerHeight;
   const showLM = (S.mode === 'explore' && !flight) || S.mode === 'view' || (S.mode === 'tour' && !panoOn);
   // sales cards only from the overview distance: up close (street, garden) they would float through the buildings
-  const cardsOK = S.area || (camera.position.distanceTo(controls.target) > 30 && camera.position.y - SY() > 12);
+  const cardsOK = S.area || S.mode === 'view' || (camera.position.distanceTo(controls.target) > 30 && camera.position.y - SY() > 12);
   if (!occluders) { occluders = []; CH.group.traverse(o => { if (o.isMesh && /brick|slate/.test(o.name)) occluders.push(o); }); contextGroup.traverse(o => { if (o.isMesh && /ctx_(cBrick|cSlate|shed)/.test(o.name)) occluders.push(o); }); }
   if (performance.now() - occT > 350) {
     occT = performance.now();
@@ -1548,7 +1557,7 @@ const tour = createTour({ camera, fader: $('#tfade') });
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const eyeAt = (x, z, h = 1.65) => V3(x, groundAt(x, z) + h, z);
 let SPOTS = [], spotPins = [], clayForTour = false;
-const PANOS = [];   // panoramas present in assets/pano (filled in when they are rendered)
+let PANO_INDEX = [];   // photoreal panoramas present in assets/pano (index.json, written when they are rendered)
 const T = { spot: -1, prev: null, door: null };
 function buildSpots() {
   if (IS_PH) {
@@ -1578,9 +1587,8 @@ function buildSpots() {
       { id: 'market', name: 'Market Place', at: eyeAt(-178, -13), look: V3(-205, 10, -10), note: 'The 1861 Market Hall, two minutes’ walk from your front door.', glide: false },
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
-    // photoreal path-traced 360s inside the top-floor corner two-bed (rendered offline; typical of the 2A apartments 10, 17 and 24)
-    const ap = [['apt24-living', 'Inside Apt 24 · living', [3.425, 10.206, 2.725], [3.445, 9.936, 1.522], 'ch24_0'], ['apt24-bed', 'Inside Apt 24 · bedroom', [8.625, 10.206, 3.025], [9.022, 9.936, 1.348], 'ch24_1'], ['apt24-bath', 'Inside Apt 24 · shower room', [5.125, 10.206, 5.525], [5.098, 9.886, 5.433], 'ch24_3']];
-    for (const [id, name, a, l, f] of ap) if (PANOS.includes(f)) SPOTS.push({ id, name, at: V3(...a), look: V3(...l), pano: `pano/${f}.jpg`, glide: false, note: 'Photoreal render of the top-floor corner two-bed: oak herringbone floors, panelled walls, brass and marble (indicative finish). Drag to look round.' });
+    // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
+    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg`, glide: false, type: p.type, note: p.note || 'Photoreal render, typical of this apartment type (indicative finish). Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -1629,12 +1637,12 @@ function goSpot(i) {
   const sp = SPOTS[i]; if (!sp) return;
   const from = SPOTS[T.spot];
   const near = from && sp.glide !== false && from.glide !== false && tour.st.pos.distanceTo(sp.at) < 48 && Math.abs(tour.st.pos.y - sp.at.y) < 2;
-  T.spot = i; T.door = null;
+  T.spot = i; if (!sp.pano) T.door = null;
   document.querySelectorAll('#t-spots [data-spot]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.spot === i));
   const chip = document.querySelector(`#t-spots [data-spot="${i}"]`); if (chip) chip.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
   $('#t-backlbl').textContent = 'Back to the 3D model';
   tourCaption(`360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note);
-  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: sp.look }], {}); setTimeout(() => showPano(sp.pano), 400); }
+  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: sp.look }], {}); setTimeout(() => { showPano(sp.pano); tour.setFov(innerWidth < innerHeight ? 96 : 80); }, 400); }
   else { showPano(null); tour.walk([near ? { to: sp.at, speed: 6, look: sp.look } : { to: sp.at, cut: true, look: sp.look }]); }
   stillFrames = Math.max(stillFrames, 4);
 }
@@ -1712,6 +1720,7 @@ $('#t-acts').addEventListener('click', (e) => {
   if (b.dataset.tact === 'skip') return tour.skip();
   if (b.dataset.tact === 'unit') exitTour(plot);
   else if (b.dataset.tact === 'interiors') { exitTour(plot); openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))); }
+  else if (b.dataset.tact === 'inside' && SPOTS.some(x => x.pano && x.type === unitByPlot.get(plot).type)) { const i = SPOTS.findIndex(x => x.pano && x.type === unitByPlot.get(plot).type); T.door = plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${plot}`; }
   else if (b.dataset.tact === 'inside') {
     const f = $('#tfade'); f.style.transitionDuration = '.35s'; f.style.opacity = 1;
     setTimeout(() => { exitTour(plot); const was = window.__fastFlights; window.__fastFlights = true; stepInside(plot); window.__fastFlights = was; setTimeout(() => { f.style.opacity = 0; }, 450); }, 380);
@@ -1737,6 +1746,19 @@ function updateTourPins() {
     const vis = !panoOn && !busy && cur && cur.links.includes(sp.id) && T.door == null && d < 95 && d > 3 && tmpV.z < 1 && Math.abs(tmpV.x) < 1 && tmpV.y > -0.62 && tmpV.y < 0.9;
     el.style.opacity = vis ? 1 : 0; el.style.pointerEvents = vis ? 'auto' : 'none';
     if (vis) { el.style.transform = `translate(${(tmpV.x + 1) / 2 * w}px, ${(1 - tmpV.y) / 2 * h}px) translate(-50%, -100%) scale(${THREE.MathUtils.clamp(14 / d, 0.62, 1.15)})`; }
+  }
+}
+
+
+// ------------------------------------------------------------------ full screen (for presenting on a call: no address bar, no tabs)
+{
+  const de = document.documentElement, req = de.requestFullscreen || de.webkitRequestFullscreen, exit = document.exitFullscreen || document.webkitExitFullscreen;
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (req && exit) {
+    $('#btn-fs').hidden = false; document.body.classList.add('has-fs');
+    $('#btn-fs').onclick = () => { try { const r = isFs() ? exit.call(document) : req.call(de, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => {}); } catch (e) {} };
+    const sync = () => { document.body.classList.toggle('is-fs', isFs()); $('#btn-fs').setAttribute('aria-label', isFs() ? 'Exit full screen' : 'Full screen'); $('#btn-fs').title = isFs() ? 'Exit full screen' : 'Full screen (hides the browser bar)'; setTimeout(() => dispatchEvent(new Event('resize')), 120); };
+    document.addEventListener('fullscreenchange', sync); document.addEventListener('webkitfullscreenchange', sync);
   }
 }
 
@@ -1792,7 +1814,9 @@ function loop() {
   $('#upd').textContent = SITE.updated;
   try {
     await build();
-    placeLandmarks(); buildSpots();
+    placeLandmarks();
+    try { const j = await fetch(BASE + 'pano/index.json').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
   renderPanel();
