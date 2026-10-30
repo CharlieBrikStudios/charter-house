@@ -9,24 +9,24 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, PLANF } from './site.js?v=1793390161';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793390161';
-import { buildOSL } from './oslbuild.js?v=1793390161';
-import { buildOSLFitout } from './oslfit.js?v=1793390161';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793390161';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793390161';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793390161';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793390161';
-import { buildFar, hazeUniforms } from './far.js?v=1793390161';
-import { Forest, windUniforms } from './trees.js?v=1793390161';
-import { Interior } from './interior.js?v=1793390161';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793390161';
-import { buildPHFitout } from './phfit.js?v=1793390161';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793390161';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793390161';
-import { createTour } from './tour.js?v=1793390161';
-import { buildCrowd } from './crowd.js?v=1793390161';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF } from './sales.js?v=1793390161';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, PLANF } from './site.js?v=1793391115';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793391115';
+import { buildOSL } from './oslbuild.js?v=1793391115';
+import { buildOSLFitout } from './oslfit.js?v=1793391115';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793391115';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793391115';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793391115';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793391115';
+import { buildFar, hazeUniforms } from './far.js?v=1793391115';
+import { Forest, windUniforms } from './trees.js?v=1793391115';
+import { Interior } from './interior.js?v=1793391115';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793391115';
+import { buildPHFitout } from './phfit.js?v=1793391115';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793391115';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793391115';
+import { createTour } from './tour.js?v=1793391115';
+import { buildCrowd } from './crowd.js?v=1793391115';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF } from './sales.js?v=1793391115';
 const pitch = IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_OSL ? OSL_PROOF : PROOF;
@@ -1011,7 +1011,8 @@ function renderPanel() {
     const u = unitByPlot.get(S.plot), s = st(u);
     const R = rentFor(u, RK), rent = R.pcm;
     const yld = (rent * 12 / u.price * 100).toFixed(1);
-    const scy = Math.round(u.sqft * SITE.serviceCharge), scm = Math.round(scy / 12);
+    const scr = u.house && SITE.estateCharge ? SITE.estateCharge : SITE.serviceCharge, scw = u.house && SITE.estateCharge ? 'Estate charge' : 'Service charge';
+    const scy = Math.round(u.sqft * scr), scm = Math.round(scy / 12);
     const canBuy = u.status === 'Available';
     const hasPano = SPOTS.some(x => x.pano && (x.plot === u.plot || x.type === u.type));
     html = `<div class="pscroll">
@@ -1031,7 +1032,7 @@ function renderPanel() {
       <div class="price"><b class="num">${fmtGBP(u.price)}</b><span>${canBuy ? `£${SITE.reservation.toLocaleString('en-GB')} reserves it` : 'No longer available'}</span></div>
       <div class="money">
         <div class="rentbox"><span class="label">Forecast rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b><span>${yld}% gross yield${R.why.length ? ' · ' + R.why.join(', ') : ''}</span></div>
-        <div class="lease"><div><span class="label">Lease</span><b>${SITE.lease}</b></div><div><span class="label">Ground rent</span><b>${SITE.groundRent}</b></div><div><span class="label">Service charge</span><b class="num">£${SITE.serviceCharge.toFixed(2)}/sq ft</b><small>about ${fmtGBP(scy)} a year</small></div><div><span class="label">Completion</span><b>${SITE.completion}</b></div></div>
+        <div class="lease"><div><span class="label">${u.house ? 'Tenure' : 'Lease'}</span><b>${u.house ? 'Freehold' : SITE.lease}</b></div><div><span class="label">Ground rent</span><b>${u.house ? 'None' : SITE.groundRent}</b></div><div><span class="label">${scw}</span><b class="num">£${scr.toFixed(2)}/sq ft</b><small>about ${fmtGBP(scy)} a year</small></div><div><span class="label">Completion</span><b>${SITE.completion}</b></div></div>
       </div>
       <p class="aspect">${u.view}.</p>
       ${pitchHTML(u, canBuy)}
@@ -1040,7 +1041,7 @@ function renderPanel() {
       <div class="kv">
         <div><span>Forecast rent (Brik estimate)</span><span class="num">${fmtGBP(rent)} pcm</span></div>
         <div><span>Gross yield at that rent</span><span class="num">${yld}%</span></div>
-        <div><span>Service charge (estimate)</span><span class="num">about ${fmtGBP(scm)} a month</span></div>
+        <div><span>${scw} (estimate)</span><span class="num">about ${fmtGBP(scm)} a month</span></div>
         <div><span>Notes</span><span>${u.note}</span></div>
       </div>
       <div class="contact"><span>Charlie Baxter, Co-founder and Sales Director</span><b>${SITE.phone}</b><b>${SITE.email}</b></div>`;
@@ -1892,7 +1893,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793390161`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793391115`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2126,7 +2127,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793390161').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793391115').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
