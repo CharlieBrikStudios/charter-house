@@ -6,7 +6,16 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
-export function setTerrain(t) { TER = t; TH = new Float32Array(t.h.length); for (let i = 0; i < t.h.length; i++) TH[i] = t.h[i] / 10; }
+export function setTerrain(t) {
+  TER = t; TH = new Float32Array(t.h.length); for (let i = 0; i < t.h.length; i++) TH[i] = t.h[i] / 10;
+  // local knowledge: Churchgate runs gently DOWNHILL from Charter House to St Mary's and the Market Place (the estimated grid had it rising)
+  const sm = (v) => { v = Math.max(0, Math.min(1, v)); return v * v * (3 - 2 * v); };
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const w = sm((10 - x) / 40) * (1 - sm((-260 - x) / 100)) * (1 - sm((Math.abs(z + 10) - 110) / 90));
+    if (w > 0) TH[j * t.nx + i] -= w * 0.08 * Math.min(110, Math.max(0, 10 - x));
+  }
+}
 // the 12 km mid-distance heightfield (far.json) continues the street-level grid out to the valleys and hills
 let MID = null, MH = null;
 export function setMid(m) {

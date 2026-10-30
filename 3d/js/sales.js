@@ -218,7 +218,7 @@ export const AREA_HEADLINE = [
 const r25 = (x) => Math.round(x / 25) * 25;
 export function rentFor(u, ph) {
   let r, why = [];
-  const lo = u.beds === 2 ? 1450 : 1250, hi = u.beds === 2 ? 1550 : 1375;
+  const lo = u.beds === 2 ? 1450 : 1250, hi = u.beds === 2 ? 1550 : 1325;   // 1 bed £1,250–£1,325, 2 bed £1,450–£1,550
   if (ph) {
     r = lo;
     if (u.floor === 4) { r += 50; why.push('top floor'); }
