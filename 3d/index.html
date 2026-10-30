@@ -486,6 +486,9 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
 #floorsw button:hover { background: rgba(216,180,118,.2); color: var(--brass); }
 #floorsw svg { width: 20px; height: 20px; }
 #floorsw span { min-width: 64px; text-align: center; font-size: 13px; font-weight: 600; color: var(--ink); }
+#navpad .nlv { font-size: 12px; font-weight: 700; color: var(--brass); padding: 2px 0; }
+#navpad.nofl .nfl, #navpad.noun .nun { display: none; }
+#floorsw { display: none !important; }
 /* demo build: compact plot tab, details in a pop-up, no action/WhatsApp buttons */
 .btn.wa, a[href*="wa.me"], a[href*="whatsapp"] { display: none !important; }
 #panel.compact { bottom: auto !important; height: auto !important; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }
@@ -531,17 +534,15 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
     <span class="vsep" aria-hidden="true"></span><button id="btn-build" title="Scroll through the build, from groundworks to handover">Build timeline</button><button id="btn-360" class="v360" title="Stand at fixed spots around the building and look all the way round">360° walk-around</button><button id="btn-clay" aria-pressed="false" title="Turn every other building into a plain white architectural model so Charter House stands out">Highlight</button>
   </div>
   <aside id="panel" aria-live="polite"></aside>
-  <div id="navpad" role="group" aria-label="Move the camera">
-    <button data-nav="left" title="Turn left" aria-label="Turn left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4.5h4.5"/></svg></button>
-    <button data-nav="right" title="Turn right" aria-label="Turn right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4.5h-4.5"/></svg></button>
-    <span class="nsep" aria-hidden="true"></span>
-    <button data-nav="in" title="Zoom in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button data-nav="out" title="Zoom out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"/></svg></button>
-    <span class="nsep" aria-hidden="true"></span>
-    <button data-nav="up" title="Look from higher" aria-label="Look from higher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 15 6-6 6 6"/></svg></button>
-    <button data-nav="down" title="Look from lower" aria-label="Look from lower"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-    <span class="nsep" aria-hidden="true"></span>
-    <button data-nav="home" title="Reset the view" aria-label="Reset the view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button>
+  <div id="navpad" role="group" aria-label="Floors and apartments">
+    <button data-nav="fup" class="nfl" title="Floor up" aria-label="Floor up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg></button>
+    <span class="nlv nfl" aria-live="polite"></span>
+    <button data-nav="fdown" class="nfl" title="Floor down" aria-label="Floor down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></button>
+    <span class="nsep nfl" aria-hidden="true"></span>
+    <button data-nav="uprev" class="nun" title="Previous apartment" aria-label="Previous apartment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 6-6 6 6 6"/></svg></button>
+    <button data-nav="unext" class="nun" title="Next apartment" aria-label="Next apartment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 6 6 6-6 6"/></svg></button>
+    <span class="nsep nun" aria-hidden="true"></span>
+    <button data-nav="home" title="Back to the whole building" aria-label="Back to the whole building"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/></svg></button>
   </div>
   <section id="area" hidden aria-label="The area and its regeneration"></section>
   <div id="hint"><span><b>Drag</b> to look around</span><span><b>Scroll</b> to zoom</span><span><b>Hover</b> a floor, <b>click</b> to open it</span></div>
@@ -618,6 +619,6 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1793368761"></script>
+<script type="module" src="js/main.js?v=1793368862"></script>
 
 </body></html>

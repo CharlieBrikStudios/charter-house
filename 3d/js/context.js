@@ -3,8 +3,8 @@
 // Positions are approximate, from Google Earth and the Ollier Smurthwaite site/context drawings.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxGeom, boxUV } from './building.js?v=1793368761';
-import { groundAt } from './world.js?v=1793368761';
+import { boxGeom, boxUV } from './building.js?v=1793368862';
+import { groundAt } from './world.js?v=1793368862';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -369,42 +369,69 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     for (let x = -46; x < -2; x += 1.2) forest.add(x, -13.9 + Math.sin(x) * 0.1, { kind: 'hedge', h: 1.0, r: 0.6, seed: 900 + x * 7 });
     for (const [x, h] of [[-43, 11], [-34, 12.5], [-25, 10.5]]) forest.add(x, -15.4, { h, r: 3.8, kind: 'sycamore', seed: 3000 + x, density: 0.85 });
 
-    // the new play park
-    const pp = [[2.5, -14.6], [27, -14.6], [27, -29], [2.5, -29]];
-    const ps = new THREE.Shape(pp.map(([x, z]) => new THREE.Vector2(x, -z)));
-    const pg = new THREE.ShapeGeometry(ps); pg.rotateX(-Math.PI / 2); const pq = pg.attributes.position;
-    for (let i = 0; i < pq.count; i++) pq.setY(i, groundY(pq.getX(i), pq.getZ(i)) + 0.05); pg.computeVertexNormals(); B.add('rubber', pg);
-    for (const [cx, cz, r] of [[9, -21, 3.2], [19.5, -20, 2.6]]) {
-      const c = new THREE.CircleGeometry(r, 40); c.rotateX(-Math.PI / 2); c.translate(cx, groundY(cx, cz) + 0.06, cz); B.add('playRed', c);
-    }
+    // the new play park: a big one, with a tower and slides, swings, a rope pyramid, roundabout, see-saw, sandpit and trampolines
+    const PX0 = 1, PX1 = 34, PZ0 = -14.6, PZ1 = -44;
+    const flat = (pts, k, lift) => { const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z))); const g = new THREE.ShapeGeometry(sh, 24); g.rotateX(-Math.PI / 2); const q = g.attributes.position; for (let i = 0; i < q.count; i++) q.setY(i, groundY(q.getX(i), q.getZ(i)) + lift); g.computeVertexNormals(); boxUV(g, 3); B.add(k, g); };
+    flat([[PX0, PZ0], [PX1, PZ0], [PX1, PZ1], [PX0, PZ1]], 'rubber', 0.05);
+    const disc = (cx, cz, r, k, lift = 0.06) => { const c = new THREE.CircleGeometry(r, 48); c.rotateX(-Math.PI / 2); c.translate(cx, groundY(cx, cz) + lift, cz); B.add(k, c); };
+    const MAT = (c, r = 0.6) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
+    const sand = MAT('#e6cf9c', 0.95), blue = MAT('#2f6fb3', 0.45), green = MAT('#4f9a4a', 0.5), tramp = MAT('#1b1b1b', 0.7);
+    for (const [cx, cz, r, k] of [[9, -21, 3.4, 'playRed'], [19.5, -20, 3.0, 'playRed'], [12, -34, 4.2, blue], [25, -33, 3.6, green], [5.5, -35.5, 2.0, 'playYellow']]) disc(cx, cz, r, k);
     const railLine = (x0, z0, x1, z1) => {
       const len = Math.hypot(x1 - x0, z1 - z0), n = Math.floor(len / 0.14);
       for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, z = z0 + (z1 - z0) * i / n; const g = boxGeom(x - 0.012, 0, z - 0.012, x + 0.012, 1.0, z + 0.012); g.translate(0, groundY(x, z), 0); B.add('timberBlack', g); }
       for (const hh of [0.1, 0.95]) { const g = boxGeom(Math.min(x0, x1) - 0.02, hh, Math.min(z0, z1) - 0.02, Math.max(x0, x1) + 0.02, hh + 0.04, Math.max(z0, z1) + 0.02); g.translate(0, groundY((x0 + x1) / 2, (z0 + z1) / 2), 0); B.add('timberBlack', g); }
     };
-    railLine(2.5, -14.6, 12, -14.6); railLine(14, -14.6, 27, -14.6); railLine(27, -14.6, 27, -29); railLine(2.5, -14.6, 2.5, -29);
-    const ty = groundY(9, -21);
-    for (const [px, pz] of [[7.6, -22.4], [10.4, -22.4], [7.6, -19.6], [10.4, -19.6]]) B.add('playWood', boxGeom(px - 0.09, ty, pz - 0.09, px + 0.09, ty + 3.4, pz + 0.09));
-    B.add('playWood', boxGeom(7.5, ty + 1.5, -22.5, 10.5, ty + 1.62, -19.5));
-    const roof = new THREE.ConeGeometry(2.3, 1.2, 4); roof.rotateY(Math.PI / 4); roof.translate(9, ty + 4.0, -21); B.add('playRed', roof);
-    const slide = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(10.5, ty + 1.6, -21), new THREE.Vector3(12, ty + 1.1, -21.6), new THREE.Vector3(13.4, ty + 0.4, -22.6), new THREE.Vector3(14.2, ty + 0.25, -23.4)]), 24, 0.32, 10, false);
-    B.add('playYellow', slide);
-    const sy = groundY(19.5, -20);
-    for (const sx of [17.4, 21.6]) {
-      for (const sz of [-21, -19]) { const leg = new THREE.CylinderGeometry(0.05, 0.05, 2.6, 8); leg.rotateX((sz < -20 ? 1 : -1) * 0.22); leg.translate(sx, sy + 1.25, sz + (sz < -20 ? 0.28 : -0.28)); B.add('rubber', leg); }
-    }
-    const beam = new THREE.CylinderGeometry(0.06, 0.06, 4.4, 8); beam.rotateZ(Math.PI / 2); beam.translate(19.5, sy + 2.5, -20); B.add('rubber', beam);
-    for (const sx of [18.6, 20.4]) { for (const d of [-0.2, 0.2]) { const c = new THREE.CylinderGeometry(0.01, 0.01, 1.9, 4); c.translate(sx + d, sy + 1.55, -20); B.add('timberBlack', c); } B.add('timberBlack', boxGeom(sx - 0.25, sy + 0.55, -20.12, sx + 0.25, sy + 0.6, -19.88)); }
-    for (const [x, z, k] of [[15, -26, 'playYellow'], [16.6, -26.4, 'playRed']]) {
+    railLine(PX0, PZ0, 12, PZ0); railLine(14, PZ0, PX1, PZ0); railLine(PX1, PZ0, PX1, PZ1); railLine(PX0, PZ1, PX1, PZ1); railLine(PX0, PZ0, PX0, PZ1);
+    // tower one with a slide
+    const tower = (cx, cz, h, roofK) => {
+      const ty = groundY(cx, cz);
+      for (const [px, pz] of [[cx - 1.4, cz - 1.4], [cx + 1.4, cz - 1.4], [cx - 1.4, cz + 1.4], [cx + 1.4, cz + 1.4]]) B.add('playWood', boxGeom(px - 0.09, ty, pz - 0.09, px + 0.09, ty + h + 1.8, pz + 0.09));
+      B.add('playWood', boxGeom(cx - 1.5, ty + h, cz - 1.5, cx + 1.5, ty + h + 0.12, cz + 1.5));
+      for (const d of [-1.45, 1.45]) { B.add('playWood', boxGeom(cx - 1.5, ty + h + 0.12, cz + d - 0.03, cx + 1.5, ty + h + 0.95, cz + d + 0.03)); }
+      const roof = new THREE.ConeGeometry(2.3, 1.2, 4); roof.rotateY(Math.PI / 4); roof.translate(cx, ty + h + 2.4, cz); B.add(roofK, roof);
+      for (let k = 0; k < 6; k++) B.add('playWood', boxGeom(cx - 1.5 - 0.5 - k * 0.0, ty + k * h / 6, cz - 0.5, cx - 1.5, ty + k * h / 6 + 0.06, cz + 0.5));   // ladder rungs
+      return ty;
+    };
+    let ty = tower(9, -21, 1.5, 'playRed');
+    B.add('playYellow', new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(10.5, ty + 1.6, -21), new THREE.Vector3(12, ty + 1.1, -21.6), new THREE.Vector3(13.4, ty + 0.4, -22.6), new THREE.Vector3(14.2, ty + 0.25, -23.4)]), 24, 0.32, 10, false));
+    // tower two, taller, with a wave slide and a spiral slide
+    ty = tower(25, -33, 2.2, blue);
+    B.add('playYellow', new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(25, ty + 2.3, -34.5), new THREE.Vector3(25.3, ty + 1.5, -36.5), new THREE.Vector3(25.5, ty + 1.2, -37.6), new THREE.Vector3(25.7, ty + 0.5, -39.6), new THREE.Vector3(25.8, ty + 0.3, -40.8)]), 32, 0.36, 10, false));
+    const sp = []; for (let i = 0; i <= 40; i++) { const t = i / 40, a = t * Math.PI * 2.4; sp.push(new THREE.Vector3(27.6 + Math.cos(a) * 1.5, ty + 2.3 - t * 2.0, -33 + Math.sin(a) * 1.5)); }
+    B.add('playRed', new THREE.TubeGeometry(new THREE.CatmullRomCurve3(sp), 80, 0.34, 10, false));
+    B.add('playWood', new THREE.CylinderGeometry(0.12, 0.12, 2.6, 10).translate(27.6, ty + 1.3, -33));
+    // swings (two bays)
+    const swings = (cx, cz) => {
+      const sy = groundY(cx, cz);
+      for (const sx of [cx - 2.1, cx + 2.1]) for (const sz of [cz - 1, cz + 1]) { const leg = new THREE.CylinderGeometry(0.05, 0.05, 2.6, 8); leg.rotateX((sz < cz ? 1 : -1) * 0.22); leg.translate(sx, sy + 1.25, sz + (sz < cz ? 0.28 : -0.28)); B.add('rubber', leg); }
+      const beam = new THREE.CylinderGeometry(0.06, 0.06, 4.4, 8); beam.rotateZ(Math.PI / 2); beam.translate(cx, sy + 2.5, cz); B.add('rubber', beam);
+      for (const sx of [cx - 0.9, cx + 0.9]) { for (const d of [-0.2, 0.2]) { const c = new THREE.CylinderGeometry(0.01, 0.01, 1.9, 4); c.translate(sx + d, sy + 1.55, cz); B.add('timberBlack', c); } B.add('timberBlack', boxGeom(sx - 0.25, sy + 0.55, cz - 0.12, sx + 0.25, sy + 0.6, cz + 0.12)); }
+    };
+    swings(19.5, -20);
+    // rope pyramid
+    { const cx = 12, cz = -34, g0 = groundY(cx, cz), H = 4.6, R = 3.4;
+      B.add('timberBlack', new THREE.CylinderGeometry(0.06, 0.08, H + 0.3, 8).translate(cx, g0 + (H + 0.3) / 2, cz));
+      for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, ex = cx + Math.cos(a) * R, ez = cz + Math.sin(a) * R; const L = Math.hypot(R, H); const c = new THREE.CylinderGeometry(0.025, 0.025, L, 5); c.translate(0, L / 2, 0); c.rotateZ(-Math.atan2(R, H)); c.rotateY(-a); c.translate(ex, g0, ez); B.add(MAT('#b3402e', 0.8), c); }
+      for (const t of [0.25, 0.5, 0.75]) { const ring = new THREE.TorusGeometry(R * (1 - t), 0.025, 5, 40); ring.rotateX(Math.PI / 2); ring.translate(cx, g0 + H * t, cz); B.add(MAT('#b3402e', 0.8), ring); } }
+    // roundabout, see-saw, trampolines, springers
+    { const cx = 5.5, cz = -35.5, g0 = groundY(cx, cz); B.add('playRed', new THREE.CylinderGeometry(1.2, 1.2, 0.12, 32).translate(cx, g0 + 0.3, cz)); B.add('timberBlack', new THREE.CylinderGeometry(0.06, 0.06, 0.9, 8).translate(cx, g0 + 0.75, cz)); B.add('playYellow', new THREE.TorusGeometry(0.5, 0.03, 6, 24).rotateX(Math.PI / 2).translate(cx, g0 + 1.15, cz)); }
+    { const cx = 18, cz = -30.5, g0 = groundY(cx, cz); B.add('timberBlack', boxGeom(cx - 0.15, g0, cz - 0.15, cx + 0.15, g0 + 0.45, cz + 0.15)); const bm = boxGeom(-1.8, -0.05, -0.12, 1.8, 0.05, 0.12); bm.rotateZ(0.15); bm.translate(cx, g0 + 0.5, cz); B.add('playYellow', bm); for (const d of [-1.6, 1.6]) B.add('playRed', boxGeom(cx + d - 0.2, g0 + 0.5 + d * 0.15, cz - 0.2, cx + d + 0.2, g0 + 0.6 + d * 0.15, cz + 0.2)); }
+    for (const [cx, cz] of [[5, -27], [7.4, -27]]) { disc(cx, cz, 0.95, tramp, 0.07); const r = new THREE.TorusGeometry(1.0, 0.07, 6, 32); r.rotateX(Math.PI / 2); r.translate(cx, groundY(cx, cz) + 0.08, cz); B.add(green, r); }
+    for (const [x, z, k] of [[15, -26, 'playYellow'], [16.6, -26.4, 'playRed'], [30, -28, blue]]) {
       const gy0 = groundY(x, z);
-      const sp = new THREE.CylinderGeometry(0.09, 0.09, 0.42, 10); sp.translate(x, gy0 + 0.21, z); B.add('timberBlack', sp);
+      B.add('timberBlack', new THREE.CylinderGeometry(0.09, 0.09, 0.42, 10).translate(x, gy0 + 0.21, z));
       const bd = new THREE.CapsuleGeometry(0.2, 0.5, 4, 10); bd.rotateZ(Math.PI / 2); bd.translate(x, gy0 + 0.6, z); B.add(k, bd);
-      const hd = new THREE.SphereGeometry(0.17, 12, 8); hd.translate(x + 0.42, gy0 + 0.82, z); B.add(k, hd);
-      const hb = new THREE.CylinderGeometry(0.025, 0.025, 0.4, 6); hb.rotateX(Math.PI / 2); hb.translate(x + 0.3, gy0 + 0.88, z); B.add('timberBlack', hb);
+      B.add(k, new THREE.SphereGeometry(0.17, 12, 8).translate(x + 0.42, gy0 + 0.82, z));
     }
-    for (const [x, z] of [[5, -27.6], [24, -27.6], [24, -16]]) { B.add('playWood', boxGeom(x - 0.9, groundY(x, z) + 0.42, z - 0.22, x + 0.9, groundY(x, z) + 0.48, z + 0.22)); B.add('timberBlack', boxGeom(x - 0.8, groundY(x, z), z - 0.05, x - 0.7, groundY(x, z) + 0.42, z + 0.05)); B.add('timberBlack', boxGeom(x + 0.7, groundY(x, z), z - 0.05, x + 0.8, groundY(x, z) + 0.42, z + 0.05)); }
+    // sandpit with a timber edge
+    { const cx = 30, cz = -20, g0 = groundY(cx, cz); for (const [a1, b1, c1, d1] of [[cx - 2, cz - 2, cx + 2, cz - 1.8], [cx - 2, cz + 1.8, cx + 2, cz + 2], [cx - 2, cz - 2, cx - 1.8, cz + 2], [cx + 1.8, cz - 2, cx + 2, cz + 2]]) B.add('playWood', boxGeom(a1, g0, b1, c1, g0 + 0.3, d1)); B.add(sand, boxGeom(cx - 1.8, g0, cz - 1.8, cx + 1.8, g0 + 0.2, cz + 1.8)); }
+    // benches and picnic tables for parents, trees for shade
+    for (const [x, z] of [[4, -16.2], [24, -16.2], [32.6, -38], [2.6, -41.8], [18, -42.4]]) { B.add('playWood', boxGeom(x - 0.9, groundY(x, z) + 0.42, z - 0.22, x + 0.9, groundY(x, z) + 0.48, z + 0.22)); B.add('timberBlack', boxGeom(x - 0.8, groundY(x, z), z - 0.05, x - 0.7, groundY(x, z) + 0.42, z + 0.05)); B.add('timberBlack', boxGeom(x + 0.7, groundY(x, z), z - 0.05, x + 0.8, groundY(x, z) + 0.42, z + 0.05)); }
+    for (const [x, z] of [[31, -42], [3.5, -38]]) { const g0 = groundY(x, z); B.add('playWood', boxGeom(x - 0.4, g0 + 0.72, z - 0.9, x + 0.4, g0 + 0.77, z + 0.9)); for (const d of [-0.75, 0.75]) B.add('playWood', boxGeom(x + d - 0.15, g0 + 0.42, z - 0.9, x + d + 0.15, g0 + 0.46, z + 0.9)); B.add('timberBlack', boxGeom(x - 0.05, g0, z - 0.05, x + 0.05, g0 + 0.72, z + 0.05)); }
+    for (const [x, z, h] of [[32, -16.5, 7], [2.2, -31, 8], [20, -43, 7.5]]) forest.add(x, z, { kind: 'birch', h, r: 2.6, y: groundY(x, z), seed: Math.floor(x * 13 + z) });
     // grass around the play park
-    const gr = new THREE.Shape([[-1.2, -13.6], [30, -13.6], [30, -36], [-1.2, -36]].map(([x, z]) => new THREE.Vector2(x, -z)));
+    const gr = new THREE.Shape([[-1.2, -13.6], [36, -13.6], [36, -48], [-1.2, -48]].map(([x, z]) => new THREE.Vector2(x, -z)));
     const gg = new THREE.ShapeGeometry(gr); gg.rotateX(-Math.PI / 2); const gp = gg.attributes.position;
     for (let i = 0; i < gp.count; i++) gp.setY(i, groundY(gp.getX(i), gp.getZ(i)) + 0.03); gg.computeVertexNormals(); boxUV(gg, 4); B.add('grassCtx', gg);
   }
@@ -417,7 +444,7 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     let guard = 0;
     while (pts.length < 64 && guard++ < 6000) {
       const x = 4 + R() * 100, z = -42 - R() * 70;
-      if (x < 34 && z > -48) continue;              // open ground behind the play park
+      if (x < 40 && z > -52) continue;              // the play park and the open ground round it
       if (tryAdd(x, z, 8.5)) forest.add(x, z, { h: 16 + R() * 8, r: 5.5 + R() * 2.5, kind: R() < 0.6 ? 'oak' : 'sycamore', seed: Math.floor(R() * 1e6), density: 0.85 });
     }
     // trees at the bend of Churchgate and along its south side beyond the play park
