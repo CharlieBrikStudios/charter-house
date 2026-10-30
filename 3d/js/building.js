@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H } from './data.js?v=1793368862';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1793368862';
+import { UNITS, FLOOR_H } from './data.js?v=1793368906';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1793368906';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -133,6 +133,8 @@ export function buildCharterHouse(M, base) {
     [[15.0, 'RH1'], [19.4, 'RH2']].forEach(([z, id]) =>
       open.hwR.push({ id, c: z - 11.03, v0: y + (f ? 0.85 : 0.45), v1: y + 2.2, w: 1.2, type: 'win2', floor: f }));
     [16.5, 17.9].forEach(z => open.hwR.push({ id: 'DOOR', c: z - 11.03, v0: y, v1: y + 2.15, w: 0.95, type: 'door', floor: f }));
+    // the stair and lift lobby opens onto each upper floor's walkway at the inner corner
+    if (f > 0) { open.hwR.push({ id: 'CORE', c: 0.62, v0: y, v1: y + 2.15, w: 1.0, type: 'door', floor: f }); open.hwR.push({ id: 'LIFT', c: 1.82, v0: y, v1: y + 2.15, w: 1.05, type: 'door', floor: f }); }
     // SW end wall: recessed blind panels (as the CGIs)
     [2.6, 5.7, 8.8].forEach(c => open.hwS.push({ id: 'BL', c, v0: y + Gs + 0.1, v1: y + Gh - 0.1, w: 1.1, type: 'blind', floor: f }));
   }
