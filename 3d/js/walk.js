@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793369754';
+import { FLOOR_H as FH } from './data.js?v=1793369959';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -239,6 +239,9 @@ export function buildApartment(u, ctx) {
   // fallback: the smallest enclosed room of shower-room size (some plans give it a small window)
   if (!bath) bath = others.filter(R => R.area > 2.0 && R.area < 9.5 && (R.x1 - R.x0) > 1.1 && (R.z1 - R.z0) > 1.1 && R.type !== 'bedroom').sort((a, b) => a.area - b.area)[0];
   if (bath) bath.type = 'bath';
+  // two-bed flats: the en-suite as well
+  const bath2 = u.beds === 2 ? others.filter(R => R !== bath && !R.type && R.area > 1.8 && R.area < 7.5 && (R.x1 - R.x0) > 1.0 && (R.z1 - R.z0) > 1.0).sort((a, b) => a.area - b.area)[0] : null;
+  if (bath2) bath2.type = 'bath';
   for (const R of live) if (!R.type) R.type = R.area > 6 && R.windows.length ? 'living' : 'hall';
   const names = { living: u.beds === 2 ? 'Living and dining' : 'Kitchen and living', bath: 'Shower room', hall: 'Hallway' };
   bedrooms.forEach((R, i) => { R.name = bedrooms.length > 1 ? (i === 0 ? 'Main bedroom' : 'Second bedroom') : 'Bedroom'; });
@@ -431,8 +434,8 @@ export function buildApartment(u, ctx) {
     }
   }
   // shower room: walk-in shower with fluted glass screen, wall-hung WC, basin on an oak vanity, backlit mirror
-  if (bath) {
-    const R = bath, wx = R.x1 - R.x0 + RES, wz = R.z1 - R.z0 + RES, x0 = R.x0 - RES / 2, z0 = R.z0 - RES / 2, x1 = x0 + wx, z1 = z0 + wz;
+  for (const bathR of [bath, bath2].filter(Boolean)) {
+    const R = bathR, wx = R.x1 - R.x0 + RES, wz = R.z1 - R.z0 + RES, x0 = R.x0 - RES / 2, z0 = R.z0 - RES / 2, x1 = x0 + wx, z1 = z0 + wz;
     const alongX = wx >= wz;   // long axis
     // marble floor
     const fl = new THREE.PlaneGeometry(wx, wz); fl.rotateX(-Math.PI / 2); fl.translate((x0 + x1) / 2, y0 + 0.008, (z0 + z1) / 2); add('marble', fl);
