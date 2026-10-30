@@ -218,20 +218,22 @@ export const AREA_HEADLINE = [
 const r25 = (x) => Math.round(x / 25) * 25;
 export function rentFor(u, ph) {
   let r, why = [];
+  const lo = u.beds === 2 ? 1450 : 1250, hi = u.beds === 2 ? 1550 : 1375;
   if (ph) {
-    r = u.beds === 2 ? 1525 : 1250;
+    r = lo;
     if (u.floor === 4) { r += 50; why.push('top floor'); }
     if (u.floor === 0) { r -= 50; why.push('lower ground'); }
     if (u.plot === 37) { r += 25; why.push('viaduct views'); }
     if (u.side) { r += 25; why.push('private side-block landing'); }
     if (u.type === '1C') { r += 25; why.push('corner, two aspects'); }
   } else {
-    r = u.beds === 2 ? 1550 : 1300;
+    r = lo;
+    if (u.type === '1C') { r += 25; why.push('facing St Mary’s Gate'); }
     if (u.floor === 3) { r += 50; why.push('top floor'); }
     if (u.type === '2A' || u.type === '1D') { r += 50; why.push('corner view to the Market Hall'); }
     if (u.type === '1A') { r += 25; why.push('park-facing'); if (ENDS_PARK.includes(u.plot)) { r += 25; why.push('end of the walkway'); } }
     if (u.type === '1B' && ENDS_HARVEY.includes(u.plot)) { r += 25; why.push('end of the walkway'); }
     if (u.type === '1E') { r -= 50; why.push('courtyard, ground floor'); }
   }
-  return { pcm: r25(r), why };
+  return { pcm: Math.min(hi, Math.max(lo, r25(r))), why };
 }

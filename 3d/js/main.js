@@ -864,6 +864,11 @@ function renderBack() {
   if (S.mode === 'floor') $('#backlbl').textContent = 'Back to all floors';
   if (S.mode === 'unit') { const u = unitByPlot.get(S.plot); $('#backlbl').textContent = `Back to level ${floorWord(u.floor)}`; }
 }
+let UDET = '';
+function openDetails() {
+  let d = $('#udet'); if (!d) { d = document.createElement('div'); d.id = 'udet'; d.setAttribute('role', 'dialog'); document.body.appendChild(d); d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('.uclose')) d.classList.remove('on'); else { const b = e.target.closest('[data-plot]'); if (b) { d.classList.remove('on'); toUnit(+b.dataset.plot); } } }); }
+  d.innerHTML = `<div class="ubox"><button class="uclose" aria-label="Close">×</button>${UDET}</div>`; d.classList.add('on');
+}
 function renderPanel() {
   renderBack();
   const P = $('#panel');
@@ -903,26 +908,27 @@ function renderPanel() {
     const yld = (rent * 12 / u.price * 100).toFixed(1);
     const scy = Math.round(u.sqft * SITE.serviceCharge), scm = Math.round(scy / 12);
     const canBuy = u.status === 'Available';
+    const hasPano = SPOTS.some(x => x.pano && (x.plot === u.plot || x.type === u.type));
     html = `<div class="pscroll">
       <button class="back" data-act="floor" data-floor="${u.floor}">${chev}Level ${floorWord(u.floor)}</button>
-      <div class="uhead"><div><span class="label">Apartment ${u.apt} · type ${u.type}</span><h2>Plot ${u.plot}</h2><div class="sub">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''}</div></div><span class="status ${s.key}">${s.label}</span></div>
+      <div class="uhead"><div><span class="label">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''}</span><h2>Plot ${u.plot}</h2></div><span class="status ${s.key}">${s.label}</span></div>
+      <div class="acts uacts">
+        <button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : hasPano ? 'Step inside · 360°' : 'Step inside'}</button>
+        <button class="btn ghost" data-act="view">View from window</button>
+        <button class="btn ghost" data-act="door">Walk to the door</button>
+      </div>
+      <div class="facts"><div><span class="label">Price</span><b class="num">${fmtGBP(u.price)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
+      <div class="acts uacts"><button class="btn ghost" data-act="plan">Floor plan</button><button class="btn ghost" data-act="details">All details</button></div>
+    </div>`;
+    UDET = `<div class="uhead"><div><span class="label">Apartment ${u.apt} · type ${u.type}</span><h2>Plot ${u.plot}</h2><div class="sub">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''} · ${u.sqft} sq ft (${sqm(u.sqft)} m²)</div></div><span class="status ${s.key}">${s.label}</span></div>
       <div class="price"><b class="num">${fmtGBP(u.price)}</b><span>${canBuy ? `£${SITE.reservation.toLocaleString('en-GB')} reserves it` : 'No longer available'}</span></div>
-      <div class="facts"><div><span class="label">Bedrooms</span><b>${u.beds}</b></div><div><span class="label">Sq ft</span><b class="num">${u.sqft}</b></div><div><span class="label">m²</span><b class="num">${sqm(u.sqft)}</b></div></div>
       <div class="money">
         <div class="rentbox"><span class="label">Forecast rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b><span>${yld}% gross yield${R.why.length ? ' · ' + R.why.join(', ') : ''}</span></div>
         <div class="lease"><div><span class="label">Lease</span><b>${SITE.lease}</b></div><div><span class="label">Ground rent</span><b>${SITE.groundRent}</b></div><div><span class="label">Service charge</span><b class="num">£${SITE.serviceCharge.toFixed(2)}/sq ft</b><small>about ${fmtGBP(scy)} a year</small></div><div><span class="label">Completion</span><b>${SITE.completion}</b></div></div>
       </div>
       <p class="aspect">${u.view}.</p>
       ${pitchHTML(u, canBuy)}
-      <div class="acts">
-        <button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : SPOTS.some(x => x.pano && x.type === u.type) ? 'Step inside · photoreal 360°' : 'Step inside'}</button>
-        ${SPOTS.some(x => x.pano && x.type === u.type) ? `<button class="btn ghost wide" data-act="walk3d">Walk round it in 3D</button>` : ''}
-        <button class="btn ghost walkdoor" data-act="door"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M6 21V4h10l2 2v15"/><path d="M4 21h16"/><circle cx="14" cy="13" r="1"/></svg>Walk to the front door</button>
-        <button class="btn ghost" data-act="view">See the view</button>
-        <button class="btn ghost" data-act="plan">Floor plan</button>
-        <a class="btn wa wide" href="${waLink(u, canBuy)}" target="_blank" rel="noopener">${waIcon}<span class="lg2">${canBuy ? 'Reserve Plot ' + u.plot + ' on WhatsApp' : 'Ask about similar apartments'}</span><span class="sm2">${canBuy ? 'Reserve' : 'Ask Charlie'}</span></a>
-      </div>
-      <img class="planimg" src="${BASE}plans/${IS_PH ? 'ph_type_' + u.type : 'unit' + u.plot}.jpg" alt="Floor plan of plot ${u.plot}" data-act="plan">
+      <img class="planimg" src="${BASE}plans/${IS_PH ? 'ph_type_' + u.type : 'unit' + u.plot}.jpg" alt="Floor plan of plot ${u.plot}">
       <div class="proof">${PROOF.map(r => `<div><span>${r.k}</span><span>${r.v}</span></div>`).join('')}${canBuy ? `<div><span>Reserve</span><span>${RESERVE(SITE.reservation)}</span></div>` : ''}</div>
       <div class="kv">
         <div><span>Forecast rent (Brik estimate)</span><span class="num">${fmtGBP(rent)} pcm</span></div>
@@ -930,9 +936,9 @@ function renderPanel() {
         <div><span>Service charge (estimate)</span><span class="num">about ${fmtGBP(scm)} a month</span></div>
         <div><span>Notes</span><span>${u.note}</span></div>
       </div>
-      <div class="contact"><span>Charlie Baxter, Co-founder and Sales Director</span><b>${SITE.phone}</b><b>${SITE.email}</b></div>
-    </div>`;
+      <div class="contact"><span>Charlie Baxter, Co-founder and Sales Director</span><b>${SITE.phone}</b><b>${SITE.email}</b></div>`;
   }
+  P.classList.toggle('compact', S.mode === 'unit');
   P.innerHTML = html;
   if (innerWidth <= 760) { const g = document.createElement('button'); g.id = 'grab'; g.setAttribute('aria-label', 'Expand or collapse the panel'); g.onclick = () => { sheetMin = !sheetMin; P.classList.toggle('min', sheetMin); applyViewOffset(); }; P.prepend(g); }
 }
@@ -955,11 +961,12 @@ function unitRow(u) {
 }
 $('#panel').addEventListener('click', (e) => {
   const b = e.target.closest('[data-floor],[data-plot],[data-act]'); if (!b) return;
+  if (b.dataset.act === 'details') return openDetails();
   if (b.dataset.act === 'explore') return toExplore();
   if (b.dataset.act === 'floor') return toFloor(+b.dataset.floor);
   if (b.dataset.act === 'door') return walkToDoor(S.plot);
   if (b.dataset.act === 'walk3d') return stepInside(S.plot);
-  if (b.dataset.act === 'inside' && !IS_PH) { const u = unitByPlot.get(S.plot), i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; return; } }
+  if (b.dataset.act === 'inside' && !IS_PH) { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; return; } }
   if (b.dataset.act === 'inside') return IS_PH ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))) : stepInside(S.plot);
   if (b.dataset.act === 'view') return seeView(S.plot);
   if (b.dataset.act === 'plan') { showPlan('card'); $('#zoomplan').classList.add('on'); return; }
@@ -1045,6 +1052,12 @@ function buildUnitTags(f) {
     const ring = new THREE.Mesh(mergeGeometries(rw, false), new THREE.MeshBasicMaterial({ color: new THREE.Color(st(u).color).multiplyScalar(2.2), transparent: true, opacity: 0, toneMapped: false }));
     ring.renderOrder = 6; edge.userData.ring = ring; unitTagGroup.add(ring);
     unitTagGroup.add(mesh, edge);
+    // gone: a red cross hovering over the apartment on the cut-away floor
+    if (u.status !== 'Available') {
+      const L = Math.min(x1 - x0, z1 - z0) * 0.62, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, cy = f * FH + 2.1;
+      const xm = new THREE.MeshBasicMaterial({ color: new THREE.Color('#e3242b').multiplyScalar(1.5), toneMapped: false });
+      for (const a of [Math.PI / 4, -Math.PI / 4]) { const bar = new THREE.Mesh(new THREE.BoxGeometry(L, 0.14, 0.26), xm); bar.rotation.y = a; bar.position.set(cx, cy, cz); bar.renderOrder = 7; unitTagGroup.add(bar); }
+    }
     const el = document.createElement('div'); el.className = 'tag ' + st(u).key;
     el.innerHTML = `<div class="b"><strong class="num">${u.plot}</strong><em>${u.beds} bed · ${u.status === 'Available' ? fmtGBP(u.price) : st(u).label}</em></div><div class="stem"></div><div class="pin"></div>`;
     el.onclick = () => toUnit(u.plot);

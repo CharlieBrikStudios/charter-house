@@ -467,7 +467,7 @@ export function buildCars(M, list) {
   return group;
 }
 
-// courtyard landscaping inside Charter House (planting, bench, bike store, festoon lights, boundary)
+// courtyard landscaping inside Charter House (planting, flowers, bench, picnic table, festoon lights, boundary)
 export function buildCourtyard(M, forest, festoon) {
   const group = new THREE.Group(); group.name = 'courtyard';
   const B = new Buckets();
@@ -488,14 +488,27 @@ export function buildCourtyard(M, forest, festoon) {
   // bench
   B.add('timber', (() => { const b = boxGeom(15.0, y0 + 0.42, 16.9, 15.45, y0 + 0.48, 18.6); boxUV(b, 1); return b; })());
   for (const z of [17.1, 18.4]) B.add('steel', boxGeom(15.1, y0, z - 0.04, 15.35, y0 + 0.42, z + 0.04));
-  // bike store: vertical boarded enclosure + Sheffield stands
-  const bx0 = 16.7, bx1 = 20.6, bz0 = 16.2, bz1 = 21.4, bh = 2.25;
-  for (const [a, b, c, d] of [[bx0, bz1 - 0.08, bx1, bz1], [bx1 - 0.08, bz0, bx1, bz1], [bx0, bz0, bx0 + 0.08, bz0 + 1.2]]) { const w = boxGeom(a, y0, b, c, y0 + bh, d); boxUV(w, 1.6); B.add('timber', w); }
-  const rf = boxGeom(bx0 - 0.15, y0 + bh, bz0 - 0.15, bx1 + 0.15, y0 + bh + 0.12, bz1 + 0.15); B.add('steel', rf);
-  for (let z = bz0 + 0.6; z < bz1 - 0.3; z += 0.85) {
-    const st = new THREE.TorusGeometry(0.38, 0.025, 6, 16, Math.PI); st.rotateY(Math.PI / 2); st.translate(18.2, y0 + 0.45, z); B.add('steel', st);
-    for (const dz of [-0.38, 0.38]) B.add('steel', boxGeom(18.18, y0, z + dz - 0.02, 18.22, y0 + 0.45, z + dz + 0.02));
-  }
+  // garden corner (as the CGIs): raised timber planters full of flowers and a picnic table, no sheds or stores
+  const planter = (x0, z0, x1, z1) => {
+    const h = 0.55, t = 0.06;
+    for (const [a1, b1, c1, d1] of [[x0, z0, x1, z0 + t], [x0, z1 - t, x1, z1], [x0, z0, x0 + t, z1], [x1 - t, z0, x1, z1]]) { const w = boxGeom(a1, y0, b1, c1, y0 + h, d1); boxUV(w, 1.2); B.add('timber', w); }
+    const soil = boxGeom(x0 + t, y0, z0 + t, x1 - t, y0 + h - 0.06, z1 - t); B.add('stone', soil);
+    for (let x = x0 + 0.35; x < x1 - 0.2; x += 0.6) for (let z = z0 + 0.35; z < z1 - 0.2; z += 0.6) forest.add(x, z, { kind: (Math.round(x * 3 + z * 5) % 3) ? 'shrub' : 'grass', h: 0.55, r: 0.4, y: y0 + h - 0.06, seed: Math.floor(x * 131 + z * 17) });
+    return [x0 + t, z0 + t, x1 - t, z1 - t, y0 + h];
+  };
+  const beds = [planter(16.9, 16.4, 20.45, 17.35), planter(19.5, 17.35, 20.45, 21.3), planter(16.9, 20.35, 19.5, 21.3)];
+  // picnic table (timber, A-frame legs) with two benches
+  const tx0 = 17.55, tx1 = 18.35, tz0 = 18.15, tz1 = 19.95;
+  B.add('timber', boxGeom(tx0, y0 + 0.72, tz0, tx1, y0 + 0.77, tz1));
+  for (const [bx0, bx1] of [[tx0 - 0.5, tx0 - 0.2], [tx1 + 0.2, tx1 + 0.5]]) B.add('timber', boxGeom(bx0, y0 + 0.42, tz0, bx1, y0 + 0.46, tz1));
+  for (const z of [tz0 + 0.2, tz1 - 0.25]) { B.add('timber', boxGeom(tx0 - 0.45, y0, z, tx1 + 0.45, y0 + 0.07, z + 0.06)); B.add('timber', boxGeom(tx0 + 0.05, y0, z, tx1 - 0.05, y0 + 0.72, z + 0.06)); }
+  // flowers: blooms over the planters and the garden bed
+  const FL = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a', '#f6c1a0'].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
+  let fs = 911; const fr = () => ((fs = (fs * 16807) % 2147483647) / 2147483647);
+  const bloom = (x, z, y) => { const g = new THREE.IcosahedronGeometry(0.045 + fr() * 0.03, 0); g.translate(x, y, z); B.add(FL[Math.floor(fr() * FL.length)], g); };
+  for (const [x0, z0, x1, z1, yy] of beds) for (let i = 0; i < 70; i++) bloom(x0 + fr() * (x1 - x0), z0 + fr() * (z1 - z0), yy + 0.15 + fr() * 0.4);
+  for (let i = 0; i < 90; i++) bloom(12.0 + fr() * 4.2, 16.5 + fr() * 5.0, y0 + 0.2 + fr() * 0.45);
+  for (let i = 0; i < 50; i++) bloom(13.3 + fr() * 5.8, 12.7 + fr() * 1.4, y0 + 0.75 + fr() * 0.35);
   // boundary walls (existing, retained) and railings
   for (const [a, b, c, d] of [[22.61, 11.03, 22.95, 17.9], [21.5, 17.9, 22.95, 18.2], [21.5, 18.2, 21.8, 21.75], [11.7, 21.75, 21.8, 22.05]]) { const w = boxGeom(a, -1.2, b, c, y0 + 2.0, d); boxUV(w); B.add('brick2', w); }
   // festoon lights across the courtyard (catenaries between the gallery and the boundary)

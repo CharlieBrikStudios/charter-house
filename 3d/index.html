@@ -460,6 +460,19 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
   #inside .cap p { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition-duration: .01ms !important; animation: none !important; } }
+.credit { display: none !important; }
+/* demo build: compact plot tab, details in a pop-up, no action/WhatsApp buttons */
+.btn.wa, a[href*="wa.me"], a[href*="whatsapp"] { display: none !important; }
+#panel.compact { bottom: auto; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }
+#panel.compact .pscroll { gap: 14px; }
+#panel .uacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#panel .uacts .wide { grid-column: 1 / -1; }
+#panel .facts small { font-size: 11px; font-weight: 400; opacity: .75; }
+#udet { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; background: rgba(10,8,6,.6); backdrop-filter: blur(4px); padding: 16px; }
+#udet.on { display: grid; }
+#udet .ubox { position: relative; width: min(600px, 100%); max-height: calc(100vh - 48px); overflow: auto; display: flex; flex-direction: column; gap: 16px; padding: 26px 24px; border-radius: var(--r); background: rgba(24,19,16,.97); border: 1px solid var(--line-hi); color: var(--ink); }
+#udet .uclose { position: absolute; top: 10px; right: 12px; width: 36px; height: 36px; border-radius: 50%; font-size: 22px; color: var(--ink); background: rgba(255,255,255,.06); }
+#udet .planimg { width: 100%; border-radius: 12px; background: #fff; }
 </style>
 
 <canvas id="stage" tabindex="0" aria-label="3D model of Charter House. Drag to orbit, scroll or pinch to zoom, click a floor to explore it."></canvas>
