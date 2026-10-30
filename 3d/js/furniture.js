@@ -5,9 +5,9 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT, tex } from './materials.js?v=1793382923';
-import { FLOOR_H } from './data.js?v=1793382923';
-import { Forest } from './trees.js?v=1793382923';
+import { CUT, tex } from './materials.js?v=1793384463';
+import { FLOOR_H } from './data.js?v=1793384463';
+import { Forest } from './trees.js?v=1793384463';
 
 const FH = FLOOR_H;
 const DIR = { '+x': [1, 0], '-x': [-1, 0], '+z': [0, 1], '-z': [0, -1] };
@@ -412,3 +412,6 @@ export function buildFurniture(base, leafTex, leafAlpha, barkMat) {
   }
   return { groups, materials: F };
 }
+
+// shared with the Print House fit-out
+export { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, media, rug, pot };
