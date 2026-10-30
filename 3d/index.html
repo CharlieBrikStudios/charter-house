@@ -463,7 +463,11 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
 .credit { display: none !important; }
 /* demo build: compact plot tab, details in a pop-up, no action/WhatsApp buttons */
 .btn.wa, a[href*="wa.me"], a[href*="whatsapp"] { display: none !important; }
-#panel.compact { bottom: auto; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }
+#panel.compact { bottom: auto !important; height: auto !important; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }
+#panel.compact .pscroll { flex: 0 1 auto; }
+#panel .more { gap: 6px; border-color: var(--brass); color: var(--brass); }
+#panel .morehint { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 12px; background: rgba(216,180,118,.1); border: 1px dashed rgba(216,180,118,.45); color: var(--ink-2); font-size: 12.5px; text-align: left; cursor: pointer; }
+#panel .morehint span { color: var(--brass); font-weight: 600; white-space: nowrap; }
 #panel.compact .pscroll { gap: 14px; }
 #panel .uacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 #panel .uacts .wide { grid-column: 1 / -1; }

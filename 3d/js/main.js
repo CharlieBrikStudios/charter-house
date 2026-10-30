@@ -702,7 +702,7 @@ function stepInside(plot) {
   P.onT = (k) => {
     if (k > 0.62 && CH.meshes.glass.visible) { setInteriorLighting(true); CH.meshes.glass.visible = false; if (CH.meshes.slate) CH.meshes.slate.visible = false;   /* the pitched roofs would cut through the top-floor ceilings */ windUniforms.uNear.value = 1.2; setInteriorEnv(aptEnv.texture); }
     renderer.toneMappingExposure = baseExposure * (1 + 0.45 * THREE.MathUtils.smoothstep(k, 0.6, 0.95));
-    camera.near = k > 0.5 ? 0.05 : 0.25; camera.fov = THREE.MathUtils.lerp(baseFov(), 78, THREE.MathUtils.smoothstep(k, 0.55, 1)); camera.updateProjectionMatrix();
+    camera.near = k > 0.5 ? 0.05 : 0.25; camera.fov = THREE.MathUtils.lerp(baseFov(), 90, THREE.MathUtils.smoothstep(k, 0.55, 1)); camera.updateProjectionMatrix();
   };
   setHash('inside-' + plot);
 }
@@ -918,7 +918,8 @@ function renderPanel() {
         <button class="btn ghost" data-act="door">Walk to the door</button>
       </div>
       <div class="facts"><div><span class="label">Price</span><b class="num">${fmtGBP(u.price)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
-      <div class="acts uacts"><button class="btn ghost" data-act="plan">Floor plan</button><button class="btn ghost" data-act="details">All details</button></div>
+      <div class="acts uacts"><button class="btn ghost" data-act="plan">Floor plan</button><button class="btn ghost more" data-act="details">All details<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M7 17 17 7M9 7h8v8"/></svg></button></div>
+      <button class="morehint" data-act="details">Lease, service charge, yield and floor plan <span>Open ›</span></button>
     </div>`;
     UDET = `<div class="uhead"><div><span class="label">Apartment ${u.apt} · type ${u.type}</span><h2>Plot ${u.plot}</h2><div class="sub">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''} · ${u.sqft} sq ft (${sqm(u.sqft)} m²)</div></div><span class="status ${s.key}">${s.label}</span></div>
       <div class="price"><b class="num">${fmtGBP(u.price)}</b><span>${canBuy ? `£${SITE.reservation.toLocaleString('en-GB')} reserves it` : 'No longer available'}</span></div>
@@ -1052,11 +1053,14 @@ function buildUnitTags(f) {
     const ring = new THREE.Mesh(mergeGeometries(rw, false), new THREE.MeshBasicMaterial({ color: new THREE.Color(st(u).color).multiplyScalar(2.2), transparent: true, opacity: 0, toneMapped: false }));
     ring.renderOrder = 6; edge.userData.ring = ring; unitTagGroup.add(ring);
     unitTagGroup.add(mesh, edge);
-    // gone: a red cross hovering over the apartment on the cut-away floor
+    // taken: the same lit outline, in red, with a red cross from corner to corner
     if (u.status !== 'Available') {
-      const L = Math.min(x1 - x0, z1 - z0) * 0.62, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, cy = f * FH + 2.1;
-      const xm = new THREE.MeshBasicMaterial({ color: new THREE.Color('#e3242b').multiplyScalar(1.5), toneMapped: false });
-      for (const a of [Math.PI / 4, -Math.PI / 4]) { const bar = new THREE.Mesh(new THREE.BoxGeometry(L, 0.14, 0.26), xm); bar.rotation.y = a; bar.position.set(cx, cy, cz); bar.renderOrder = 7; unitTagGroup.add(bar); }
+      const xm = new THREE.MeshBasicMaterial({ color: new THREE.Color('#e3242b').multiplyScalar(2.0), toneMapped: false });
+      for (const [ax, az, bx, bz] of [[x0 + i, z0 + i, x1 - i, z1 - i], [x0 + i, z1 - i, x1 - i, z0 + i]]) {
+        const L = Math.hypot(bx - ax, bz - az); const bar = new THREE.Mesh(new THREE.BoxGeometry(L, 0.06, 0.14), xm);
+        bar.rotation.y = -Math.atan2(bz - az, bx - ax); bar.position.set((ax + bx) / 2, ry, (az + bz) / 2); bar.renderOrder = 7; unitTagGroup.add(bar);
+      }
+      ring.material.color.copy(xm.color); edge.material.color.set('#e3242b');
     }
     const el = document.createElement('div'); el.className = 'tag ' + st(u).key;
     el.innerHTML = `<div class="b"><strong class="num">${u.plot}</strong><em>${u.beds} bed · ${u.status === 'Available' ? fmtGBP(u.price) : st(u).label}</em></div><div class="stem"></div><div class="pin"></div>`;
@@ -1064,7 +1068,9 @@ function buildUnitTags(f) {
     el.onpointerenter = () => { S.hoverPlot = u.plot; }; el.onpointerleave = () => { S.hoverPlot = null; };
     $('#labels').appendChild(el);
     const tp = new THREE.Vector3((x0 + x1) / 2, y + 0.2, (z0 + z1) / 2); if (IS_PH) tp.applyMatrix4(CH.group.matrixWorld);
-    unitTags.push({ el, plot: u.plot, p: tp, mesh, edge });
+    const vg = new THREE.BoxGeometry(x1 - x0 - 2 * i + 0.1, 1.34, z1 - z0 - 2 * i + 0.1); vg.translate((x0 + x1) / 2, f * FH + 0.75, (z0 + z1) / 2);
+    const veil = new THREE.Mesh(vg, new THREE.MeshBasicMaterial({ color: '#2b2723', transparent: true, opacity: 0, depthWrite: false, toneMapped: false })); veil.renderOrder = 8; veil.visible = false; unitTagGroup.add(veil);
+    unitTags.push({ el, plot: u.plot, p: tp, mesh, edge, veil });
   }
   if (IS_PH) { unitTagGroup.position.copy(CH.group.position); unitTagGroup.quaternion.copy(CH.group.quaternion); }
   scene.add(unitTagGroup);
@@ -1195,6 +1201,16 @@ $('#vw-right').onclick = () => { look.ty = THREE.MathUtils.clamp(look.ty - 0.38,
 // ------------------------------------------------------------------ on-screen camera controls (turn, zoom, height, reset)
 const NAV_UP = new THREE.Vector3(0, 1, 0);
 function navStep(kind) {
+  if (kind === 'home') {
+    try {
+      if (S.mode === 'tour') exitTour();
+      else if (S.mode === 'view') closeView();
+      else if (S.mode === 'walk' || S.mode === 'entering' || S.inside) restoreFromInterior();
+      if (S.area) toggleArea(false);
+    } catch (e) { console.error(e); }
+    $('#panel').classList.remove('hide'); controls.enabled = true;
+    toExplore(true); return;
+  }
   if (S.mode === 'tour') { if (kind === 'left') tour.turn(0.4); else if (kind === 'right') tour.turn(-0.4); else if (kind === 'in') tour.zoom(-6); else if (kind === 'out') tour.zoom(6); return; }
   if (S.mode === 'view') { if (kind === 'left') $('#vw-left').click(); if (kind === 'right') $('#vw-right').click(); return; }
   if (S.mode === 'intro' || S.mode === 'walk' || S.mode === 'entering' || filmOn) return;
@@ -1375,7 +1391,8 @@ function updateHighlights(dt) {
     const want = tintFor(t.plot, on, shade);
     t.mesh.material.color.lerp(want, STILL ? 1 : k);
     t.edge.material.opacity = on ? 1 : 0.6;
-    const ring = t.edge.userData.ring; if (ring) { const want = S.plot === t.plot ? 1 : S.hoverPlot === t.plot ? 0.6 : unitByPlot.get(t.plot).status === 'Reserved' ? 0.85 : 0; ring.material.opacity += (want - ring.material.opacity) * (STILL ? 1 : k); ring.visible = ring.material.opacity > 0.01; }
+    if (t.veil) { const wv = S.plot != null && S.plot !== t.plot ? 0.68 : 0; t.veil.material.opacity += (wv - t.veil.material.opacity) * (STILL ? 1 : k); t.veil.visible = t.veil.material.opacity > 0.01; }
+    const ring = t.edge.userData.ring; if (ring) { const want = S.plot === t.plot ? 1 : S.hoverPlot === t.plot ? 0.6 : unitByPlot.get(t.plot).status !== 'Available' ? 0.95 : 0; ring.material.opacity += (want - ring.material.opacity) * (STILL ? 1 : k); ring.visible = ring.material.opacity > 0.01; }
     t.el.classList.toggle('on', on);
     t.el.classList.toggle('dim', S.plot != null && !on);
   }
@@ -1395,6 +1412,7 @@ function updateHighlights(dt) {
 const _tint = new THREE.Color(), _white = new THREE.Color(1, 1, 1);
 function tintFor(plot, on, shade) {
   const u = unitByPlot.get(plot); const c = new THREE.Color(st(u).color);
+  if (shade) return _tint.setRGB(0.3, 0.29, 0.28).clone();
   if (u.status === 'Reserved') return _white.clone().lerp(c, on ? 0.9 : 0.8);   // reserved: unmistakably red
   if (shade) return _tint.setRGB(0.3, 0.29, 0.28).clone();
   return _white.clone().lerp(c, on ? 0.75 : u.status === 'Available' ? 0.32 : 0.55);
@@ -1659,7 +1677,7 @@ function goSpot(i) {
   const sib = sp.pano ? SPOTS.map((x, j) => [x, j]).filter(([x]) => x.pano && x.plot === sp.plot) : [];
   const roomActs = sib.length > 1 ? sib.map(([x, j]) => `<button class="btn ${j === i ? 'brass' : 'ghost'}" data-tact="room" data-spot="${j}">${(x.room || x.name).replace(/^./, ch => ch.toUpperCase())}</button>`).join('') : '';
   tourCaption(sp.pano ? `Apartment ${sp.plot} · photoreal 360°` : `360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note, roomActs);
-  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: sp.look }], {}); setTimeout(() => { showPano(sp.pano); tour.setFov(innerWidth < innerHeight ? 96 : 80); }, 400); }
+  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: sp.look }], {}); setTimeout(() => { showPano(sp.pano); tour.setFov(innerWidth < innerHeight ? 100 : 92); }, 400); }
   else { showPano(null); tour.walk([near ? { to: sp.at, speed: 6, look: sp.look } : { to: sp.at, cut: true, look: sp.look }]); }
   stillFrames = Math.max(stillFrames, 4);
 }
