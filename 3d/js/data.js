@@ -34,7 +34,7 @@ export const STATUS = {
   'Available': { key: 'available', label: 'Available', color: '#f4d79a' },
   'Reserved': { key: 'reserved', label: 'Reserved', color: '#e3342b' },
   'In Legals': { key: 'legals', label: 'Sale agreed', color: '#9a8f86' },
-  'Sold': { key: 'sold', label: 'Sold', color: '#7c736c' },
+  'Sold': { key: 'sold', label: 'Sold', color: '#e3242b' },
 };
 
 // Window ids refer to the façade bays defined in building.js

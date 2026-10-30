@@ -461,6 +461,10 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition-duration: .01ms !important; animation: none !important; } }
 .credit { display: none !important; }
+.dot.sold { background: #e3242b !important; opacity: 1 !important; }
+.status.sold { background: rgba(227,36,43,.16) !important; color: #ff6b6f !important; }
+.tag.sold .pin { background: #e3242b !important; box-shadow: 0 0 0 4px rgba(227,36,43,.25) !important; }
+.tag.sold .b em { color: #ff8a8d; }
 /* demo build: compact plot tab, details in a pop-up, no action/WhatsApp buttons */
 .btn.wa, a[href*="wa.me"], a[href*="whatsapp"] { display: none !important; }
 #panel.compact { bottom: auto !important; height: auto !important; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }

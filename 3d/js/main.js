@@ -1414,7 +1414,7 @@ const _tint = new THREE.Color(), _white = new THREE.Color(1, 1, 1);
 function tintFor(plot, on, shade) {
   const u = unitByPlot.get(plot); const c = new THREE.Color(st(u).color);
   if (shade) return _tint.setRGB(0.3, 0.29, 0.28).clone();
-  if (u.status === 'Reserved') return _white.clone().lerp(c, on ? 0.9 : 0.8);   // reserved: unmistakably red
+  if (u.status === 'Reserved' || u.status === 'Sold') return _white.clone().lerp(c, on ? 0.9 : 0.8);   // sold: lit red   // reserved: unmistakably red
   if (shade) return _tint.setRGB(0.3, 0.29, 0.28).clone();
   return _white.clone().lerp(c, on ? 0.75 : u.status === 'Available' ? 0.32 : 0.55);
 }
