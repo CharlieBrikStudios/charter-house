@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793369445';
+import { FLOOR_H as FH } from './data.js?v=1793369732';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -235,7 +235,9 @@ export function buildApartment(u, ctx) {
   const bedrooms = live.filter(R => R.type === 'bedroom').sort((a, b) => b.area - a.area);
   const others = live.filter(R => !R.type).sort((a, b) => a.area - b.area);
   // the shower room: an enclosed, windowless room of bathroom size
-  const bath = others.find(R => R.area > 2.2 && R.area < 7.5 && R.windows.length === 0 && (R.x1 - R.x0) > 1.2 && (R.z1 - R.z0) > 1.2);
+  let bath = others.find(R => R.area > 2.2 && R.area < 7.5 && R.windows.length === 0 && (R.x1 - R.x0) > 1.2 && (R.z1 - R.z0) > 1.2);
+  // fallback: the smallest enclosed room of shower-room size (some plans give it a small window)
+  if (!bath) bath = others.filter(R => R.area > 2.0 && R.area < 9.5 && (R.x1 - R.x0) > 1.1 && (R.z1 - R.z0) > 1.1 && R.type !== 'bedroom').sort((a, b) => a.area - b.area)[0];
   if (bath) bath.type = 'bath';
   for (const R of live) if (!R.type) R.type = R.area > 6 && R.windows.length ? 'living' : 'hall';
   const names = { living: u.beds === 2 ? 'Living and dining' : 'Kitchen and living', bath: 'Shower room', hall: 'Hallway' };
