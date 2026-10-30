@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793370525';
+import { FLOOR_H as FH } from './data.js?v=1793376193';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -238,6 +238,18 @@ export function buildApartment(u, ctx) {
   let bath = others.find(R => R.area > 2.2 && R.area < 7.5 && R.windows.length === 0 && (R.x1 - R.x0) > 1.2 && (R.z1 - R.z0) > 1.2);
   // fallback: the smallest enclosed room of shower-room size (some plans give it a small window)
   if (!bath) bath = others.filter(R => R.area > 2.0 && R.area < 9.5 && (R.x1 - R.x0) > 1.1 && (R.z1 - R.z0) > 1.1 && R.type !== 'bedroom').sort((a, b) => a.area - b.area)[0];
+  // shower rooms read off the architect's plans (x0, z0, x1, z1, door x, door z): the room finder merges these
+  // compact rooms with the hall or bedroom, so for these types the plan is the source of truth
+  const BP = { A: [19.75, 5.15, 22.45, 6.9, 19.75, 6.2], B: [14.85, 5.15, 17.25, 6.9, 17.25, 6.2], C: [11.05, 5.15, 13.4, 6.9, 13.4, 6.2],
+    D: [4.05, 6.25, 6.45, 7.95, 4.75, 7.95], E: [6.15, 13.45, 7.6, 15.95, 6.9, 15.95], F: [6.15, 18.45, 7.6, 20.95, 6.9, 18.45] };
+  const BPLOT = { 7: 'A', 14: 'A', 21: 'A', 8: 'B', 15: 'B', 22: 'B', 9: 'C', 16: 'C', 23: 'C', 4: 'D', 11: 'D', 18: 'D', 25: 'D', 5: 'E', 12: 'E', 19: 'E', 26: 'E', 6: 'F', 13: 'F', 20: 'F', 27: 'F' };
+  let bathPlan = null;
+  if (BPLOT[u.plot]) {
+    const [bx0, bz0, bx1, bz1, dx, dz] = BP[BPLOT[u.plot]];
+    if (bath) bath.type = null;
+    bath = null;
+    bathPlan = { id: -50, type: 'bath', name: 'Shower room', x0: bx0 + RES / 2, z0: bz0 + RES / 2, x1: bx1 - RES / 2, z1: bz1 - RES / 2, cx: (bx0 + bx1) / 2, cz: (bz0 + bz1) / 2, area: (bx1 - bx0) * (bz1 - bz0), windows: [], door: [dx, dz] };
+  }
   if (bath) bath.type = 'bath';
   // two-bed flats: the en-suite as well
   const bath2 = u.beds === 2 ? others.filter(R => R !== bath && !R.type && R.area > 1.8 && R.area < 7.5 && (R.x1 - R.x0) > 1.0 && (R.z1 - R.z0) > 1.0).sort((a, b) => a.area - b.area)[0] : null;
@@ -434,13 +446,13 @@ export function buildApartment(u, ctx) {
     }
   }
   // shower room: walk-in shower with fluted glass screen, wall-hung WC, basin on an oak vanity, backlit mirror
-  for (const bathR of [bath, bath2].filter(Boolean)) {
+  for (const bathR of [bath || bathPlan, bath2].filter(Boolean)) {
     const R = bathR, wx = R.x1 - R.x0 + RES, wz = R.z1 - R.z0 + RES, x0 = R.x0 - RES / 2, z0 = R.z0 - RES / 2, x1 = x0 + wx, z1 = z0 + wz;
     const alongX = wx >= wz;   // long axis
     // marble floor
     const fl = new THREE.PlaneGeometry(wx, wz); fl.rotateX(-Math.PI / 2); fl.translate((x0 + x1) / 2, y0 + 0.008, (z0 + z1) / 2); add('marble', fl);
     // shower at the far end of the long axis (away from the room's door)
-    const doorSide = (() => { let sx = 0, sz = 0, n = 0; for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const k = idx(i, j); if (room[k] !== R.id) continue; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= nx || jj >= nz) continue; const r2 = room[idx(ii, jj)]; if (r2 >= 0 && r2 !== R.id) { sx += cx(i); sz += cz(j); n++; } } } return n ? [sx / n, sz / n] : [(x0 + x1) / 2, z0]; })();
+    const doorSide = R.door || (() => { let sx = 0, sz = 0, n = 0; for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const k = idx(i, j); if (room[k] !== R.id) continue; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= nx || jj >= nz) continue; const r2 = room[idx(ii, jj)]; if (r2 >= 0 && r2 !== R.id) { sx += cx(i); sz += cz(j); n++; } } } return n ? [sx / n, sz / n] : [(x0 + x1) / 2, z0]; })();
     let sh;
     if (alongX) { const far = Math.abs(doorSide[0] - x0) > Math.abs(doorSide[0] - x1) ? x0 : x1; sh = far === x0 ? [x0, z0, x0 + 1.0, z1] : [x1 - 1.0, z0, x1, z1]; }
     else { const far = Math.abs(doorSide[1] - z0) > Math.abs(doorSide[1] - z1) ? z0 : z1; sh = far === z0 ? [x0, z0, x1, z0 + 1.0] : [x0, z1 - 1.0, x1, z1]; }
@@ -565,6 +577,12 @@ export function buildApartment(u, ctx) {
     if (R.windows[0]) { const wp = R.windows[0].pos; look.set((R.cx + wp.x) / 2, y0 + 1.35, (R.cz + wp.z) / 2); }
     if (pos.distanceTo(look) < 0.8) look.set(R.cx + (R.cx - pos.x), y0 + 1.3, R.cz + (R.cz - pos.z));
     chips.push({ name: R.name, type: R.type, pos, look, room: R.id });
+  }
+  if (bathPlan) {   // a viewpoint in the plan's shower room: just inside its door, looking at the shower
+    const R = bathPlan, [dx, dz] = R.door, ix = Math.sign(R.cx - dx) * (Math.abs(R.cx - dx) > 0.3 ? 1 : 0), iz = Math.sign(R.cz - dz) * (Math.abs(R.cz - dz) > 0.3 ? 1 : 0);
+    const pos = new THREE.Vector3(dx + ix * 0.45, y0 + EYE, dz + iz * 0.45);
+    const look = new THREE.Vector3(R.cx + (R.cx - dx) * 0.6, y0 + 1.25, R.cz + (R.cz - dz) * 0.6);
+    const bi = chips.findIndex(c => c.type === 'hall'); chips.splice(bi < 0 ? chips.length : bi, 0, { name: 'Shower room', type: 'bath', pos, look, room: -50 });
   }
   return { group, spawn, entry: entryW, chips, grid: { gx0, gz0, nx, nz, walk, free, room, idx, toCell }, y0, yC, rooms: live };
 }

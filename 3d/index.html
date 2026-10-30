@@ -498,6 +498,9 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
 #loader.intro .lbrik { display: block; }
 #loader.intro .lcard img:first-child { animation: introIn 1.4s ease both; }
 @keyframes introIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+body { -webkit-user-select: none; user-select: none; }   /* no accidental blue text selection while dragging */
+input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-select: text; }
+#panel .angle[aria-pressed="true"] { border-color: var(--brass); color: var(--brass); }
 /* demo build: compact plot tab, details in a pop-up, no action/WhatsApp buttons */
 .btn.wa, a[href*="wa.me"], a[href*="whatsapp"] { display: none !important; }
 #panel.compact { bottom: auto !important; height: auto !important; max-height: calc(100vh - var(--gt) - var(--gb) - 100px); }
@@ -556,7 +559,7 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
     <button data-nav="home" title="Back to the whole building" aria-label="Back to the whole building"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/></svg></button>
   </div>
   <section id="area" hidden aria-label="The area and its regeneration"></section>
-  <div id="hint"><span><b>Drag</b> to look around</span><span><b>Scroll</b> to zoom</span><span><b>Hover</b> a floor, <b>click</b> to open it</span></div>
+  <div id="hint"><span><b>Drag</b> to turn</span><span><b>Right-drag</b> or <b>W A S D</b> to move</span><span><b>Scroll</b> to zoom</span><span><b>Click</b> a floor to open it</span></div>
   <div class="credit">Live availability from Brik Studios, updated <span id="upd"></span>. Model built from Ollier Smurthwaite drawings; surroundings approximate.</div>
 </div>
 
@@ -630,6 +633,6 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1793370525"></script>
+<script type="module" src="js/main.js?v=1793376193"></script>
 
 </body></html>

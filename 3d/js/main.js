@@ -9,21 +9,21 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793370525';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793370525';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793370525';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793370525';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793370525';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793370525';
-import { buildFar, hazeUniforms } from './far.js?v=1793370525';
-import { Forest, windUniforms } from './trees.js?v=1793370525';
-import { Interior } from './interior.js?v=1793370525';
-import { buildFurniture, LAYOUTS } from './furniture.js?v=1793370525';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793370525';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793370525';
-import { createTour } from './tour.js?v=1793370525';
-import { buildCrowd } from './crowd.js?v=1793370525';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793370525';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793376193';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793376193';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793376193';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793376193';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793376193';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793376193';
+import { buildFar, hazeUniforms } from './far.js?v=1793376193';
+import { Forest, windUniforms } from './trees.js?v=1793376193';
+import { Interior } from './interior.js?v=1793376193';
+import { buildFurniture, LAYOUTS } from './furniture.js?v=1793376193';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793376193';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793376193';
+import { createTour } from './tour.js?v=1793376193';
+import { buildCrowd } from './crowd.js?v=1793376193';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793376193';
 const pitch = IS_PH ? phPitch : chPitch, PICKS = IS_PH ? PH_PICKS : CH_PICKS;
 const AREA_CARDS = ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || (c.id !== 'charter' && c.id !== 'print'));   // the area edition pins every Brik site (Charter House demo: no Print House tag)
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
@@ -63,7 +63,8 @@ const camera = new THREE.PerspectiveCamera(baseFov(), innerWidth / innerHeight, 
 camera.position.set(70, 75, -110);
 const controls = new OrbitControls(camera, canvas);
 controls.target.set(10, 5, 9);
-controls.enableDamping = true; controls.dampingFactor = 0.065;
+controls.enableDamping = true; controls.dampingFactor = 0.18;   // stops when you let go (no long spin)
+controls.screenSpacePanning = false;   // right-drag slides across the ground
 controls.minDistance = 9; controls.maxDistance = 190;
 controls.maxPolarAngle = 1.47; controls.minPolarAngle = 0.12;
 controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.8; controls.panSpeed = 0.6;
@@ -550,7 +551,8 @@ function floorView(f) {
   if (IS_PH) return { pos: CH.local(-12, y + 27, -17), tgt: CH.local(12, y + 0.5, 9) };
   return { pos: new THREE.Vector3(-17, y + 25, -21), tgt: new THREE.Vector3(10.5, y + 0.5, 9.5) };
 }
-function unitView(u) {
+let viewAlt = 0;   // 0: from the street side, 1: from the opposite side
+function unitView(u, alt = viewAlt) {
   if (IS_PH) {
     const [a, b, c, d] = u.fp, y = u.floor * FH, cu = (a + c) / 2, cv = (b + d) / 2;
     const tgt = CH.local(cu, y + 0.5, cv);
@@ -563,6 +565,7 @@ function unitView(u) {
   if (c.x > 12) out.set(c.x - 8, 0, c.z - 20);
   if (c.z > 12) out.set(c.x - 20, 0, c.z - 6);
   const span = Math.max(x1 - x0, z1 - z0), dir = new THREE.Vector3(out.x - c.x, 0, out.z - c.z).normalize();
+  if (alt === 1) dir.negate();
   const pos = c.clone().addScaledVector(dir, span * 0.56); pos.y = c.y + span * 0.95;
   if (pos.distanceTo(c) < 12) pos.sub(c).setLength(12).add(c);   // the whole flat in view, with a little of its neighbours
   return { pos, tgt: c };
@@ -943,6 +946,7 @@ function renderPanel() {
         <button class="btn ghost" data-act="door">Walk to the door</button>
       </div>
       <div class="facts"><div><span class="label">Price</span><b class="num">${fmtGBP(u.price)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
+      <div class="acts uacts"><button class="btn ghost angle" data-act="angle" data-a="0" aria-pressed="${viewAlt === 0}">Street-side angle</button><button class="btn ghost angle" data-act="angle" data-a="1" aria-pressed="${viewAlt === 1}">Other-side angle</button></div>
       <div class="acts uacts"><button class="btn ghost" data-act="plan">Floor plan</button><button class="btn ghost more" data-act="details">All details<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M7 17 17 7M9 7h8v8"/></svg></button></div>
       <button class="morehint" data-act="details">Lease, service charge, yield and floor plan <span>Open ›</span></button>
     </div>`;
@@ -988,6 +992,7 @@ function unitRow(u) {
 $('#panel').addEventListener('click', (e) => {
   const b = e.target.closest('[data-floor],[data-plot],[data-act]'); if (!b) return;
   if (b.dataset.act === 'details') return openDetails();
+  if (b.dataset.act === 'angle') { viewAlt = +b.dataset.a; const v = unitView(unitByPlot.get(S.plot)); flyTo(v.pos, v.tgt, 1.1); document.querySelectorAll('#panel [data-act=angle]').forEach(x => x.setAttribute('aria-pressed', x.dataset.a === b.dataset.a)); return; }
   if (b.dataset.act === 'explore') return toExplore();
   if (b.dataset.act === 'floor') return toFloor(+b.dataset.floor);
   if (b.dataset.act === 'door') return walkToDoor(S.plot);
@@ -1054,6 +1059,41 @@ function buildFloorGlow() {
 
 // ------------------------------------------------------------------ floor-mode unit overlays + tags
 let unitTagGroup = null, unitTags = [];
+// the stair and lift core on the cut-away floors (read off the architect's plans): stone lobby, lift with steel
+// doors, the stair flights, each core flat's front door, and a brass route from the walkway to the chosen flat
+const CORE_DOORS = { '2A': { at: [10.05, 6.2], axis: 'x', w: 0.95 }, '1C': { at: [6.72, 8.25], axis: 'z', w: 0.95 } };
+function buildCore(f) {
+  if (IS_PH || f === 0) return;
+  const y = f * FH, G = new THREE.Group(); G.name = 'core' + f;
+  const mat = (c, r = 0.6, mt = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: mt, clippingPlanes: [CUT] });
+  const stone = mat('#cfc8bb', 0.45), steel = mat('#8c9397', 0.3, 0.85), shaft = mat('#5b5f63', 0.7), tread = mat('#b8ad9c', 0.6), door = mat('#20372d', 0.45), brass = mat('#c49a55', 0.3, 1);
+  const box = (x0, y0, z0, x1, y1, z1, m) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); const me = new THREE.Mesh(g, m); me.receiveShadow = true; G.add(me); return me; };
+  // stone floor: lobby and the corridor down to the walkway door
+  box(6.95, y + 0.03, 6.3, 10.82, y + 0.05, 8.45, stone); box(9.35, y + 0.03, 8.45, 10.82, y + 0.05, 12.7, stone);
+  // lift: shaft walls with brushed steel doors facing the lobby
+  box(6.95, y + 0.05, 6.35, 7.05, y + 2.6, 8.35, shaft); box(6.95, y + 0.05, 6.35, 8.55, y + 2.6, 6.45, shaft); box(6.95, y + 0.05, 8.25, 8.55, y + 2.6, 8.35, shaft);
+  box(8.5, y + 0.05, 6.35, 8.6, y + 2.6, 6.95, shaft); box(8.5, y + 0.05, 7.85, 8.6, y + 2.6, 8.35, shaft);
+  box(8.53, y + 0.05, 6.95, 8.58, y + 2.15, 7.4, steel); box(8.53, y + 0.05, 7.4, 8.58, y + 2.15, 7.85, steel);
+  box(7.05, y + 0.05, 6.45, 8.5, y + 0.07, 8.25, steel);
+  // stair: a dog-leg, the up flight rising towards the courtyard, the down flight beside it
+  for (let i = 0; i < 9; i++) { const z0 = 10.0 + i * 0.3; box(6.98, y + 0.05, z0, 8.0, y + 0.05 + (i + 1) * 0.165, z0 + 0.3, tread); }
+  for (let i = 0; i < 9; i++) { const z0 = 12.85 - (i + 1) * 0.3; box(8.1, y + 0.03, z0, 9.12, y + 0.05 + 0.02 * ((i % 2) + 1), z0 + 0.3, tread); }
+  box(6.98, y + 0.05, 12.7, 9.12, y + 0.07, 13.2, stone);
+  // front doors of the core flats on this floor, with the route to the selected one
+  for (const u of floorUnits(f)) {
+    const D = CORE_DOORS[u.type]; if (!D) continue;
+    const [dx, dz] = D.at, h = D.w / 2;
+    if (D.axis === 'x') { box(dx - h, y + 0.05, dz - 0.03, dx + h, y + 2.05, dz + 0.03, door); box(dx + h - 0.15, y + 1.0, dz + 0.03, dx + h - 0.06, y + 1.03, dz + 0.09, brass); }
+    else { box(dx - 0.03, y + 0.05, dz - h, dx + 0.03, y + 2.05, dz + h, door); box(dx + 0.03, y + 1.0, dz + h - 0.15, dx + 0.09, y + 1.03, dz + h - 0.06, brass); }
+    const pts = [[11.6, 11.25], [10.1, 11.25], [10.1, 8.0], D.axis === 'x' ? [dx, 7.3] : [7.9, dz], D.axis === 'x' ? [dx, dz + 0.45] : [dx + 0.45, dz]];
+    const route = new THREE.Group(); route.userData.plot = u.plot; route.visible = false;
+    const dotM = new THREE.MeshBasicMaterial({ color: new THREE.Color('#e8c27a').multiplyScalar(1.4), toneMapped: false });
+    for (let s = 0; s < pts.length - 1; s++) { const [ax, az] = pts[s], [bx, bz] = pts[s + 1], L = Math.hypot(bx - ax, bz - az); for (let t = 0; t < L; t += 0.35) { const d = new THREE.Mesh(new THREE.CircleGeometry(0.07, 14), dotM); d.rotation.x = -Math.PI / 2; d.position.set(ax + (bx - ax) * t / L, y + 0.07, az + (bz - az) * t / L); route.add(d); } }
+    G.add(route); coreRoutes.push(route);
+  }
+  unitTagGroup.add(G);
+}
+const coreRoutes = [];
 let bathGroup = null;
 function clearBaths() { if (bathGroup) { scene.remove(bathGroup); bathGroup = null; } }
 // shower rooms on the cut-away floor: the walk-through apartment's sanitaryware, clipped at the cut like the walls
@@ -1063,10 +1103,11 @@ function buildBaths(f) {
   const list = floorUnits(f).slice(), KEEP = new Set(['apt_ceramic', 'apt_chrome', 'apt_showerGlass', 'apt_marble', 'apt_oak', 'apt_brass', 'apt_mirror']);
   const step = () => {
     if (bathGroup !== g || !list.length) return;
+    if (flight && !list.every(x => aptCache.has(x.plot))) { setTimeout(step, 250); return; }   // never stall a camera move
     const u = list.shift();
     try {
       const a = getApartment(u); a.group.updateMatrixWorld(true);
-      a.group.children.forEach(mm => { if (!mm.isMesh || !KEEP.has(mm.name)) return; const mat = mm.material.clone(); mat.clippingPlanes = [CUT]; if (mm.name === 'apt_marble') { mat.color.set('#9fa6aa'); mat.map = null; } if (mm.name === 'apt_ceramic') mat.color.set('#ffffff'); const c = new THREE.Mesh(mm.geometry, mat); c.matrixAutoUpdate = false; c.matrix.copy(mm.matrixWorld); c.castShadow = false; c.receiveShadow = true; g.add(c); });
+      a.group.children.forEach(mm => { if (!mm.isMesh || !KEEP.has(mm.name)) return; const mat = mm.material.clone(); mat.clippingPlanes = [CUT]; if (mm.name === 'apt_marble') { mat.color.set('#6c7377'); mat.map = null; mat.roughness = 0.35; } if (mm.name === 'apt_ceramic') mat.color.set('#ffffff'); const c = new THREE.Mesh(mm.geometry, mat); c.matrixAutoUpdate = false; c.matrix.copy(mm.matrixWorld); c.castShadow = false; c.receiveShadow = true; g.add(c); });
     } catch (e) { console.warn('baths', e); }
     stillFrames = Math.max(stillFrames, 4);
     setTimeout(step, 80);
@@ -1087,7 +1128,7 @@ function buildWinPins(u) {
   });
 }
 function clearUnitTags() {
-  clearWinPins(); clearBaths();
+  clearWinPins(); clearBaths(); coreRoutes.length = 0;
   if (unitTagGroup) { scene.remove(unitTagGroup); unitTagGroup.traverse(o => o.geometry && o.geometry.dispose()); unitTagGroup = null; }
   unitTags.forEach(t => t.el.remove()); unitTags = [];
 }
@@ -1134,8 +1175,7 @@ function buildUnitTags(f) {
   else {   // the stair and lift core every front door is reached from
     const el = document.createElement('div'); el.className = 'tag core'; el.innerHTML = `<div class="b"><strong>⇅</strong><em>${f === 0 ? 'Entrance · stairs and lift' : 'Stairs and lift · walkway'}</em></div><div class="stem"></div><div class="pin"></div>`;
     $('#labels').appendChild(el); unitTags.push({ el, plot: -1, p: new THREE.Vector3(8.8, f * FH + 0.3, 8.7), mesh: null, edge: null, veil: null });
-    const lg = new THREE.BoxGeometry(1.7, 0.02, 1.9); lg.translate(7.8, f * FH + 0.06, 7.4);
-    unitTagGroup.add(new THREE.Mesh(lg, new THREE.MeshStandardMaterial({ color: '#6d7377', metalness: 0.7, roughness: 0.35 })));
+    buildCore(f);
   }
   buildBaths(f);
   scene.add(unitTagGroup);
@@ -1216,7 +1256,7 @@ canvas.addEventListener('pointerup', (e) => {
   ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   const hit = pick();
   if (S.mode === 'explore' && hit.floor != null) toFloor(hit.floor);
-  else if ((S.mode === 'floor' || S.mode === 'unit') && hit.plot != null) toUnit(hit.plot);
+  else if ((S.mode === 'floor' || S.mode === 'unit') && hit.plot != null && !(S.mode === 'unit' && hit.plot === S.plot)) toUnit(hit.plot);
 });
 function pick() {
   if (!CH) return {};
@@ -1235,8 +1275,26 @@ function pick() {
 }
 controls.addEventListener('start', () => { S.idle = 0; controls.autoRotate = false; });
 
+// keyboard movement: W A S D / arrows move across the ground, Q E turn, R F raise and lower
+const navKeys = new Set();
+addEventListener('keyup', (e) => navKeys.delete(e.key.toLowerCase()));
+addEventListener('blur', () => navKeys.clear());
+function keyMove(dt) {
+  if (!navKeys.size || flight || !(S.mode === 'explore' || S.mode === 'floor' || S.mode === 'unit')) return;
+  const k = (c) => navKeys.has(c);
+  const fw = (k('w') || k('arrowup') ? 1 : 0) - (k('s') || k('arrowdown') ? 1 : 0), st = (k('d') || k('arrowright') ? 1 : 0) - (k('a') || k('arrowleft') ? 1 : 0);
+  const turn = (k('q') ? 1 : 0) - (k('e') ? 1 : 0), up = (k('r') ? 1 : 0) - (k('f') ? 1 : 0);
+  const off = camera.position.clone().sub(controls.target), dist = off.length(), sp = Math.max(4, dist * 0.9) * dt;
+  const f = off.clone().setY(0).normalize().negate(), r = new THREE.Vector3(-f.z, 0, f.x);
+  const mv = f.multiplyScalar(fw * sp).add(r.multiplyScalar(st * sp)); mv.y = up * sp * 0.6;
+  controls.target.add(mv); camera.position.add(mv);
+  if (controls.target.length() > 420) { const back = controls.target.clone().setLength(420).sub(controls.target); controls.target.add(back); camera.position.add(back); }
+  if (turn) { off.applyAxisAngle(NAV_UP, turn * dt * 1.1); camera.position.copy(controls.target).add(off); }
+  S.idle = 0; controls.autoRotate = false; stillFrames = Math.max(stillFrames, 2);
+}
 // keyboard
 addEventListener('keydown', (e) => {
+  if (!e.target.closest || !e.target.closest('input, textarea')) { const kk = e.key.toLowerCase(); if (['w', 'a', 's', 'd', 'q', 'e', 'r', 'f', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(kk) && (S.mode === 'explore' || S.mode === 'floor' || S.mode === 'unit')) { navKeys.add(kk); e.preventDefault(); } }
   if (e.key === 'Escape' && filmOn) return endFilm(false);
   if (e.key === 'Escape') {
     if ($('#zoomplan').classList.contains('on')) return $('#zoomplan').classList.remove('on');
@@ -1483,6 +1541,7 @@ function updateHighlights(dt) {
     if (U.uVar) U.uVar.value = tod === 'dusk' ? 1 : tod === 'golden' ? 0.5 : 0;
     if (u) U.uHiColor.value.set(st(u).color);
   }
+  for (const r of coreRoutes) r.visible = S.plot === r.userData.plot;
   if (unitTagGroup) for (const t of unitTags) {
     if (t.plot < 0) continue;
     const on = S.hoverPlot === t.plot || S.plot === t.plot;
@@ -1745,7 +1804,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793370525`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793376193`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -1937,6 +1996,7 @@ function loop() {
   finish.uniforms.uTime.value = (t * 60) % 1000;
   if (S.mode === 'inside') { interior.update(dt); interior.render(renderer); return; }
   stepFlight(STILL ? dt : Math.min(0.2, rawDt));
+  keyMove(dt);
   stepPathFlight(STILL ? dt : Math.min(0.2, rawDt));
   if (S.mode === 'walk') walker.update(dt);
   if (frames % 15 === 0) applyViewOffset();
@@ -1975,7 +2035,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793370525').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793376193').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
@@ -2044,4 +2104,4 @@ function waitForTextures() {
 }
 
 // expose for testing
-window.__CH = { crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT };
+window.__CH = { getApartment, UNITS, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT };
