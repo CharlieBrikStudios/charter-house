@@ -135,8 +135,8 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 
 
 /* on-screen camera controls: big, obvious buttons for people who don't drag and scroll */
-#navpad { position: absolute; top: 50%; right: calc(var(--gr) + 392px); transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px; border-radius: 30px; background: rgba(20,16,14,.74); border: 1px solid var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: right .45s cubic-bezier(.2,.8,.2,1); z-index: 3; }
-#panel.hide ~ #navpad { right: var(--gr); }
+#navpad { position: absolute; top: 50%; left: var(--gx); right: auto; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px; border-radius: 30px; background: rgba(20,16,14,.74); border: 1px solid var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: right .45s cubic-bezier(.2,.8,.2,1); z-index: 3; }
+#panel.hide ~ #navpad { left: var(--gx); right: auto; }
 #navpad button { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); transition: background .15s; }
 #navpad button:hover { background: rgba(255,255,255,.1); }
 #navpad button:active { background: rgba(216,180,118,.25); }
@@ -166,7 +166,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 #buildbar .bb-ticks { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
 @media (max-width: 760px) { #buildbar { bottom: calc(var(--gb) + 16px); } }
 body:has(#buildbar:not([hidden])) #panel, body:has(#buildbar:not([hidden])) .credit { opacity: 0; pointer-events: none; }
-body:has(#buildbar:not([hidden])) #navpad { right: var(--gr); }
+body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
 /* 360° walk-around and the walk to the front door */
 .views .v360 { color: var(--brass); font-weight: 600; }
 #tourui { position: fixed; inset: 0; z-index: 15; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .45s, visibility .45s; }
@@ -443,7 +443,7 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
   .bigback { height: 44px; font-size: 14px; padding: 0 16px 0 12px; }
   .views { bottom: auto; top: calc(var(--gt) + 108px); left: var(--gx); right: var(--gr); overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 32px); }
   .views button { white-space: nowrap; flex: none; }
-  #navpad, #panel.hide ~ #navpad { top: calc(var(--gt) + 166px); right: var(--gr); transform: none; gap: 2px; padding: 4px; }
+  #navpad, #panel.hide ~ #navpad { top: calc(var(--gt) + 166px); left: var(--gx); right: auto; transform: none; gap: 2px; padding: 4px; }
   #navpad button { width: 40px; height: 40px; }
   #navpad [data-nav="up"], #navpad [data-nav="down"], #navpad .nsep:nth-of-type(3) { display: none; }
   #area { top: auto; bottom: calc(var(--gb) + 10px); left: var(--gx); right: var(--gr); width: auto; max-width: none; max-height: 38vh; padding: 14px; gap: 10px; }
@@ -472,7 +472,7 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
     <span class="addr">50–72 Churchgate · Stockport · SK1</span>
   </div>
   <div class="tools">
-    <div class="seg" role="group" aria-label="Time of day">
+    <div class="seg" role="group" aria-label="Time of day" style="display:none">
       <button id="tod-day" aria-pressed="true"><span class="lg">Sunny day</span><span class="sm">Day</span></button>
       <button id="tod-golden" aria-pressed="false"><span class="lg">Golden hour</span><span class="sm">Golden</span></button>
       <button id="tod-dusk" aria-pressed="false"><span class="lg">Evening</span><span class="sm">Evening</span></button>
@@ -511,7 +511,7 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
     <button class="bigback" id="in-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg>Back to the building</button>
     <div style="display:none"><a class="chip" id="in-enquire" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .3-3.4-.7-2.9-1.2-4.7-4.1-4.8-4.3-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.5-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.7-.1l2 .9c.3.1.5.2.5.3.1.2.1.7-.1 1.3Z"/></svg>Register interest</a></div>
   </div>
-  <div class="cginote">Typical Charter House interior · computer-generated, indicative</div>
+  <div class="cginote" hidden></div>
   <div id="hots"></div>
   <div class="cap"><span class="label" id="in-kicker"></span><h3 id="in-title"></h3><p id="in-text"></p></div>
   <div class="rooms" id="in-rooms"></div>
@@ -529,7 +529,7 @@ tr.r { cursor: pointer; } tr.r:hover td { background: rgba(255,255,255,.04); }
 
 
 <div id="buildbar" hidden role="group" aria-label="Build timeline">
-  <div class="bb-head"><span class="label">Build timeline · indicative</span><button class="tbtn" id="bb-close" aria-label="Close the build timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="bb-head"><span class="label">Build timeline</span><button class="tbtn" id="bb-close" aria-label="Close the build timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="bb-stage" id="bb-stage">Site set-up and groundworks</div>
   <div class="bb-row"><button class="tbtn" id="bb-play" aria-label="Play the build"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></button><input type="range" id="bb-range" min="0" max="1000" value="1000" aria-label="Build progress"><span class="bb-pct" id="bb-pct">100%</span></div>
   <div class="bb-ticks" id="bb-ticks"></div>

@@ -337,6 +337,7 @@ const PRESETS = {
 if (IS_PH) { PRESETS.day.sun = [0.42, 0.78, 0.6]; PRESETS.golden.sun = [-0.17, 0.2, 0.96]; }   // evening sun from the south-west, low across the garden
 let tod = 'day';
 function applyTOD(name) {
+  name = 'day';   // sunny everywhere: no time-of-day switching
   tod = name; const P = PRESETS[name];
   SUN_DIR.set(...P.sun).normalize();
   sun.position.copy(sun.target.position).addScaledVector(SUN_DIR, 140);
@@ -712,7 +713,7 @@ function openWalk(u) {
   walker.onRoom = (r) => { const c = apt.chips.find(c => c.room === r); if (c) { $('#in-title').textContent = c.name; document.querySelectorAll('#in-rooms [data-i]').forEach(b => b.setAttribute('aria-pressed', apt.chips[+b.dataset.i].room === r)); } };
   $('#in-kicker').textContent = `Plot ${u.plot} · ${FLOORS[u.floor].name} · ${u.beds} bed · ${u.sqft} sq ft`;
   $('#in-title').textContent = apt.chips[0] ? apt.chips[0].name : 'Inside';
-  $('#in-text').textContent = 'Drag to look around. Click the floor to walk there, or use W A S D. Finished to an ultra-premium specification (indicative).';
+  $('#in-text').textContent = 'Drag to look around. Click the floor to walk there, or tap a room below.';
   $('#in-enquire').href = waLink(u, u.status === 'Available');
   $('#in-enquire').lastChild.textContent = u.status === 'Available' ? 'Reserve on WhatsApp' : 'Register interest';
   $('#in-rooms').innerHTML = apt.chips.map((c, i) => `<button class="chip" data-i="${i}" aria-pressed="${i === 0}">${c.name}</button>`).join('') + `<button class="chip" data-cgi="1">CGI images</button>`;
@@ -722,7 +723,8 @@ $('#in-rooms').addEventListener('click', (e) => {
   const b = e.target.closest('[data-i],[data-cgi]'); if (!b) return;
   if (b.dataset.cgi) { const k = GALLERY.findIndex(g => g[0].startsWith('int_')); openGallery(Math.max(0, k)); return; }
   if (S.mode !== 'walk') return;
-  const c = apt.chips[+b.dataset.i]; walker.goTo(c.pos, c.look);
+  const c = apt.chips[+b.dataset.i]; const fade = $('#fade'); fade.classList.add('on');
+  setTimeout(() => { walker.path = null; walker.pos.x = c.pos.x; walker.pos.z = c.pos.z; walker.lookAt(c.look); walker.yaw = walker.tyaw; walker.pitch = walker.tpitch; walker.update(0.016); fade.classList.remove('on'); }, 280);
 });
 function restoreFromInterior() {
   const u = unitByPlot.get(S.plot);
@@ -801,7 +803,7 @@ function seeView(plot, idx = 0) {
   const eye = w.pos.clone().addScaledVector(w.normal, 0.3); eye.y = SY() + u.floor * FH + 1.5;   // at the glass, so nothing blocks the view
   look.base.copy(eye); look.dir.copy(w.normal); look.yaw = look.ty = 0; look.pitch = look.tp = -0.04;
   const D = dirs[idx];
-  if (D && D.target) { look.dir.copy(D.target).sub(eye).setY(0).normalize(); look.pitch = look.tp = 0.06; }
+  if (D && D.target) { look.dir.copy(D.target).sub(eye).setY(0).normalize(); look.pitch = look.tp = -0.12; }   // looking down the street from the top floor
   CH.meshes.glass.visible = false;
   const cur = CH.group.getObjectByName('curtains'); if (cur) cur.visible = false;
   windUniforms.uNear.value = 1.2;
@@ -1277,7 +1279,7 @@ function showG() {
   const [k, cap] = GALLERY[gi];
   $('#g-img').src = `${BASE}cgi/${k}_${!IS_PH && innerWidth * DPR > 2200 ? '4k' : '2k'}.jpg`;
   $('#g-img').onerror = () => { $('#g-img').onerror = null; $('#g-img').src = `${BASE}cgi/${k}_2k.jpg`; };
-  $('#g-img').alt = cap; $('#g-cap').textContent = cap + ' · computer-generated image';
+  $('#g-img').alt = cap; $('#g-cap').textContent = cap;
   document.querySelectorAll('#g-thumbs button').forEach((b, i) => b.setAttribute('aria-current', i === gi));
 }
 $('#g-thumbs').innerHTML = GALLERY.map(([k, c], i) => `<button aria-label="${c}"><img src="${BASE}cgi/${k}_2k.jpg" alt="" loading="lazy"></button>`).join('');
@@ -1588,7 +1590,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg`, glide: false, type: p.type, note: p.note || 'Photoreal render, typical of this apartment type (indicative finish). Drag to look round.' });
+    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -1641,7 +1643,9 @@ function goSpot(i) {
   document.querySelectorAll('#t-spots [data-spot]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.spot === i));
   const chip = document.querySelector(`#t-spots [data-spot="${i}"]`); if (chip) chip.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
   $('#t-backlbl').textContent = 'Back to the 3D model';
-  tourCaption(`360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note);
+  const sib = sp.pano ? SPOTS.map((x, j) => [x, j]).filter(([x]) => x.pano && x.plot === sp.plot) : [];
+  const roomActs = sib.length > 1 ? sib.map(([x, j]) => `<button class="btn ${j === i ? 'brass' : 'ghost'}" data-tact="room" data-spot="${j}">${(x.room || x.name).replace(/^./, ch => ch.toUpperCase())}</button>`).join('') : '';
+  tourCaption(sp.pano ? `Apartment ${sp.plot} · photoreal 360°` : `360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note, roomActs);
   if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: sp.look }], {}); setTimeout(() => { showPano(sp.pano); tour.setFov(innerWidth < innerHeight ? 96 : 80); }, 400); }
   else { showPano(null); tour.walk([near ? { to: sp.at, speed: 6, look: sp.look } : { to: sp.at, cut: true, look: sp.look }]); }
   stillFrames = Math.max(stillFrames, 4);
@@ -1718,6 +1722,7 @@ function walkToDoor(plot) {
 $('#t-acts').addEventListener('click', (e) => {
   const b = e.target.closest('[data-tact]'); if (!b) return; const plot = T.door;
   if (b.dataset.tact === 'skip') return tour.skip();
+  if (b.dataset.tact === 'room') return goSpot(+b.dataset.spot);
   if (b.dataset.tact === 'unit') exitTour(plot);
   else if (b.dataset.tact === 'interiors') { exitTour(plot); openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))); }
   else if (b.dataset.tact === 'inside' && SPOTS.some(x => x.pano && x.type === unitByPlot.get(plot).type)) { const i = SPOTS.findIndex(x => x.pano && x.type === unitByPlot.get(plot).type); T.door = plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${plot}`; }
@@ -1773,7 +1778,7 @@ function loop() {
   const dt = Math.min(0.05, rawDt);
   const t = clock.elapsedTime;
   if (!STILL) adapt(rawDt);
-  windUniforms.uTime.value = t; clouds.material.uniforms.uTime.value = t;
+  windUniforms.uTime.value = 0;   /* trees and plants hold still */ clouds.material.uniforms.uTime.value = t;
   finish.uniforms.uTime.value = (t * 60) % 1000;
   if (S.mode === 'inside') { interior.update(dt); interior.render(renderer); return; }
   stepFlight(STILL ? dt : Math.min(0.2, rawDt));

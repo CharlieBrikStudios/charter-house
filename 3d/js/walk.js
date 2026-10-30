@@ -118,9 +118,9 @@ export function walkMaterials(tex, base) {
     frame: new THREE.MeshStandardMaterial({ color: '#2a2420', roughness: 0.5 }),
     giltFrame: new THREE.MeshStandardMaterial({ color: '#b48b4a', metalness: 0.9, roughness: 0.32 }),
     art: [
-      new THREE.MeshStandardMaterial({ map: tex(base + 'cgi/drone_above_2k.jpg'), roughness: 0.6 }),
-      new THREE.MeshStandardMaterial({ map: abstractArt(11, ['#efe7da', '#c9a27a', '#36443b', '#9b5a3c', '#e2cfb0']), roughness: 0.85 }),
-      new THREE.MeshStandardMaterial({ map: abstractArt(29, ['#e9e4dc', '#2f3a4f', '#b8a68a', '#7d8a7a', '#d9b48a']), roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ map: tex(base + 'tex/modern_art_0.jpg'), roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({ map: tex(base + 'tex/modern_art_1.jpg'), roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({ map: tex(base + 'tex/modern_art_2.jpg'), roughness: 0.8 }),
     ],
     paint: {},
     artCache: {},
@@ -492,7 +492,7 @@ export function buildApartment(u, ctx) {
   for (const [k, list] of Object.entries(G)) {
     let mat;
     if (k.startsWith('paint_')) mat = paintMat(mats, k.slice(6));
-    else if (k.startsWith('art')) { const i = +k.slice(3); mat = i === 0 && u.plot % 3 === 0 ? mats.art[0] : (mats.artCache[u.plot + '_' + i] ||= new THREE.MeshStandardMaterial({ map: artCanvas(u.plot * 10 + i, (u.plot + i) % 4), roughness: 0.85 })); }
+    else if (k.startsWith('art')) { const i = +k.slice(3); mat = mats.art[(i + u.plot) % 3]; }
     else mat = mats[k];
     const g = mergeGeometries(list, false); if (!g) continue; g.computeBoundingSphere();
     const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = !['showerGlass', 'linen', 'glow', 'opal', 'ceiling'].includes(k) && !k.startsWith('paint_');
