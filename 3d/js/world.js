@@ -15,6 +15,13 @@ export function setTerrain(t) {
     const w = sm((10 - x) / 40) * (1 - sm((-260 - x) / 100)) * (1 - sm((Math.abs(z + 10) - 110) / 90));
     if (w > 0) TH[j * t.nx + i] -= w * 0.08 * Math.min(110, Math.max(0, 10 - x));
   }
+  // the play park sits level with Churchgate (no grass bank between the pavement and its railings)
+  const jr = Math.round((-6.6 - t.z0) / t.cell);
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const w2 = sm((x + 8) / 8) * sm((48 - x) / 8) * sm((z + 60) / 8) * sm((-8 - z) / 3);
+    if (w2 > 0) TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w2) + TH[jr * t.nx + i] * w2;
+  }
 }
 // the 12 km mid-distance heightfield (far.json) continues the street-level grid out to the valleys and hills
 let MID = null, MH = null;

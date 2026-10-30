@@ -9,21 +9,21 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793369296';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793369296';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793369296';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793369296';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793369296';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793369296';
-import { buildFar, hazeUniforms } from './far.js?v=1793369296';
-import { Forest, windUniforms } from './trees.js?v=1793369296';
-import { Interior } from './interior.js?v=1793369296';
-import { buildFurniture, LAYOUTS } from './furniture.js?v=1793369296';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793369296';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793369296';
-import { createTour } from './tour.js?v=1793369296';
-import { buildCrowd } from './crowd.js?v=1793369296';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793369296';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793369445';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793369445';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793369445';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793369445';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793369445';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793369445';
+import { buildFar, hazeUniforms } from './far.js?v=1793369445';
+import { Forest, windUniforms } from './trees.js?v=1793369445';
+import { Interior } from './interior.js?v=1793369445';
+import { buildFurniture, LAYOUTS } from './furniture.js?v=1793369445';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793369445';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793369445';
+import { createTour } from './tour.js?v=1793369445';
+import { buildCrowd } from './crowd.js?v=1793369445';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793369445';
 const pitch = IS_PH ? phPitch : chPitch, PICKS = IS_PH ? PH_PICKS : CH_PICKS;
 const AREA_CARDS = ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || c.id !== 'charter');   // the area edition pins every Brik site
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
@@ -562,9 +562,10 @@ function unitView(u) {
   const out = new THREE.Vector3(c.x - 15, 0, c.z - 15);
   if (c.x > 12) out.set(c.x - 8, 0, c.z - 20);
   if (c.z > 12) out.set(c.x - 20, 0, c.z - 6);
-  const near = c.clone().lerp(new THREE.Vector3(out.x, c.y, out.z), 0.2);   // right down into the flat, looking in from just above
-  const span = Math.max(x1 - x0, z1 - z0);
-  return { pos: new THREE.Vector3(near.x, y + 4.5 + span * 0.55, near.z), tgt: c };
+  const span = Math.max(x1 - x0, z1 - z0), dir = new THREE.Vector3(out.x - c.x, 0, out.z - c.z).normalize();
+  const pos = c.clone().addScaledVector(dir, span * 0.42); pos.y = c.y + span * 0.72;
+  if (pos.distanceTo(c) < 9.3) pos.sub(c).setLength(9.3).add(c);   // the orbit's minimum distance
+  return { pos, tgt: c };
 }
 function primaryWindow(u) {
   const ws = CH.windows.filter(w => w.plot === u.plot);
@@ -869,6 +870,7 @@ function renderBack() {
   if (S.mode === 'floor') $('#backlbl').textContent = 'Back to all floors';
   if (S.mode === 'unit') { const u = unitByPlot.get(S.plot); $('#backlbl').textContent = `Back to level ${floorWord(u.floor)}`; }
 }
+const NO_INSIDE = true;   // demo meeting: Step inside switched off (interiors, panoramas and code all kept; set false to bring it back)
 let UDET = '';
 function openDetails() {
   let d = $('#udet'); if (!d) { d = document.createElement('div'); d.id = 'udet'; d.setAttribute('role', 'dialog'); document.body.appendChild(d); d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('.uclose')) d.classList.remove('on'); else { const b = e.target.closest('[data-plot]'); if (b) { d.classList.remove('on'); toUnit(+b.dataset.plot); } } }); }
@@ -936,8 +938,8 @@ function renderPanel() {
       <button class="back" data-act="floor" data-floor="${u.floor}">${chev}Level ${floorWord(u.floor)}</button>
       <div class="uhead"><div><span class="label">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''}</span><h2>Plot ${u.plot}</h2></div><span class="status ${s.key}">${s.label}</span></div>
       <div class="acts uacts">
-        <button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : hasPano ? 'Step inside · 360°' : 'Step inside'}</button>
-        <button class="btn ghost" data-act="view">View from window</button>
+        ${NO_INSIDE ? '' : `<button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : hasPano ? 'Step inside · 360°' : 'Step inside'}</button>`}
+        <button class="btn ${NO_INSIDE ? 'brass' : 'ghost'}" data-act="view">View from window</button>
         <button class="btn ghost" data-act="door">Walk to the door</button>
       </div>
       <div class="facts"><div><span class="label">Price</span><b class="num">${fmtGBP(u.price)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
@@ -1721,7 +1723,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793369296`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793369445`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -1844,7 +1846,7 @@ function walkToDoor(plot) {
     onDone: () => {
       const acts = IS_PH
         ? `<button class="btn brass" data-tact="interiors">See the interiors</button><button class="btn ghost" data-tact="unit">Back to Plot ${plot}</button>`
-        : `<button class="btn brass" data-tact="inside">Step inside</button><button class="btn ghost" data-tact="unit">Back to Plot ${plot}</button>`;
+        : NO_INSIDE ? `<button class="btn brass" data-tact="unit">Back to Plot ${plot}</button>` : `<button class="btn brass" data-tact="inside">Step inside</button><button class="btn ghost" data-tact="unit">Back to Plot ${plot}</button>`;
       tourCaption(`Walk to the front door · Plot ${plot}`, `Plot ${plot} · your front door`, u.view + '.', acts);
     },
   });
@@ -1951,7 +1953,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793369296').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793369445').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');

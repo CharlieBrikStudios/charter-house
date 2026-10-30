@@ -3,8 +3,8 @@
 // Positions are approximate, from Google Earth and the Ollier Smurthwaite site/context drawings.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxGeom, boxUV } from './building.js?v=1793369296';
-import { groundAt } from './world.js?v=1793369296';
+import { boxGeom, boxUV } from './building.js?v=1793369445';
+import { groundAt } from './world.js?v=1793369445';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -373,6 +373,7 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     const PX0 = 1, PX1 = 34, PZ0 = -14.6, PZ1 = -44;
     const flat = (pts, k, lift) => { const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z))); const g = new THREE.ShapeGeometry(sh, 24); g.rotateX(-Math.PI / 2); const q = g.attributes.position; for (let i = 0; i < q.count; i++) q.setY(i, groundY(q.getX(i), q.getZ(i)) + lift); g.computeVertexNormals(); boxUV(g, 3); B.add(k, g); };
     flat([[PX0, PZ0], [PX1, PZ0], [PX1, PZ1], [PX0, PZ1]], 'rubber', 0.05);
+    flat([[-2, -12.4], [40, -12.4], [40, -14.5], [-2, -14.5]], 'paving', 0.14);   // the pavement widened right up to the railings
     const disc = (cx, cz, r, k, lift = 0.06) => { const c = new THREE.CircleGeometry(r, 48); c.rotateX(-Math.PI / 2); c.translate(cx, groundY(cx, cz) + lift, cz); B.add(k, c); };
     const MAT = (c, r = 0.6) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
     const sand = MAT('#e6cf9c', 0.95), blue = MAT('#2f6fb3', 0.45), green = MAT('#4f9a4a', 0.5), tramp = MAT('#1b1b1b', 0.7);
@@ -445,7 +446,7 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     while (pts.length < 64 && guard++ < 6000) {
       const x = 4 + R() * 100, z = -42 - R() * 70;
       if (x < 40 && z > -52) continue;              // the play park and the open ground round it
-      if (tryAdd(x, z, 8.5)) forest.add(x, z, { h: 16 + R() * 8, r: 5.5 + R() * 2.5, kind: R() < 0.6 ? 'oak' : 'sycamore', seed: Math.floor(R() * 1e6), density: 0.85 });
+      if (tryAdd(x, z, 8.5)) forest.add(x, z, { h: 16 + R() * 8, r: 5.5 + R() * 2.5, kind: R() < 0.6 ? 'oak' : 'sycamore', seed: Math.floor(R() * 1e6), density: 1.15 });
     }
     // trees at the bend of Churchgate and along its south side beyond the play park
     for (const [x, z, h] of [[36, -24, 15], [46, -30, 17], [56, -20, 16], [64, -6, 15], [70, -26, 18], [80, 8, 14]]) if (tryAdd(x, z, 7)) forest.add(x, z, { h, r: h * 0.36, kind: R() < 0.5 ? 'oak' : 'sycamore', seed: Math.floor(R() * 1e6), density: 0.85 });
