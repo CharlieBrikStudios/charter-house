@@ -138,8 +138,8 @@ export function buildCharterHouse(M, base) {
   }
   // core entrance from the courtyard
   open.hwR.push({ id: 'DOOR', c: 0.55, v0: 0, v1: 2.3, w: 1.1, type: 'door', floor: 0 });
-  // every window 5% bigger in both directions than the planning drawings (sill drops, head rises, a touch wider each side)
-  for (const k of Object.keys(open)) for (const o of open[k]) if (o.type === 'win1' || o.type === 'win2') { const dh = (o.v1 - o.v0) * 0.025; o.v0 -= dh; o.v1 += dh; o.w *= 1.05; }
+  // every window 10% bigger in both directions than the planning drawings (demo build: sill drops, head rises, wider each side)
+  for (const k of Object.keys(open)) for (const o of open[k]) if (o.type === 'win1' || o.type === 'win2') { const dh = (o.v1 - o.v0) * 0.05; o.v0 -= dh; o.v1 += dh; o.w *= 1.10; }
 
   // ---- wall outlines in facade (u, v) coords
   const BOT = -3.2;

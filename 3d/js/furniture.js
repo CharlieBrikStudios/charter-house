@@ -258,7 +258,7 @@ const L_2A = [
   { t: 'rug', x: 5.5, z: 2.05, w: 2.2, d: 1.9, m: 'rug1' },
   { t: 'sofa', x: 5.3, z: 3.12, f: '-z', len: 2.1, chaise: { end: '-x', len: 0.8 }, fab: 'taupe' },
   { t: 'coffee', x: 5.75, z: 2.0 },
-  { t: 'media', x: 6.35, z: 0.62, f: '+z', len: 1.4 },
+  { t: 'media', x: 5.45, z: 0.55, f: '+z', len: 1.3, tv: false },   // low sideboard centred under the Churchgate window (a TV here stood in front of the glass)
   { t: 'armchair', x: 3.95, z: 1.2, f: [1, 0.45], fab: 'cognac' },
   { t: 'dining', x: 2.15, z: 1.15, w: 0.9, d: 1.5, top: 'walnut', chairs: [[1.56, 0.78, '+x'], [1.56, 1.52, '+x'], [2.74, 0.78, '-x'], [2.74, 1.52, '-x']] },
   { t: 'kitchen', x: 2.05, z: 3.3, f: '-z', len: 3.3, col: 'green', sink: [2.75, 3.3], hob: [1.0, 3.3] },
