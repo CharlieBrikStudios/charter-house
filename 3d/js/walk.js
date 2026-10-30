@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793370305';
+import { FLOOR_H as FH } from './data.js?v=1793370395';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -472,6 +472,20 @@ export function buildApartment(u, ctx) {
       for (let k = 0; k < 5; k++) add('brass', box(x1 - 0.07, y0 + 1.0 + k * 0.1, along - 0.32, x1 - 0.05, y0 + 1.02 + k * 0.1, along + 0.32));
     }
     lights.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, I: 2.5, d: 4 });
+  }
+  // type 2A: the en-suite off the main bedroom is too small for the room finder (it merges into the bedroom), so it is fitted from the plan
+  if (u.type === '2A' && !bath2) {
+    const x0 = 8.55, x1 = 10.65, z0 = 3.95, z1 = 5.1;
+    const fl2 = new THREE.PlaneGeometry(x1 - x0, z1 - z0); fl2.rotateX(-Math.PI / 2); fl2.translate((x0 + x1) / 2, y0 + 0.008, (z0 + z1) / 2); add('marble', fl2);
+    add('marble', box(9.8, y0, z0, x1, y0 + 0.03, z1));                                               // shower tray at the far end
+    add('showerGlass', box(9.795, y0 + 0.03, z0 + 0.05, 9.805, y0 + 2.0, z0 + 0.75));
+    add('chrome', new THREE.CylinderGeometry(0.13, 0.13, 0.012, 24).translate(10.25, y0 + 2.2, 4.55));
+    add('oak', box(8.7, y0 + 0.45, z1 - 0.46, 9.28, y0 + 0.82, z1));                                 // vanity and basin on the back wall
+    add('ceramic', box(8.75, y0 + 0.82, z1 - 0.42, 9.23, y0 + 0.9, z1 - 0.04));
+    add('chrome', box(8.98, y0 + 0.9, z1 - 0.14, 9.0, y0 + 1.1, z1 - 0.05));
+    add('mirror', box(8.72, y0 + 1.15, z1 - 0.04, 9.26, y0 + 1.95, z1 - 0.02));
+    add('ceramic', box(9.38, y0 + 0.3, z1 - 0.56, 9.72, y0 + 0.42, z1 - 0.02)); add('ceramic', box(9.33, y0 + 0.42, z1 - 0.14, 9.77, y0 + 1.1, z1));   // WC
+    lights.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, I: 2.0, d: 3 });
   }
   // pendants: an opal-globe cluster over the dining table, a brass ring in each bedroom, spots in halls
   for (const o of layout) if (o.t === 'dining') {
