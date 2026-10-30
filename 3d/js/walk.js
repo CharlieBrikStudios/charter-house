@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793382009';
+import { FLOOR_H as FH } from './data.js?v=1793382923';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -348,7 +348,7 @@ export function buildApartment(u, ctx) {
         for (const [h0, h1] of [[0.32, 0.8], [1.12, CEIL - 0.42]]) {
           const t = 0.035, dpt = 0.024;
           place(run, pa, pb, h0, h0 + t, dpt, PK); place(run, pa, pb, h1 - t, h1, dpt, PK);
-          place(run, pa, pa + t, h0, h1, dpt, PK); place(run, pb - t, pb, h0, h1, dpt, PK);
+          place(run, pa, pa + t, h0 + t, h1 - t, dpt, PK); place(run, pb - t, pb, h0 + t, h1 - t, dpt, PK);   // stiles stop at the rails (no overlapping solids: they render black when path-traced)
         }
       }
       // art on the middle panel of long walls in living rooms and bedrooms
