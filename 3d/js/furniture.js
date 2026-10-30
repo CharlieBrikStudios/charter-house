@@ -255,9 +255,9 @@ function pot(K, { big = false }) {
 // ------------------------------------------------------------------ layouts (floor 1 plan coordinates, metres)
 // t: piece type; x, z: centre; f: facing (front direction); chaise.end: world axis of the chaise end
 const L_2A = [
-  { t: 'rug', x: 5.5, z: 2.05, w: 2.2, d: 1.9, m: 'rug1' },
-  { t: 'sofa', x: 5.3, z: 3.12, f: '-z', len: 2.1, chaise: { end: '-x', len: 0.8 }, fab: 'taupe' },
-  { t: 'coffee', x: 5.75, z: 2.0 },
+  { t: 'rug', x: 4.9, z: 1.95, w: 2.2, d: 1.9, m: 'rug1' },
+  { t: 'sofa', x: 4.7, z: 3.02, f: '-z', len: 2.1, chaise: { end: '-x', len: 0.8 }, fab: 'taupe' },
+  { t: 'coffee', x: 5.15, z: 1.9 },
   { t: 'media', x: 5.45, z: 0.55, f: '+z', len: 1.3, tv: false },   // low sideboard centred under the Churchgate window (a TV here stood in front of the glass)
   { t: 'armchair', x: 3.95, z: 1.2, f: [1, 0.45], fab: 'cognac' },
   { t: 'dining', x: 2.15, z: 1.15, w: 0.9, d: 1.5, top: 'walnut', chairs: [[1.56, 0.78, '+x'], [1.56, 1.52, '+x'], [2.74, 0.78, '-x'], [2.74, 1.52, '-x']] },
