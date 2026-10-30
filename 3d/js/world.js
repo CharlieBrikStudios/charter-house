@@ -6,8 +6,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
-export function setTerrain(t) {
+export function setTerrain(t, raw = false) {
   TER = t; TH = new Float32Array(t.h.length); for (let i = 0; i < t.h.length; i++) TH[i] = t.h[i] / 10;
+  if (raw) return;   // another town (Hyde): no Stockport street corrections
   // local knowledge: Churchgate runs gently DOWNHILL from Charter House to St Mary's and the Market Place (the estimated grid had it rising)
   const sm = (v) => { v = Math.max(0, Math.min(1, v)); return v * v * (3 - 2 * v); };
   for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
@@ -54,7 +55,7 @@ const rng = (seed) => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 10
 const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
 
 // ------------------------------------------------------------------ geometry helpers
-function polyArea(p) { let a = 0; for (let i = 0; i < p.length; i++) { const q = p[i], r = p[(i + 1) % p.length]; a += q[0] * r[1] - r[0] * q[1]; } return a / 2; }
+export function polyArea(p) { let a = 0; for (let i = 0; i < p.length; i++) { const q = p[i], r = p[(i + 1) % p.length]; a += q[0] * r[1] - r[0] * q[1]; } return a / 2; }
 function centroidOf(p) { let x = 0, z = 0; for (const q of p) { x += q[0]; z += q[1]; } return [x / p.length, z / p.length]; }
 function hull(pts) {
   const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -65,7 +66,7 @@ function hull(pts) {
   return lo.slice(0, -1).concat(up.slice(0, -1));
 }
 // inward offset of a CCW polygon (null if it collapses or folds)
-function insetPoly(p, d) {
+export function insetPoly(p, d) {
   const n = p.length, A = polyArea(p); if (A <= 0 || n < 3) return null;
   const out = [];
   for (let i = 0; i < n; i++) {
@@ -372,7 +373,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + 'world_splat.png', { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {

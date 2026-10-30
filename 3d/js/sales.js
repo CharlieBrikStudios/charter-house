@@ -218,6 +218,14 @@ export const AREA_HEADLINE = [
 const r25 = (x) => Math.round(x / 25) * 25;
 export function rentFor(u, ph) {
   let r, why = [];
+  if (ph === 'osl') {   // Oldham Street Lofts: Brik forecast £875 pcm for a one-bed at completion (late 2027)
+    if (u.beds === 3) return { pcm: 1350, why: ['three-bed townhouse, Brik estimate'] };
+    r = 875;
+    if (u.type === '1B') { r += 25; why.push('corner, dual aspect'); }
+    if (u.type === '1C+') { r += 25; why.push('the largest one-bed'); }
+    if (u.plot === 19) { r -= 25; why.push('a little smaller'); }
+    return { pcm: r, why };
+  }
   const lo = u.beds === 2 ? 1450 : 1250, hi = u.beds === 2 ? 1550 : 1325;   // 1 bed £1,250–£1,325, 2 bed £1,450–£1,550
   if (ph) {
     r = lo;
@@ -237,3 +245,34 @@ export function rentFor(u, ph) {
   }
   return { pcm: Math.min(hi, Math.max(lo, r25(r))), why };
 }
+
+// ---------------------------------------------------------------- Oldham Street Lofts (Hyde): early access, not urgency
+export const OSL_PICKS = { 17: 'Charlie’s pick · corner one-bed', 1: 'End townhouse' };
+export function oslPitch(u) {
+  const p = { badge: OSL_PICKS[u.plot] || null, head: '', points: [], supply: null };
+  if (u.house) {
+    p.head = u.plot === 1 ? 'The end townhouse on Henry Street: the biggest of the nine, on the splayed corner.' : 'A proper three-bed townhouse with its own front door on Syddall Street and a garden behind.';
+    p.points = ['Three bedrooms over three floors: kitchen and dining to the front, living room onto the garden, a top-floor bedroom under the rooflights.',
+      'Freehold, with a private south-south-east facing garden and its own bin and bike store.',
+      'Nine in the whole scheme, all on one terrace stepping up Syddall Street.'];
+    return p;
+  }
+  if (u.type === '1B') {
+    p.head = 'The corner apartment: light from Syddall Street and Oldham Street, right behind the painted name.';
+    p.points = ['Dual-aspect living room on the chamfered corner, with the tall warehouse windows on two sides.', 'Off the stair core, so there is no walkway past your windows.', 'Only three corner apartments in the building, one per floor.'];
+  } else if (u.type.startsWith('1C')) {
+    p.head = u.type === '1C+' ? 'The largest one-bed in the building, on the quiet Oldham Street wing.' : 'Ground floor on the Oldham Street wing, over the residents’ garden.';
+    p.points = ['Living room windows look down onto the residents’ garden; the bedroom faces Oldham Street.', 'Front door straight off the stair landing.', 'A hall with storage and a separate double bedroom.'];
+  } else {
+    p.head = u.floor === 2 ? 'Top floor under the roof, with two tall windows onto Syddall Street.' : u.floor === 0 ? 'Ground floor beside the archway, with two tall windows onto Syddall Street.' : 'Classic Lofts layout: two tall warehouse windows in the living room, bedroom at the back.';
+    p.points = ['Open-plan kitchen and living behind two 4×4-pane warehouse windows onto Syddall Street.', 'Your own front door off the covered steel-and-glass walkway, looking over the residents’ garden.', 'Double bedroom and shower room tucked away at the back.'];
+    if (u.floor === 2) p.points.push('Top floor: nobody above you.');
+  }
+  return p;
+}
+export const OSL_PROOF = [
+  { k: 'Rents', v: 'One-beds forecast at £875 pcm at completion, a 6.7% gross yield at £157,000. Nearby: Warrington Street, Ashton, £955 pcm; Longlands Mill, Stalybridge, £825 pcm.' },
+  { k: 'Transport', v: 'Hyde Central station a 9-minute walk; Manchester 7.5 miles, Stockport 5 miles.' },
+  { k: 'Build', v: 'New build by Ollier Smurthwaite Architects (planning 24/00783/FUL), with a 10-year build warranty. Completion expected late 2027.' },
+  { k: 'Early access', v: 'This is the private preview, before the November launch to the full database.' },
+];

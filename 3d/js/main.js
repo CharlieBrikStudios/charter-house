@@ -9,24 +9,28 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793385625';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793385625';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793385625';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793385625';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793385625';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793385625';
-import { buildFar, hazeUniforms } from './far.js?v=1793385625';
-import { Forest, windUniforms } from './trees.js?v=1793385625';
-import { Interior } from './interior.js?v=1793385625';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793385625';
-import { buildPHFitout } from './phfit.js?v=1793385625';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793385625';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793385625';
-import { createTour } from './tour.js?v=1793385625';
-import { buildCrowd } from './crowd.js?v=1793385625';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793385625';
-const pitch = IS_PH ? phPitch : chPitch, PICKS = IS_PH ? PH_PICKS : CH_PICKS;
-const AREA_CARDS = ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || (c.id !== 'charter' && c.id !== 'print'));   // the area edition pins every Brik site (Charter House demo: no Print House tag)
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, PLANF } from './site.js?v=1793390161';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793390161';
+import { buildOSL } from './oslbuild.js?v=1793390161';
+import { buildOSLFitout } from './oslfit.js?v=1793390161';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793390161';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793390161';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793390161';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793390161';
+import { buildFar, hazeUniforms } from './far.js?v=1793390161';
+import { Forest, windUniforms } from './trees.js?v=1793390161';
+import { Interior } from './interior.js?v=1793390161';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793390161';
+import { buildPHFitout } from './phfit.js?v=1793390161';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793390161';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793390161';
+import { createTour } from './tour.js?v=1793390161';
+import { buildCrowd } from './crowd.js?v=1793390161';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF } from './sales.js?v=1793390161';
+const pitch = IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
+const RK = IS_OSL ? 'osl' : IS_PH;   // which site's rents
+const PROOFS = IS_OSL ? OSL_PROOF : PROOF;
+const AREA_CARDS = IS_OSL ? [] : ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || (c.id !== 'charter' && c.id !== 'print'));   // the area edition pins every Brik site (Charter House demo: no Print House tag)
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
 
 const BASE = 'assets/';
@@ -84,15 +88,23 @@ if (IS_PH) {
   $('#btn-clay').title = 'Turn every other building into a plain white architectural model so The Print House stands out';
   $('.credit').innerHTML = 'Live availability from Brik Studios, updated <span id="upd"></span>. Model built from Ollier Smurthwaite GA plans; surroundings approximate.';
 }
+if (IS_OSL) {
+  document.querySelectorAll('.brand img, .lcard img').forEach(i => { i.src = BASE + 'brand_osl.png'; i.alt = 'Oldham Street Lofts'; });
+  $('.brand .addr').textContent = 'Syddall Street · Hyde · SK14';
+  $('#btn-tour').hidden = true; $('#btn-build').hidden = true; $('#btn-360').hidden = true; $('#btn-area').hidden = true;
+  const vb = { front: 'The corner', rear: 'The courtyard', street: 'Syddall Street', above: 'From above' };
+  document.querySelectorAll('#views [data-view]').forEach(b => b.textContent = vb[b.dataset.view]);
+  $('#btn-clay').title = 'Turn every other building into a plain white architectural model so Oldham Street Lofts stands out';
+}
 if (START_AREA) {
   document.querySelectorAll('.brand img, .lcard img').forEach(i => { i.src = BASE + 'brand_brik.png'; i.alt = 'Brik Studios'; });
   $('.brand .addr').textContent = 'Stockport Underbanks · our sites and the regeneration';
 }
-document.querySelectorAll('#btn-list .lg').forEach(e => e.textContent = `All ${UNITS.length} apartments`);
+document.querySelectorAll('#btn-list .lg').forEach(e => e.textContent = `All ${UNITS.length} ${IS_OSL ? 'homes' : 'apartments'}`);
 document.querySelectorAll('#btn-list .sm').forEach(e => e.textContent = `All ${UNITS.length}`);
-$('#list h2').textContent = `All ${UNITS.length} apartments`;
+$('#list h2').textContent = `All ${UNITS.length} ${IS_OSL ? 'homes' : 'apartments'}`;
 $('#gallery h2').textContent = SITE.name;
-const msgs = ['Laying the brickwork…', `Glazing ${UNITS.length} apartments…`, IS_PH ? 'Planting the residents’ garden…' : 'Planting the trees on Churchgate…', 'Checking live availability…', 'Lighting the rooms…'];
+const msgs = ['Laying the brickwork…', `Glazing ${UNITS.length} apartments…`, IS_OSL ? 'Laying the setts on Syddall Street…' : IS_PH ? 'Planting the residents’ garden…' : 'Planting the trees on Churchgate…', 'Checking live availability…', 'Lighting the rooms…'];
 let mi = 0; const msgTimer = setInterval(() => { lmsg.textContent = msgs[++mi % msgs.length]; }, 1800);
 
 // ------------------------------------------------------------------ lights + sky
@@ -102,7 +114,7 @@ const SM = Q === 'low' ? 1024 : Q === 'high' ? 4096 : 2048;
 sun.shadow.mapSize.set(SM, SM);
 const sc = sun.shadow.camera; sc.left = -46; sc.right = 46; sc.top = 46; sc.bottom = -46; sc.near = 1; sc.far = 260;
 sun.shadow.bias = -0.00025; sun.shadow.normalBias = 0.035;
-sun.target.position.set(...(IS_PH ? [-52, 0, 204] : [11, 0, 10]));   // the shadow map follows the building on sale
+sun.target.position.set(...(IS_OSL ? [37, 0, -14] : IS_PH ? [-52, 0, 204] : [11, 0, 10]));   // the shadow map follows the building on sale
 scene.add(sun, sun.target);
 const hemi = new THREE.HemisphereLight('#bcd2ec', '#5b4c40', 0.55); scene.add(hemi);
 // even, all-round daylight: a flat ambient on top of the sky/ground light, so no face of any building sits in a dark shadow
@@ -194,7 +206,7 @@ function updateReflections() {
   const hide = [CH.group, ...(plates ? [...plates.plates, ...plates.walls] : [])];
   const was = hide.map(o => o.visible); hide.forEach(o => o.visible = false);
   const tagWas = unitTagGroup ? unitTagGroup.visible : null; if (unitTagGroup) unitTagGroup.visible = false;
-  cubeCam.position.set(5.5, 7.5, 4.5);
+  if (IS_OSL) cubeCam.position.copy(CH.local(50, 7.5, 6)); else cubeCam.position.set(5.5, 7.5, 4.5);
   cubeCam.update(renderer, scene);
   hide.forEach((o, i) => o.visible = was[i]); if (unitTagGroup) unitTagGroup.visible = tagWas;
   if (reflRT) reflRT.dispose();
@@ -210,7 +222,8 @@ const M = makeMaterials(BASE);
 const leafTex = tex(BASE + 'tex/leaves.jpg', { wrap: false });
 const leafAlpha = tex(BASE + 'tex/leaves_a.png', { wrap: false, srgb: false });
 const forest = new Forest(leafTex, M.bark, groundY, leafAlpha);
-if (IS_PH) forest.focus = [-50, 205];   // full-detail trees round The Print House instead of Charter House
+if (IS_PH) forest.focus = [-50, 205];
+if (IS_OSL) forest.focus = [37, -14];   // full-detail trees round The Print House instead of Charter House
 const lampHeads = [], festoon = [];
 
 let crowd = null;
@@ -221,6 +234,7 @@ let wallsData = null;   // world positions of landmarks, filled in once the map 
 const CHURCHGATE = [[-145, -11.5], [-121, -8.9], [-104, -7.5], [-85, -6.8], [-62, -6.5], [-30, -6.6], [0, -6.6], [24, -6.6], [34.6, -4.9], [42.2, -1.6], [50.8, 5.7], [58.7, 13.3]];
 const roadZ = (x) => { for (let i = 0; i < CHURCHGATE.length - 1; i++) { const a = CHURCHGATE[i], b = CHURCHGATE[i + 1]; if (x >= a[0] && x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return null; };
 async function build() {
+  if (IS_OSL) return buildOSLScene();
   const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + 'world.json').then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
   setTerrain(W.terrain); setMid(F.mid); wallsData = wallsJson;
   W.bld.push(...(F.bld || []));
@@ -329,6 +343,33 @@ async function build() {
   const lob = new THREE.PointLight('#ffd7a0', 0, 7, 1.8); lob.position.set(8.9, 2.6, -0.8); scene.add(lob); lampLights.push(lob);
 }
 
+// Oldham Street Lofts: Hyde town centre from OpenStreetMap (terraces filled in), the block and the townhouses
+async function buildOSLScene() {
+  const W = await fetch(BASE + 'world_osl.json').then(r => r.json());
+  setTerrain(W.terrain, true);
+  CH = buildOSL(M, { groundAt, forest, base: BASE }); scene.add(CH.group); festoon.push(...CH.bulbs);
+  plates = { plates: [], walls: [] }; furniture = { groups: [], materials: {} };
+  buildFloorGlow();
+  const site = (x, z) => { const s = x * 0.8387 - z * 0.5446, t = x * 0.5446 + z * 0.8387; return s > -3 && s < 66 && t > -1 && t < 18; };
+  worldGroup = buildWorld(W, M, BASE, forest, { tex, splat: 'world_osl_splat.png', keepOut: [site], far: false });
+  scene.add(worldGroup);
+  // the residents' garden birches
+  for (const [s, t, h] of [[49.8, 12.4, 6.5], [51.4, 14.9, 6.0]]) { const p = CH.local(s, 0, -t); forest.add(p.x, p.z, { h, r: 1.9, kind: 'birch', seed: 8800 + s, y: CH.y0 + 0.05 }); }
+  treesGroup = forest.build(Q !== 'low');
+  scene.add(treesGroup);
+  const bulbGeo = new THREE.SphereGeometry(0.045, 8, 6);
+  festoonMesh = new THREE.InstancedMesh(bulbGeo, new THREE.MeshBasicMaterial({ color: '#ffd59a' }), Math.max(1, festoon.length));
+  festoon.forEach((p, i) => festoonMesh.setMatrixAt(i, new THREE.Matrix4().setPosition(p)));
+  scene.add(festoonMesh);
+  // camera presets: the corner (the hero CGI), the courtyard and walkway, along Syddall Street, from above
+  HERO.pos.copy(CH.local(83, 24, 22)); HERO.tgt.copy(CH.local(50, 3.5, -7));
+  VIEWS.front = { pos: HERO.pos.clone(), tgt: HERO.tgt.clone() };
+  VIEWS.rear = { pos: CH.local(30, 20, -44), tgt: CH.local(47, 4, -9) };
+  VIEWS.street = { pos: CH.local(-3, 10, 5.5), tgt: CH.local(38, 3.5, -3) };   // over Syddall Street from Henry Street, the terrace stepping down to the block
+  VIEWS.above = { pos: CH.local(36, 82, 30), tgt: CH.local(34, 0, -8) };
+  const c = CH.local(32, 0, -8); CLAMP.x0 = c.x - 70; CLAMP.x1 = c.x + 70; CLAMP.z0 = c.z - 70; CLAMP.z1 = c.z + 70; CLAMP.y1 = SY() + 30;
+}
+
 // ------------------------------------------------------------------ time of day
 const SUN_DIR = new THREE.Vector3();
 const PRESETS = {
@@ -337,7 +378,8 @@ const PRESETS = {
   dusk: { sun: [-0.9, 0.03, -0.42], col: '#ff9a62', I: 0.22, shadowK: 0.3, amb: 0.12, envG: '#3a3330', hemi: ['#5874a8', '#3a322c', 0.8], exp: 0.95, sky: [3.0, 3.6, 0.008, 0.9], fog: ['#3a4560', 260, 3200], haze: 7000, rooms: 1.85, lamps: 1.0, env: 0.42, trans: 0.4, cl: [[0.32, 0.3, 0.42], [0.1, 0.1, 0.16], 0.56, 0.85] },
 };
 // The Print House: a midday sun from the south lights the garden walkways (the CGI's side) rather than Churchgate
-if (IS_PH) { PRESETS.day.sun = [0.42, 0.78, 0.6]; PRESETS.golden.sun = [-0.17, 0.2, 0.96]; }   // evening sun from the south-west, low across the garden
+if (IS_PH) { PRESETS.day.sun = [0.42, 0.78, 0.6]; PRESETS.golden.sun = [-0.17, 0.2, 0.96]; }
+if (IS_OSL) { PRESETS.day.sun = [-0.55, 0.7, -0.46]; }   // warm light across the Syddall Street frontage, as the hero CGI   // evening sun from the south-west, low across the garden
 let tod = 'day';
 function applyTOD(name) {
   name = 'day';   // sunny everywhere: no time-of-day switching
@@ -373,7 +415,7 @@ function applyTOD(name) {
   if (festoonMesh) { festoonMesh.material.color.set(P.lamps > 0.2 ? '#ffd59a' : '#5e5850'); festoonMesh.material.color.multiplyScalar(P.lamps > 0.2 ? 1 + P.lamps * 3 : 1); }
   if (M.bulb) M.bulb.color.set(P.lamps > 0.2 ? '#ffe2b0' : '#cfc8bb').multiplyScalar(P.lamps > 0.2 ? 2.5 : 1);
   townUniforms.uLit.value = P.lamps > 0.5 ? 1 : P.lamps > 0.05 ? 0.35 : 0;
-  M.ctxLit.emissiveIntensity = 0.02 + P.lamps * 1.8;
+  if (M.ctxLit) M.ctxLit.emissiveIntensity = 0.02 + P.lamps * 1.8;
   roomBase = P.rooms;
   if (S.mode === 'walk' || S.mode === 'entering') aptLights.forEach(l => l.intensity = (l.userData.I || 0) * lampScale());
   if (furniture && furniture.materials.shade) furniture.materials.shade.emissiveIntensity = P.lamps > 0.5 ? 2.4 : P.lamps > 0.05 ? 0.9 : 0.35;
@@ -468,6 +510,7 @@ function stepFlight(dt) {
 
 // section plane (floor cut-away)
 let cutTarget = 999;
+const cutY = (f) => SY() + f * FH + 1.32 + (IS_OSL && f === 0 ? Math.max(...CH.houseFloors) : 0);   // Oldham Street: clear the townhouses' raised ground floors too
 function setCut(y) { cutTarget = y; if (CUT.constant > 500 && y < 500) CUT.constant = 16; }
 
 // ------------------------------------------------------------------ views
@@ -549,11 +592,19 @@ $('#btn-area').onclick = () => toggleArea();
 
 function floorView(f) {
   const y = f * FH;
+  if (IS_OSL) return f === 0 ? { pos: CH.local(30, y + 54, 44), tgt: CH.local(27, y + 0.5, -7.5) } : { pos: CH.local(60, y + 25, 15), tgt: CH.local(50, y + 0.5, -7.5) };
   if (IS_PH) return { pos: CH.local(-12, y + 27, -17), tgt: CH.local(12, y + 0.5, 9) };
   return { pos: new THREE.Vector3(-17, y + 25, -21), tgt: new THREE.Vector3(10.5, y + 0.5, 9.5) };
 }
 let viewAlt = 0;   // 0: from the street side, 1: from the opposite side
 function unitView(u, alt = viewAlt) {
+  if (IS_OSL) {
+    const [a, b, c, d] = u.fp, y = u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : u.floor * FH, cu = (a + c) / 2, cv = (b + d) / 2;
+    const tgt = CH.local(cu, y + 0.5, cv);
+    const pos = u.house ? CH.local(cu + 5, y + 17, cv + 15) : (b < -10) ? CH.local(cu + 14, y + 16, cv + 4) : CH.local(cu + 4, y + 15, cv + 13);
+    if (alt === 1) { const h = pos.clone().sub(tgt); pos.set(tgt.x - h.x, pos.y, tgt.z - h.z); }
+    return { pos, tgt };
+  }
   if (IS_PH) {
     const [a, b, c, d] = u.fp, y = u.floor * FH, cu = (a + c) / 2, cv = (b + d) / 2;
     const tgt = CH.local(cu, y + 0.5, cv);
@@ -610,16 +661,16 @@ function toExplore(fly = true) {
 function toFloor(f, fly = true) {
   dropOverlays();
   S.mode = 'floor'; S.floor = f; S.plot = null; gtaoTried = false;
-  setCut(SY() + f * FH + 1.32); showPlates(f); buildUnitTags(f);
+  setCut(cutY(f)); showPlates(f); buildUnitTags(f);
   if (fly) { const v = floorView(f); flyTo(v.pos, v.tgt, 1.7); }
   renderPanel(); setHash('floor-' + (f === 0 ? 'g' : f));
 }
 function toUnit(plot, fly = true) {
   const u = unitByPlot.get(plot); if (!u) return;
   dropOverlays();
-  if (S.floor !== u.floor) { S.floor = u.floor; setCut(SY() + u.floor * FH + 1.32); showPlates(u.floor); buildUnitTags(u.floor); }
+  if (S.floor !== u.floor) { S.floor = u.floor; setCut(cutY(u.floor)); showPlates(u.floor); buildUnitTags(u.floor); }
   S.mode = 'unit'; S.plot = plot; buildWinPins(u);
-  if (!IS_PH) setTimeout(() => prebuildApartment(plot), 1800);
+  if (!PLANF) setTimeout(() => prebuildApartment(plot), 1800);
   if (fly) { const v = unitView(u); flyTo(v.pos, v.tgt, 1.5); }
   renderPanel(); setHash('plot-' + plot);
 }
@@ -790,11 +841,12 @@ function viewDirs(u) {
   const ws = CH.windows.filter(w => w.plot === u.plot), seen = new Map();
   for (const w of ws) { const k = Math.round(Math.atan2(w.normal.x, w.normal.z) / (Math.PI / 4)); if (!seen.has(k)) seen.set(k, []); seen.get(k).push(w); }
   // The Print House: read the window's face off the plan (n is the plan normal: -v the St Joseph's side, -u Fletcher Street)
-  const hint = IS_PH ? (n, w) => { const [pu, pv] = w.n; return pv < -0.5 ? 'to St Joseph\u2019s Church and the primary school' : pu < -0.5 ? 'along Fletcher Street, over the hedge and cobbled wall' : pu > 0.5 && w.id && w.id[0] === 'S' ? 'out of the quiet end of the block, towards St Joseph\u2019s' : 'over the residents\u2019 garden'; }
+  const hint = IS_OSL ? (n, w) => { const [nu, nv] = w.n; return nv > 0.5 ? 'across Syddall Street to the terraces opposite' : nu > 0.5 ? 'over Oldham Street towards Market Street and the Town Hall' : nu < -0.5 ? 'down into the residents’ garden' : 'over the courtyard and the gardens'; }
+    : IS_PH ? (n, w) => { const [pu, pv] = w.n; return pv < -0.5 ? 'to St Joseph\u2019s Church and the primary school' : pu < -0.5 ? 'along Fletcher Street, over the hedge and cobbled wall' : pu > 0.5 && w.id && w.id[0] === 'S' ? 'out of the quiet end of the block, towards St Joseph\u2019s' : 'over the residents\u2019 garden'; }
     : (n) => n.x < -0.7 ? 'across Harvey Street to St Mary\u2019s Gate, with St Mary\u2019s tower above the rooftops' : n.z < -0.7 ? 'across Churchgate to the play park and the big trees' : 'over the residents\u2019 courtyard garden';
   const out = [...seen.values()].map(list => { const w = list[Math.floor(list.length / 2)]; return { w, label: compassWord(w.normal).replace(/^./, c => c.toUpperCase()), hint: hint(w.normal, w) }; });
   // the corner apartments' end window: the view straight down Churchgate to St Mary's and the Market Hall (Charlie's selling point)
-  if (!IS_PH && (u.type === '2A' || u.type === '1D') && PLACES.tower) {
+  if (!PLANF && (u.type === '2A' || u.type === '1D') && PLACES.tower) {
     const end = ws.filter(w => w.normal.x < -0.7).sort((a, b) => a.pos.z - b.pos.z)[0];
     if (end) out.unshift({ w: end, label: 'Down Churchgate', hint: 'straight down Churchgate to St Mary\u2019s Church and the Market Hall', target: new THREE.Vector3(...PLACES.tower) });
   }
@@ -811,7 +863,7 @@ function seeView(plot, idx = 0, wo = null) {
   S.plot = plot; setCut(999); CUT.constant = 999; showPlates(null); clearUnitTags();
   if (clayOn) { clayForView = true; setClay(false); }   // the view from a window always shows the real street
   S.mode = 'view'; controls.enabled = false;
-  const eye = w.pos.clone().addScaledVector(w.normal, 0.3); eye.y = SY() + u.floor * FH + 1.5;   // at the glass, so nothing blocks the view
+  const eye = w.pos.clone().addScaledVector(w.normal, 0.3); eye.y = IS_OSL ? w.pos.y + 0.15 : SY() + u.floor * FH + 1.5;   // at the glass, so nothing blocks the view
   look.base.copy(eye); look.dir.copy(w.normal); look.yaw = look.ty = 0; look.pitch = look.tp = -0.04;
   const D = wo ? null : dirs[idx];
   if (D && D.target) { look.dir.copy(D.target).sub(eye).setY(0).normalize(); look.pitch = look.tp = -0.12; }   // looking down the street from the top floor
@@ -845,7 +897,7 @@ function closeView() {
 }
 function compassWord(n) {
   // model -> geographic bearing (true north from the OpenStreetMap fit: north = (-0.576, -0.818))
-  const N = new THREE.Vector2(-0.576, -0.818), E = new THREE.Vector2(0.818, -0.576);
+  const N = IS_OSL ? new THREE.Vector2(0, -1) : new THREE.Vector2(-0.576, -0.818), E = IS_OSL ? new THREE.Vector2(1, 0) : new THREE.Vector2(0.818, -0.576);   // Hyde's model is laid out east / south
   const v = new THREE.Vector2(n.x, n.z);
   const b = (Math.atan2(v.dot(E), v.dot(N)) * 180 / Math.PI + 360) % 360;
   return ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(b / 45) % 8];
@@ -877,7 +929,7 @@ function renderBack() {
 }
 const NO_INSIDE = true;   // demo meeting: Step inside switched off (interiors, panoramas and code all kept; set false to bring it back)
 const FLOOR_PHOTO = {};
-const FP_PRE = IS_PH ? 'floors/ph_floor' : 'floors/floor';
+const FP_PRE = IS_OSL ? 'floors/osl_floor' : IS_PH ? 'floors/ph_floor' : 'floors/floor';
 for (let f = 0; f < FLOORS.length; f++) fetch(BASE + FP_PRE + f + '.jpg', { method: 'HEAD', cache: 'no-store' }).then(r => { if (r.ok) { FLOOR_PHOTO[f] = BASE + FP_PRE + f + '.jpg?v=' + (r.headers.get('last-modified') || '').replace(/\W/g, ''); if (S.mode === 'floor' && S.floor === f) renderPanel(); } }).catch(() => {});
 function openPhoto(f) {
   let d = $('#photobox');
@@ -932,8 +984,8 @@ function renderPanel() {
     const f = S.hoverFloor ?? (FLOORS.length - 1);
     const fu = floorUnits(f), fa = avail(fu);
     html = `<div class="pscroll">
-      <div class="ph"><span class="label">${IS_PH ? 'Phase three now selling' : 'Private pre-launch'} · ${UNITS.length - allAv.length} of ${UNITS.length} already secured</span><h1>Choose your floor</h1>
-      <p>Hover over a floor and its rooms light up. Click it to open the floor plan, then pick an apartment and step inside.</p></div>
+      <div class="ph"><span class="label">${IS_OSL ? 'Private preview' : IS_PH ? 'Phase three now selling' : 'Private pre-launch'} · ${UNITS.length - allAv.length} of ${UNITS.length} already secured</span><h1>Choose your floor</h1>
+      <p>${IS_OSL ? 'Hover over a floor and its homes light up. Click it to open the floor up, then pick an apartment or a townhouse.' : 'Hover over a floor and its rooms light up. Click it to open the floor plan, then pick an apartment and step inside.'}</p></div>
       <div class="levelbig"><span class="lv">Level</span><span class="n num" id="lvn">${floorWord(f)}</span>
         <div class="meta"><span><b>${fa.length}</b> of ${fu.length} available</span>${fa.length ? `<span>from <b>${fmtGBP(Math.min(...fa.map(u => u.price)))}</b></span>` : ''}<span>${FLOORS[f].note || FLOORS[f].name}</span></div></div>
       <div class="floors" role="list">${FLOORS.map(F => F.id).reverse().map(k => {
@@ -942,7 +994,7 @@ function renderPanel() {
       }).join('')}</div>
       <div class="legend"><span><i class="dot"></i>Available</span><span><i class="dot reserved"></i>Reserved</span><span><i class="dot legals"></i>Sale agreed</span>${UNITS.some(u => st(u).key === 'sold') ? '<span><i class="dot sold"></i>Sold</span>' : ''}</div>
     </div>
-    <div class="pfoot"><span class="note">One and two bedroom apartments from <b class="num" style="color:var(--ink)">${fmtGBP(from)}</b></span><a class="btn wa" href="${waLink()}" target="_blank" rel="noopener">${waIcon}WhatsApp Charlie</a></div>`;
+    <div class="pfoot"><span class="note">${IS_OSL ? 'One bedroom apartments and townhouses' : 'One and two bedroom apartments'} from <b class="num" style="color:var(--ink)">${fmtGBP(from)}</b></span><a class="btn wa" href="${waLink()}" target="_blank" rel="noopener">${waIcon}WhatsApp Charlie</a></div>`;
   } else if (S.mode === 'floor') {
     const f = S.floor, fu = floorUnits(f), fa = avail(fu);
     html = `<div class="pscroll">
@@ -957,7 +1009,7 @@ function renderPanel() {
     <div class="pfoot"><span class="note">Prices and availability live from Brik Studios</span></div>`;
   } else if (S.mode === 'unit') {
     const u = unitByPlot.get(S.plot), s = st(u);
-    const R = rentFor(u, IS_PH), rent = R.pcm;
+    const R = rentFor(u, RK), rent = R.pcm;
     const yld = (rent * 12 / u.price * 100).toFixed(1);
     const scy = Math.round(u.sqft * SITE.serviceCharge), scm = Math.round(scy / 12);
     const canBuy = u.status === 'Available';
@@ -967,15 +1019,15 @@ function renderPanel() {
       <div class="uhead"><div><span class="label">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''}</span><h2>Plot ${u.plot}</h2></div><span class="status ${s.key}">${s.label}</span></div>
       <div class="acts uacts">
         ${NO_INSIDE ? '' : `<button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : hasPano ? 'Step inside · 360°' : 'Step inside'}</button>`}
-        <button class="btn ${NO_INSIDE ? 'brass' : 'ghost'}" data-act="view">View from window</button>
-        <button class="btn ghost" data-act="door">Walk to the door</button>
+        <button class="btn ${NO_INSIDE ? 'brass' : 'ghost'}${IS_OSL ? ' wide' : ''}" data-act="view">View from window</button>
+        ${IS_OSL ? '' : '<button class="btn ghost" data-act="door">Walk to the door</button>'}
       </div>
       <div class="facts"><div><span class="label">Price</span><b class="num">${fmtGBP(u.price)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
-      <div class="acts uacts"><button class="btn ghost angle" data-act="angle" data-a="0" aria-pressed="${viewAlt === 0}">${IS_PH ? 'Front angle' : 'Street-side angle'}</button><button class="btn ghost angle" data-act="angle" data-a="1" aria-pressed="${viewAlt === 1}">${IS_PH ? 'Garden-side angle' : 'Other-side angle'}</button></div>
+      <div class="acts uacts"><button class="btn ghost angle" data-act="angle" data-a="0" aria-pressed="${viewAlt === 0}">${IS_OSL ? 'Street angle' : IS_PH ? 'Front angle' : 'Street-side angle'}</button><button class="btn ghost angle" data-act="angle" data-a="1" aria-pressed="${viewAlt === 1}">${IS_OSL ? 'Courtyard angle' : IS_PH ? 'Garden-side angle' : 'Other-side angle'}</button></div>
       <div class="acts uacts"><button class="btn ghost" data-act="plan">Floor plan</button><button class="btn ghost more" data-act="details">All details<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M7 17 17 7M9 7h8v8"/></svg></button></div>
       <button class="morehint" data-act="details">Lease, service charge, yield and floor plan <span>Open ›</span></button>
     </div>`;
-    UDET = `<div class="uhead"><div><span class="label">Apartment ${u.apt} · type ${u.type}</span><h2>Plot ${u.plot}</h2><div class="sub">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''} · ${u.sqft} sq ft (${sqm(u.sqft)} m²)</div></div><span class="status ${s.key}">${s.label}</span></div>
+    UDET = `<div class="uhead"><div><span class="label">${u.house ? 'Townhouse' : 'Apartment ' + u.apt} · type ${u.type}</span><h2>Plot ${u.plot}</h2><div class="sub">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''} · ${u.sqft} sq ft (${sqm(u.sqft)} m²)</div></div><span class="status ${s.key}">${s.label}</span></div>
       <div class="price"><b class="num">${fmtGBP(u.price)}</b><span>${canBuy ? `£${SITE.reservation.toLocaleString('en-GB')} reserves it` : 'No longer available'}</span></div>
       <div class="money">
         <div class="rentbox"><span class="label">Forecast rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b><span>${yld}% gross yield${R.why.length ? ' · ' + R.why.join(', ') : ''}</span></div>
@@ -983,8 +1035,8 @@ function renderPanel() {
       </div>
       <p class="aspect">${u.view}.</p>
       ${pitchHTML(u, canBuy)}
-      <img class="planimg" src="${BASE}plans/${IS_PH ? 'ph_type_' + u.type : 'unit' + u.plot}.jpg" alt="Floor plan of plot ${u.plot}">
-      <div class="proof">${PROOF.map(r => `<div><span>${r.k}</span><span>${r.v}</span></div>`).join('')}${canBuy ? `<div><span>Reserve</span><span>${RESERVE(SITE.reservation)}</span></div>` : ''}</div>
+      <img class="planimg" src="${BASE}plans/${IS_OSL ? 'osl_type_' + u.type.replace('+', 'plus') : IS_PH ? 'ph_type_' + u.type : 'unit' + u.plot}.jpg" alt="Floor plan of plot ${u.plot}">
+      <div class="proof">${PROOFS.map(r => `<div><span>${r.k}</span><span>${r.v}</span></div>`).join('')}${canBuy ? `<div><span>Reserve</span><span>${RESERVE(SITE.reservation)}</span></div>` : ''}</div>
       <div class="kv">
         <div><span>Forecast rent (Brik estimate)</span><span class="num">${fmtGBP(rent)} pcm</span></div>
         <div><span>Gross yield at that rent</span><span class="num">${yld}%</span></div>
@@ -1012,7 +1064,7 @@ function unitRow(u) {
   return `<button class="urow ${s.key} ${S.hoverPlot === u.plot ? 'hover' : ''}" data-plot="${u.plot}" ${S.plot === u.plot ? 'aria-current="true"' : ''}>
     <span class="pl num">${u.plot}${PICKS[u.plot] ? '<span class="pick">Pick</span>' : ''}<small>${u.apt}</small></span>
     <span class="d"><span>${u.beds} bed · ${u.sqft} sq ft</span><span>${u.note}</span></span>
-    <span class="pr"><span class="num">${fmtGBP(u.price)}</span><small class="rentl">${fmtGBP(rentFor(u, IS_PH).pcm)} pcm</small><span class="status ${s.key}" style="margin-top:6px">${s.label}</span></span></button>`;
+    <span class="pr"><span class="num">${fmtGBP(u.price)}</span><small class="rentl">${fmtGBP(rentFor(u, RK).pcm)} pcm</small><span class="status ${s.key}" style="margin-top:6px">${s.label}</span></span></button>`;
 }
 $('#panel').addEventListener('click', (e) => {
   const b = e.target.closest('[data-floor],[data-plot],[data-act]'); if (!b) return;
@@ -1023,8 +1075,8 @@ $('#panel').addEventListener('click', (e) => {
   if (b.dataset.act === 'floor') return toFloor(+b.dataset.floor);
   if (b.dataset.act === 'door') return walkToDoor(S.plot);
   if (b.dataset.act === 'walk3d') return stepInside(S.plot);
-  if (b.dataset.act === 'inside' && !IS_PH) { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; return; } }
-  if (b.dataset.act === 'inside') return IS_PH ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))) : stepInside(S.plot);
+  if (b.dataset.act === 'inside' && !PLANF) { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; return; } }
+  if (b.dataset.act === 'inside') return PLANF ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))) : stepInside(S.plot);
   if (b.dataset.act === 'view') return seeView(S.plot);
   if (b.dataset.act === 'plan') { showPlan('card'); $('#zoomplan').classList.add('on'); return; }
   if (b.dataset.plot) return toUnit(+b.dataset.plot);
@@ -1038,7 +1090,7 @@ $('#panel').addEventListener('pointerover', (e) => {
 $('#panel').addEventListener('pointerleave', () => { if (S.mode === 'explore') setHoverFloor(null); S.hoverPlot = null; });
 function showPlan(k) {
   const pu = unitByPlot.get(S.plot);
-  $('#zp-img').src = IS_PH ? (k === 'card' ? `${BASE}plans/ph_type_${pu.type}.jpg` : `${BASE}plans/ph_floor_${pu.floor}.jpg`) : k === 'card' ? `${BASE}plans/unit${S.plot}.jpg` : `${BASE}plans/plot${S.plot}.png`;
+  $('#zp-img').src = IS_OSL ? (k === 'card' ? `${BASE}plans/osl_type_${pu.type.replace('+', 'plus')}.jpg` : `${BASE}plans/osl_floor_${pu.floor}.jpg`) : IS_PH ? (k === 'card' ? `${BASE}plans/ph_type_${pu.type}.jpg` : `${BASE}plans/ph_floor_${pu.floor}.jpg`) : k === 'card' ? `${BASE}plans/unit${S.plot}.jpg` : `${BASE}plans/plot${S.plot}.png`;
   document.querySelectorAll('[data-zp]').forEach(b => b.dataset.zp !== 'close' && b.setAttribute('aria-pressed', b.dataset.zp === k));
 }
 $('#zoomplan').onclick = (e) => { const b = e.target.closest('[data-zp]'); if (b && b.dataset.zp !== 'close') { showPlan(b.dataset.zp); return; } $('#zoomplan').classList.remove('on'); };
@@ -1057,7 +1109,7 @@ function setHoverFloor(f) {
 // ------------------------------------------------------------------ hover glow: the floor lights up like a lantern band
 const floorGlow = []; const unitGlow = [];
 function buildFloorGlow() {
-  const out = IS_PH ? CH.outlinePlan.map(([u, v]) => [u, -v]) : [[0, 0], [10.9, 0], [10.9, -0.34], [22.61, -0.34], [22.61, 11.03], [11.7, 11.03], [11.7, 21.27], [0.34, 21.27], [0.34, 9.2], [0, 9.2]];
+  const out = PLANF ? CH.outlinePlan.map(([u, v]) => [u, -v]) : [[0, 0], [10.9, 0], [10.9, -0.34], [22.61, -0.34], [22.61, 11.03], [11.7, 11.03], [11.7, 21.27], [0.34, 21.27], [0.34, 9.2], [0, 9.2]];
   let area = 0; for (let i = 0; i < out.length; i++) { const a = out[i], b = out[(i + 1) % out.length]; area += a[0] * b[1] - b[0] * a[1]; }
   const o = 0.16;
   const offBy = (sg) => out.map((p, i) => {
@@ -1078,7 +1130,7 @@ function buildFloorGlow() {
     const lm = new THREE.LineBasicMaterial({ color: '#ffe2ae', transparent: true, opacity: 0, toneMapped: false, depthWrite: false });
     const lines = new THREE.LineSegments(eg, lm); lines.renderOrder = 4;
     mesh.visible = lines.visible = false;
-    if (IS_PH) for (const o of [mesh, lines]) { o.position.copy(CH.group.position); o.quaternion.copy(CH.group.quaternion); }
+    if (PLANF) for (const o of [mesh, lines]) { o.position.copy(CH.group.position); o.quaternion.copy(CH.group.quaternion); }
     scene.add(mesh, lines); floorGlow.push({ mesh, lines, v: 0 });
   }
 }
@@ -1089,7 +1141,7 @@ let unitTagGroup = null, unitTags = [];
 // doors, the stair flights, each core flat's front door, and a brass route from the walkway to the chosen flat
 const CORE_DOORS = { '2A': { at: [10.05, 6.2], axis: 'x', w: 0.95 }, '1C': { at: [6.72, 8.25], axis: 'z', w: 0.95 } };
 function buildCore(f) {
-  if (IS_PH || f === 0) return;
+  if (PLANF || f === 0) return;
   const y = f * FH, G = new THREE.Group(); G.name = 'core' + f;
   const mat = (c, r = 0.6, mt = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: mt, clippingPlanes: [CUT] });
   const stone = mat('#cfc8bb', 0.45), steel = mat('#8c9397', 0.3, 0.85), shaft = mat('#5b5f63', 0.7), tread = mat('#b8ad9c', 0.6), door = mat('#20372d', 0.45), brass = mat('#c49a55', 0.3, 1);
@@ -1125,7 +1177,7 @@ let bathGroup = null;
 function clearBaths() { if (bathGroup) { scene.remove(bathGroup); bathGroup = null; } }
 // shower rooms on the cut-away floor: the walk-through apartment's sanitaryware, clipped at the cut like the walls
 function buildBaths(f) {
-  clearBaths(); if (IS_PH) return;
+  clearBaths(); if (PLANF) return;
   const g = new THREE.Group(); g.name = 'baths' + f; bathGroup = g; scene.add(g);
   const list = floorUnits(f).slice(), KEEP = new Set(['apt_ceramic', 'apt_chrome', 'apt_showerGlass', 'apt_marble', 'apt_oak', 'apt_brass', 'apt_mirror']);
   const step = () => {
@@ -1144,13 +1196,13 @@ function buildBaths(f) {
 let winPins = [];
 function clearWinPins() { winPins.forEach(p => p.el.remove()); winPins = []; }
 function buildWinPins(u) {
-  clearWinPins(); if (IS_PH) return;
-  CH.windows.filter(w => w.plot === u.plot).forEach((w) => {
+  clearWinPins();
+  CH.windows.filter(w => w.plot === u.plot && !(u.house && !/[gr]$/.test(w.id))).forEach((w) => {
     const el = document.createElement('button'); el.className = 'winpin'; el.setAttribute('aria-label', 'View from this window');
     el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M12 3v18M5 12h14"/></svg><span>View</span>';
     el.onclick = (e) => { e.stopPropagation(); seeView(u.plot, 0, w); };
     $('#labels').appendChild(el);
-    const p = w.pos.clone().addScaledVector(w.normal, -0.25); p.y = SY() + u.floor * FH + 1.0;
+    const p = w.pos.clone().addScaledVector(w.normal, -0.25); p.y = PLANF ? Math.min(w.pos.y, SY() + u.floor * FH + 1.0 + (u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : 0)) : SY() + u.floor * FH + 1.0;
     winPins.push({ el, p });
   });
 }
@@ -1163,7 +1215,7 @@ function buildUnitTags(f) {
   clearUnitTags();
   unitTagGroup = new THREE.Group();
   for (const u of floorUnits(f)) {
-    const [x0, z0, x1, z1] = IS_PH ? [u.fp[0], -u.fp[3], u.fp[2], -u.fp[1]] : u.fp, y = f * FH + 0.07, i = 0.16;
+    const [x0, z0, x1, z1] = PLANF ? [u.fp[0], -u.fp[3], u.fp[2], -u.fp[1]] : u.fp, y = (u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : f * FH) + 0.07, i = 0.16;
     const col = new THREE.Color(st(u).color);
     const g = new THREE.PlaneGeometry(x1 - x0 - 2 * i, z1 - z0 - 2 * i); g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, y, (z0 + z1) / 2);
     // multiplicative tint: works on the HDR floor before tone mapping, so it reads in bright sun too
@@ -1193,12 +1245,12 @@ function buildUnitTags(f) {
     el.onclick = () => toUnit(u.plot);
     el.onpointerenter = () => { S.hoverPlot = u.plot; }; el.onpointerleave = () => { S.hoverPlot = null; };
     $('#labels').appendChild(el);
-    const tp = new THREE.Vector3((x0 + x1) / 2, y + 0.2, (z0 + z1) / 2); if (IS_PH) tp.applyMatrix4(CH.group.matrixWorld);
+    const tp = new THREE.Vector3((x0 + x1) / 2, y + 0.2, (z0 + z1) / 2); if (PLANF) tp.applyMatrix4(CH.group.matrixWorld);
     const vg = new THREE.BoxGeometry(x1 - x0 - 2 * i + 0.1, 1.12, z1 - z0 - 2 * i + 0.1); vg.translate((x0 + x1) / 2, f * FH + 0.64, (z0 + z1) / 2);
     const veil = new THREE.Mesh(vg, new THREE.MeshBasicMaterial({ color: '#2b2723', transparent: true, opacity: 0, depthWrite: false, toneMapped: false, side: THREE.DoubleSide })); veil.renderOrder = 8; veil.visible = false; unitTagGroup.add(veil);
     unitTags.push({ el, plot: u.plot, p: tp, mesh, edge, veil });
   }
-  if (IS_PH) { unitTagGroup.position.copy(CH.group.position); unitTagGroup.quaternion.copy(CH.group.quaternion); try { unitTagGroup.add(buildPHFitout(floorUnits(f), f, FH, phFurnMats ||= furnitureMaterials(BASE))); } catch (e) { console.warn('ph fit-out', e); } }
+  if (PLANF) { unitTagGroup.position.copy(CH.group.position); unitTagGroup.quaternion.copy(CH.group.quaternion); try { unitTagGroup.add((IS_OSL ? (a, b, c, d) => buildOSLFitout(a, b, c, d, CH.houseFloors) : buildPHFitout)(floorUnits(f), f, FH, phFurnMats ||= furnitureMaterials(BASE))); } catch (e) { console.warn('ph fit-out', e); } }
   else {   // the stair and lift core every front door is reached from
     const el = document.createElement('div'); el.className = 'tag core'; el.innerHTML = `<div class="b"><strong>⇅</strong><em>${f === 0 ? 'Entrance · stairs and lift' : 'Stairs and lift · walkway'}</em></div><div class="stem"></div><div class="pin"></div>`;
     $('#labels').appendChild(el); unitTags.push({ el, plot: -1, p: new THREE.Vector3(8.8, f * FH + 0.3, 8.7), mesh: null, edge: null, veil: null });
@@ -1209,7 +1261,10 @@ function buildUnitTags(f) {
 }
 
 // landmark labels: plain street names, plus clickable pins with a sales card (Brik sites, heritage, regeneration)
-const LANDMARKS = IS_PH ? [
+const LANDMARKS = IS_OSL ? [
+  ['Syddall Street', [-4, 0.8, -26]], ['Oldham Street', [62, 0.8, -11]], ['Henry Street', [-12, 0.8, 4]], ['Church Street', [26, 0.8, 22]],
+  ['Market Street', [106, 0.8, -52]], ["Residents' garden", [48, 2.5, -14]], ['Hyde Town Hall', [129, 14, -76]], ['Hyde Central station · 9 min walk', [-8, 3, -330]],
+] : IS_PH ? [
   ['Wellington Street', [-18, 1, 214]], ['Fletcher Street', [-45.5, 1, 185.7]], ['Seaton House · Brik Studios HQ', [-32, 12, 212]], ["Residents' garden", [-49, 3, 210]],
   ["St Joseph's Primary School", [-74, 6, 170]], ["St Joseph's Church", [-128, 16, 207]],
 ] : [
@@ -1218,7 +1273,7 @@ const LANDMARKS = IS_PH ? [
 ];
 const lmEls = LANDMARKS.map(([t, p]) => { const el = document.createElement('div'); el.className = 'ltag'; el.textContent = t; $('#labels').appendChild(el); return { el, name: t, p: new THREE.Vector3(...p) }; });
 const CARD_BY_ID = new Map();
-for (const c of [...AREA_CARDS.map(c => ({ ...c, group: c.kind })), ...REGEN.map(c => ({ ...c, kind: 'regen', group: 'regen' }))]) {
+for (const c of [...AREA_CARDS.map(c => ({ ...c, group: c.kind })), ...(IS_OSL ? [] : REGEN).map(c => ({ ...c, kind: 'regen', group: 'regen' }))]) {
   const el = document.createElement('button'); el.className = 'ltag ' + c.kind; el.innerHTML = `${c.name}<small>${c.tag}</small>`;
   el.setAttribute('aria-label', `${c.name}: ${c.tag}`);
   const l = { el, name: c.name, p: new THREE.Vector3(...(c.pos || [0, 0, 0])), card: c, rel: c.pos ? c.pos[1] : 0 };
@@ -1228,7 +1283,7 @@ for (const c of [...AREA_CARDS.map(c => ({ ...c, group: c.kind })), ...REGEN.map
 }
 function placeLandmarks() {
   for (const l of lmEls) {
-    if (!l.card) { if (IS_PH) l.p.y += groundAt(l.p.x, l.p.z); continue; }
+    if (!l.card) { if (PLANF) l.p.y += groundAt(l.p.x, l.p.z); continue; }
     const c = l.card;
     if (c.id === 'stmarys' && PLACES.tower) { l.p.set(...PLACES.tower); continue; }
     if (c.id === 'market' && PLACES.hall) { l.p.set(...PLACES.hall); continue; }
@@ -1463,7 +1518,7 @@ function playIntro() {
   L.classList.add('intro'); L.classList.remove('done'); $('#panel').classList.add('hide');
   setTimeout(() => {
     flight = null; S.mode = 'explore'; controls.enabled = true;
-    if (IS_PH) { camera.position.copy(HERO.pos).sub(HERO.tgt).multiplyScalar(2.6).add(HERO.tgt).add(new THREE.Vector3(0, 40, 0)); controls.target.copy(HERO.tgt); }
+    if (PLANF) { camera.position.copy(HERO.pos).sub(HERO.tgt).multiplyScalar(2.6).add(HERO.tgt).add(new THREE.Vector3(0, 40, 0)); controls.target.copy(HERO.tgt); }
     else { camera.position.set(-150, 120, -170); controls.target.set(10, 4, 8); }
     camera.lookAt(controls.target);
     L.classList.add('done');
@@ -1476,7 +1531,10 @@ $('#btn-all').onclick = () => { S.showAll = !S.showAll; $('#btn-all').setAttribu
 $('#fm-skip').onclick = () => endFilm(false);
 
 // ------------------------------------------------------------------ gallery + list
-const GALLERY = IS_PH ? [
+const GALLERY = IS_OSL ? [
+  ['osl_hero', 'The corner of Syddall Street and Oldham Street'], ['osl_oldham', 'Oldham Street, with the entrance'], ['osl_court', 'The residents’ garden and the covered walkway'],
+  ['osl_living', 'Kitchen and living room'], ['osl_shower', 'Shower room'],
+] : IS_PH ? [
   ['ph_front', 'Seaton House on Wellington Street: Brik Studios’ new home'], ['ph_court', 'The residents’ garden and the walkways'], ['ph_kitchen', 'Kitchen and living, ground floor'],
   ['ph_bed', 'Bedroom, black accents and oak'], ['ph_bath', 'Shower room in monochrome tile'],
 ] : [
@@ -1488,7 +1546,7 @@ let gi = 0;
 function openGallery(i = 0) { gi = i; $('#gallery').classList.add('on'); showG(); }
 function showG() {
   const [k, cap] = GALLERY[gi];
-  $('#g-img').src = `${BASE}cgi/${k}_${!IS_PH && innerWidth * DPR > 2200 ? '4k' : '2k'}.jpg`;
+  $('#g-img').src = `${BASE}cgi/${k}_${!PLANF && innerWidth * DPR > 2200 ? '4k' : '2k'}.jpg`;
   $('#g-img').onerror = () => { $('#g-img').onerror = null; $('#g-img').src = `${BASE}cgi/${k}_2k.jpg`; };
   $('#g-img').alt = cap; $('#g-cap').textContent = cap;
   document.querySelectorAll('#g-thumbs button').forEach((b, i) => b.setAttribute('aria-current', i === gi));
@@ -1501,12 +1559,13 @@ $('#btn-gallery').onclick = () => openGallery(0);
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('.sheet').classList.remove('on'));
 let lf = 'all';
 function renderList() {
-  const F = [['all', 'All'], ['available', 'Available'], ['1', 'One bedroom'], ['2', 'Two bedroom'], ['u190', 'Under £190k'], IS_PH ? ['park', 'Side block'] : ['park', 'Park facing'], ['corner', 'Corner'], ['picks', 'Charlie’s picks']];
+  const F = IS_OSL ? [['all', 'All'], ['available', 'Available'], ['1', 'Apartments'], ['3', 'Townhouses'], ['u160', 'Under £160k'], ['corner', 'Corner'], ['picks', 'Charlie’s picks']]
+    : [['all', 'All'], ['available', 'Available'], ['1', 'One bedroom'], ['2', 'Two bedroom'], ['u190', 'Under £190k'], IS_PH ? ['park', 'Side block'] : ['park', 'Park facing'], ['corner', 'Corner'], ['picks', 'Charlie’s picks']];
   $('#l-filters').innerHTML = F.map(([k, t]) => `<button class="chip" data-f="${k}" aria-pressed="${lf === k}">${t}</button>`).join('');
-  const test = { all: () => true, available: u => u.status === 'Available', 1: u => u.beds === 1, 2: u => u.beds === 2, u190: u => u.price < 190000 && u.status === 'Available',
-    park: u => IS_PH ? !!u.side : /Park/.test(u.note), corner: u => IS_PH ? (u.type === '2A' || u.type === '1C') : /[Cc]orner/.test(u.note), picks: u => !!PICKS[u.plot] };
-  const rows = UNITS.filter(test[lf] || test.all).sort((a, b) => lf === 'u190' ? a.price - b.price : a.plot - b.plot);
-  $('#l-body').innerHTML = rows.map(u => `<tr class="r" data-plot="${u.plot}"><td><b style="font-family:var(--f-display);font-size:17px">${u.plot}</b> <span style="color:var(--ink-3)">${u.apt}</span>${PICKS[u.plot] ? ' <span class="pick">Pick</span>' : ''}</td><td>${FLOORS[u.floor].name}</td><td>${u.beds} bed · ${u.type}</td><td>${u.sqft} sq ft</td><td style="color:var(--ink-2)">${u.note}</td><td>${fmtGBP(u.price)}</td><td>${fmtGBP(rentFor(u, IS_PH).pcm)} pcm</td><td><span class="status ${st(u).key}">${st(u).label}</span></td></tr>`).join('');
+  const test = { all: () => true, available: u => u.status === 'Available', 1: u => u.beds === 1, 2: u => u.beds === 2, 3: u => u.beds === 3, u160: u => u.price < 160000 && u.status === 'Available', u190: u => u.price < 190000 && u.status === 'Available',
+    park: u => IS_PH ? !!u.side : /Park/.test(u.note), corner: u => IS_PH ? (u.type === '2A' || u.type === '1C') : /[Cc]orner/.test(u.note) || (IS_OSL && u.plot === 1), picks: u => !!PICKS[u.plot] };
+  const rows = UNITS.filter(test[lf] || test.all).sort((a, b) => lf === 'u190' || lf === 'u160' ? a.price - b.price : a.plot - b.plot);
+  $('#l-body').innerHTML = rows.map(u => `<tr class="r" data-plot="${u.plot}"><td><b style="font-family:var(--f-display);font-size:17px">${u.plot}</b> <span style="color:var(--ink-3)">${u.apt}</span>${PICKS[u.plot] ? ' <span class="pick">Pick</span>' : ''}</td><td>${FLOORS[u.floor].name}</td><td>${u.beds} bed · ${u.type}</td><td>${u.sqft} sq ft</td><td style="color:var(--ink-2)">${u.note}</td><td>${fmtGBP(u.price)}</td><td>${fmtGBP(rentFor(u, RK).pcm)} pcm</td><td><span class="status ${st(u).key}">${st(u).label}</span></td></tr>`).join('');
 }
 $('#l-filters').onclick = (e) => { const b = e.target.closest('[data-f]'); if (b) { lf = b.dataset.f; renderList(); } };
 $('#l-body').onclick = (e) => { const r = e.target.closest('[data-plot]'); if (!r) return; $('#list').classList.remove('on'); if (S.mode === 'inside') closeInterior(); if (S.mode === 'view') closeView(); toUnit(+r.dataset.plot); };
@@ -1520,10 +1579,10 @@ function route() {
   let m;
   if ((m = h.match(/^floor-(g|[0-9])$/)) && (m[1] === 'g' || +m[1] < FLOORS.length)) toFloor(m[1] === 'g' ? 0 : +m[1]);
   else if ((m = h.match(/^plot-(\d+)$/)) && unitByPlot.has(+m[1])) toUnit(+m[1]);
-  else if ((m = h.match(/^inside-(\d+)$/)) && unitByPlot.has(+m[1])) { toUnit(+m[1], false); if (IS_PH) openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))); else stepInside(+m[1]); }
+  else if ((m = h.match(/^inside-(\d+)$/)) && unitByPlot.has(+m[1])) { toUnit(+m[1], false); if (PLANF) openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))); else stepInside(+m[1]); }
   else if ((m = h.match(/^view-(\d+)$/)) && unitByPlot.has(+m[1])) { toUnit(+m[1], false); seeView(+m[1]); }
   else if (h === 'gallery') openGallery(0);
-  else if (h === 'film' && !IS_PH) playFilm();
+  else if (h === 'film' && !PLANF) playFilm();
   routing = false;
   return !!h;
 }
@@ -1590,14 +1649,14 @@ function updateHighlights(dt) {
     {
       const g = new THREE.Group(); g.userData.items = [];
       for (const u of floorUnits(hf)) {
-        const [x0, z0, x1, z1] = IS_PH ? [u.fp[0], -u.fp[3], u.fp[2], -u.fp[1]] : u.fp, e = 0.32, b0 = IS_PH ? 0 : SY(), y0 = b0 + hf * FH + 0.12, y1 = b0 + (hf + 1) * FH - 0.12;
+        const [x0, z0, x1, z1] = PLANF ? [u.fp[0], -u.fp[3], u.fp[2], -u.fp[1]] : u.fp, e = 0.32, b0 = PLANF ? 0 : SY(), hy = u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : hf * FH, y0 = b0 + hy + 0.12, y1 = u.house ? y0 + 9.2 : b0 + (hf + 1) * FH - 0.12;
         const col = new THREE.Color(u.status === 'Available' ? '#f4d79a' : '#e3242b');
         const bg = new THREE.BoxGeometry(x1 - x0 + 2 * e - 0.12, y1 - y0, z1 - z0 + 2 * e - 0.12); bg.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
         const fill = new THREE.Mesh(bg, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
         const lines = new THREE.LineSegments(new THREE.EdgesGeometry(bg), new THREE.LineBasicMaterial({ color: col.clone().multiplyScalar(1.3), transparent: true, opacity: 0, toneMapped: false }));
         fill.renderOrder = 4; lines.renderOrder = 5; g.add(fill, lines); g.userData.items.push({ fill, lines });
       }
-      if (IS_PH) { g.position.copy(CH.group.position); g.quaternion.copy(CH.group.quaternion); }
+      if (PLANF) { g.position.copy(CH.group.position); g.quaternion.copy(CH.group.quaternion); }
       g.userData.v = 0; scene.add(g); unitGlow[hf] = g;
     }
   }
@@ -1628,7 +1687,7 @@ function updateLabels() {
   const showLM = (S.mode === 'explore' && !flight) || S.mode === 'view' || (S.mode === 'tour' && !panoOn);
   // sales cards only from the overview distance: up close (street, garden) they would float through the buildings
   const cardsOK = S.area || S.mode === 'view' || (camera.position.distanceTo(controls.target) > 30 && camera.position.y - SY() > 12);
-  if (!occluders) { occluders = []; CH.group.traverse(o => { if (o.isMesh && /brick|slate/.test(o.name)) occluders.push(o); }); contextGroup.traverse(o => { if (o.isMesh && /ctx_(cBrick|cSlate|shed)/.test(o.name)) occluders.push(o); }); }
+  if (!occluders) { occluders = []; CH.group.traverse(o => { if (o.isMesh && /brick|slate/.test(o.name) && !/brickLow/.test(o.name)) occluders.push(o); }); if (contextGroup) contextGroup.traverse(o => { if (o.isMesh && /ctx_(cBrick|cSlate|shed)/.test(o.name)) occluders.push(o); }); }
   if (performance.now() - occT > 350) {
     occT = performance.now();
     for (const l of lmEls) {
@@ -1804,6 +1863,7 @@ let SPOTS = [], spotPins = [], clayForTour = false;
 let PANO_INDEX = [];   // photoreal panoramas present in assets/pano (index.json, written when they are rendered)
 const T = { spot: -1, prev: null, door: null };
 function buildSpots() {
+  if (IS_OSL) { SPOTS = []; return; }
   if (IS_PH) {
     const L = (u, y, v) => CH.local(u, y, v), F = FLOOR_H;
     SPOTS = [
@@ -1832,7 +1892,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793385625`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793390161`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2066,7 +2126,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793385625').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793390161').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
@@ -2088,7 +2148,7 @@ function loop() {
         pre();
         setClay(true); pre(); setClay(false);
         toFloor(1, false); pre();
-        if (!IS_PH) { stepInside(17); stepPathFlight(0.05); walker.update(0.016); pre();
+        if (!PLANF) { stepInside(17); stepPathFlight(0.05); walker.update(0.016); pre();
         restoreFromInterior(); pathFlight = null; pre(); }
         clearInterval(msgTimer); lmsg.textContent = 'Preparing the apartments…';
         await Promise.race([Promise.all(jobs), new Promise(r => setTimeout(r, 25000))]);
@@ -2113,7 +2173,7 @@ function loop() {
         renderPanel(); toggleArea(true);
       } else {
       // cinematic arrival: over the trees on Churchgate, down to the corner
-      if (IS_PH) { camera.position.copy(HERO.pos).sub(HERO.tgt).multiplyScalar(2.6).add(HERO.tgt).add(new THREE.Vector3(0, 40, 0)); controls.target.copy(HERO.tgt); }
+      if (PLANF) { camera.position.copy(HERO.pos).sub(HERO.tgt).multiplyScalar(2.6).add(HERO.tgt).add(new THREE.Vector3(0, 40, 0)); controls.target.copy(HERO.tgt); }
       else { camera.position.set(-70, 62, -78); controls.target.set(10, 4, 8); }
       flyTo(HERO.pos, HERO.tgt, reduceMotion ? 0.01 : 6.2, () => { $('#panel').classList.remove('hide'); });
       renderPanel();
@@ -2122,7 +2182,7 @@ function loop() {
     }
     setTimeout(() => { $('#hint').style.opacity = 0; }, 14000);
     // fit out every flat's interior in idle moments (never during a camera move or a drag), so opening any floor is instant
-    if (!IS_PH) { const todo = UNITS.slice(); const idle = window.requestIdleCallback || ((f) => setTimeout(f, 200));
+    if (!PLANF) { const todo = UNITS.slice(); const idle = window.requestIdleCallback || ((f) => setTimeout(f, 200));
       const next = () => { if (!todo.length) return; if (flight || downAt || pathFlight) return setTimeout(() => idle(next, { timeout: 4000 }), 600); const u = todo.shift(); try { getApartment(u); } catch (e) { console.warn('prebuild', e); } setTimeout(() => idle(next, { timeout: 4000 }), 120); };
       setTimeout(() => idle(next, { timeout: 4000 }), 9000); }
   }, 350);
