@@ -3,8 +3,8 @@
 // Positions are approximate, from Google Earth and the Ollier Smurthwaite site/context drawings.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxGeom, boxUV } from './building.js?v=1793376738';
-import { groundAt } from './world.js?v=1793376738';
+import { boxGeom, boxUV } from './building.js?v=1793378651';
+import { groundAt } from './world.js?v=1793378651';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -524,12 +524,18 @@ export function buildCourtyard(M, forest, festoon) {
     for (let x = x0 + 0.35; x < x1 - 0.2; x += 0.6) for (let z = z0 + 0.35; z < z1 - 0.2; z += 0.6) forest.add(x, z, { kind: (Math.round(x * 3 + z * 5) % 3) ? 'shrub' : 'grass', h: 0.55, r: 0.4, y: y0 + h - 0.06, seed: Math.floor(x * 131 + z * 17) });
     return [x0 + t, z0 + t, x1 - t, z1 - t, y0 + h];
   };
-  const beds = [planter(16.9, 16.4, 20.45, 17.35), planter(19.5, 17.35, 20.45, 21.3), planter(16.9, 20.35, 19.5, 21.3)];
-  // picnic table (timber, A-frame legs) with two benches
-  const tx0 = 17.55, tx1 = 18.35, tz0 = 18.15, tz1 = 19.95;
-  B.add('timber', boxGeom(tx0, y0 + 0.72, tz0, tx1, y0 + 0.77, tz1));
-  for (const [bx0, bx1] of [[tx0 - 0.5, tx0 - 0.2], [tx1 + 0.2, tx1 + 0.5]]) B.add('timber', boxGeom(bx0, y0 + 0.42, tz0, bx1, y0 + 0.46, tz1));
-  for (const z of [tz0 + 0.2, tz1 - 0.25]) { B.add('timber', boxGeom(tx0 - 0.45, y0, z, tx1 + 0.45, y0 + 0.07, z + 0.06)); B.add('timber', boxGeom(tx0 + 0.05, y0, z, tx1 - 0.05, y0 + 0.72, z + 0.06)); }
+  const beds = [planter(19.3, 16.4, 21.45, 17.3), planter(19.5, 17.3, 20.45, 21.3)];
+  // bike store (as the ground-floor plan): two rows of Sheffield stands under a light steel-and-glass canopy, open-sided
+  { const bx0 = 16.55, bx1 = 18.85, bz0 = 16.3, bz1 = 21.15, ch = 2.35;
+    for (let z = bz0 + 0.35; z < bz1 - 0.2; z += 0.55) for (const cx of [17.15, 18.25]) { const st = new THREE.TorusGeometry(0.36, 0.022, 6, 18, Math.PI); st.translate(cx, y0 + 0.44, z); B.add('steel', st); for (const dx of [-0.36, 0.36]) B.add('steel', boxGeom(cx + dx - 0.02, y0, z - 0.02, cx + dx + 0.02, y0 + 0.44, z + 0.02)); }
+    for (const [x, z] of [[bx0, bz0], [bx1, bz0], [bx0, bz1], [bx1, bz1], [bx0, (bz0 + bz1) / 2], [bx1, (bz0 + bz1) / 2]]) B.add('timberBlack', boxGeom(x - 0.05, y0, z - 0.05, x + 0.05, y0 + ch, z + 0.05));
+    B.add('timberBlack', boxGeom(bx0 - 0.1, y0 + ch, bz0 - 0.1, bx1 + 0.1, y0 + ch + 0.1, bz1 + 0.1));
+    B.add('balGlass', boxGeom(bx0 - 0.05, y0 + ch + 0.1, bz0 - 0.05, bx1 + 0.05, y0 + ch + 0.13, bz1 + 0.05)); }
+  // picnic table (timber, A-frame legs) with two benches, on the open paving by the east planters
+  { const tx0 = 19.6, tx1 = 21.4, tz0 = 14.75, tz1 = 15.55;
+    B.add('timber', boxGeom(tx0, y0 + 0.72, tz0, tx1, y0 + 0.77, tz1));
+    for (const [bz0, bz1] of [[tz0 - 0.5, tz0 - 0.2], [tz1 + 0.2, tz1 + 0.5]]) B.add('timber', boxGeom(tx0, y0 + 0.42, bz0, tx1, y0 + 0.46, bz1));
+    for (const x of [tx0 + 0.2, tx1 - 0.25]) { B.add('timber', boxGeom(x, y0, tz0 - 0.45, x + 0.06, y0 + 0.07, tz1 + 0.45)); B.add('timber', boxGeom(x, y0, tz0 + 0.05, x + 0.06, y0 + 0.72, tz1 - 0.05)); } }
   // flowers: blooms over the planters and the garden bed
   const FL = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a', '#f6c1a0'].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
   let fs = 911; const fr = () => ((fs = (fs * 16807) % 2147483647) / 2147483647);

@@ -333,6 +333,27 @@ function buildBrewery(M, poly, Wl, roofsFlat, chim, group) {
     const fl = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.1), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(flagC), side: THREE.DoubleSide, roughness: 0.9 }));
     fl.material.map.colorSpace = THREE.SRGBColorSpace; fl.position.set(tx + d[0] * 0.95, gy + 16.2 + 13.3, tz + d[1] * 0.95); fl.rotation.y = Math.atan2(-d[1], d[0]); group.add(fl);
   }
+  // the brewery proper: Victorian brick ranges under slate ridge roofs, a tall brewhouse and the chimney
+  // (the OSM footprint alone reads as one huge flat roof from above)
+  {
+    const inPoly = (x, z) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, zi] = poly[i], [xj, zj] = poly[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+    const ang = Math.atan2(-d[1], d[0]); const ridgeG = [];
+    let lo = 1e9, hi = -1e9, slo = 1e9, shi = -1e9; for (const [x, z] of poly) { const s2 = (x - A[0]) * d[0] + (z - A[1]) * d[1], t2 = (x - A[0]) * n[0] + (z - A[1]) * n[1]; lo = Math.min(lo, t2); hi = Math.max(hi, t2); slo = Math.min(slo, s2); shi = Math.max(shi, s2); }
+    for (let t = lo + 6; t < hi - 4; t += 9.6) for (let s = slo + 3; s < shi - 3; s += 6) {
+      const x = A[0] + d[0] * s + n[0] * t, z = A[1] + d[1] * s + n[1] * t;
+      if (!inPoly(x, z) || !inPoly(x + d[0] * 3, z + d[1] * 3) || !inPoly(x - d[0] * 3, z - d[1] * 3) || !inPoly(x + n[0] * 4.6, z + n[1] * 4.6) || !inPoly(x - n[0] * 4.6, z - n[1] * 4.6)) continue;
+      const near = Math.hypot(x - Bp[0], z - Bp[1]) < 13; if (near) continue;   // keep clear of the office block and turret
+      const g = new THREE.BoxGeometry(6.05, 6.6, 6.6); g.rotateX(Math.PI / 4); g.rotateY(ang); g.translate(x, groundAt(x, z) + 11.5, z); ridgeG.push(g);
+    }
+    if (ridgeG.length) { const rm = new THREE.Mesh(mergeGeometries(ridgeG, false), M.cSlate); rm.castShadow = rm.receiveShadow = true; group.add(rm); }
+    // brewhouse tower: a tall brick block near the middle of the site, and the round chimney beside it
+    let cx = 0, cz = 0; for (const [x, z] of poly) { cx += x; cz += z; } cx /= poly.length; cz /= poly.length;
+    const hx = cx + d[0] * 8, hz = cz + d[1] * 8;
+    addBuilding(Wl, roofsFlat, [], chim, { p: [[hx - d[0] * 6 - n[0] * 6, hz - d[1] * 6 - n[1] * 6], [hx + d[0] * 6 - n[0] * 6, hz + d[1] * 6 - n[1] * 6], [hx + d[0] * 6 + n[0] * 6, hz + d[1] * 6 + n[1] * 6], [hx - d[0] * 6 + n[0] * 6, hz - d[1] * 6 + n[1] * 6]], h: 22, r: 'flat', s: 'works', id: 4245 }, 0);
+    const chX = hx + d[0] * 11, chZ = hz + d[1] * 11, gC = groundAt(chX, chZ);
+    const ch = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.7, 36, 20), M.cBrickOld); ch.position.set(chX, gC + 18, chZ); ch.castShadow = true; group.add(ch);
+    const cr = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.1, 1.2, 20), M.cBrickOld); cr.position.set(chX, gC + 36.4, chZ); group.add(cr);
+  }
   // rooftop plant + white rendered stair block in front of the tall block
   { const g = new THREE.BoxGeometry(6, 2.2, 4); g.rotateY(Math.atan2(-d[1], d[0])); g.translate((A[0] + Cp[0]) / 2, gA + 16.2 + 1.1, (A[1] + Cp[1]) / 2); chim.push(g); }
   addBuilding(Wl, roofsFlat, [], chim, { p: [[Bp[0] - n[0] * 0.2 + d[0] * 1, Bp[1] - n[1] * 0.2 + d[1] * 1], [Bp[0] + d[0] * 6, Bp[1] + d[1] * 6], [Bp[0] + d[0] * 6 - n[0] * 5, Bp[1] + d[1] * 6 - n[1] * 5], [Bp[0] + d[0] * 1 - n[0] * 5, Bp[1] + d[1] * 1 - n[1] * 5]].map(q => [q[0] + n[0] * 0, q[1]]), h: 8.5, r: 'flat', s: 'plain', id: 4244 }, 0);

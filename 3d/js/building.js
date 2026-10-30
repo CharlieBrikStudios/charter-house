@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H } from './data.js?v=1793376738';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1793376738';
+import { UNITS, FLOOR_H } from './data.js?v=1793378651';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1793378651';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -562,14 +562,14 @@ function ridge(B, a, b) {
 
 // ------------------------------------------------------------------------------------------------ galleries
 function galleries(B) {
-  const dz0 = 11.03, dz1 = 12.45, dx0 = 11.7, dx1 = 13.15;
+  const dz0 = 11.03, dz1 = 12.45, dx0 = 11.7, dx1 = 13.15, XE = 19.9;   // the Churchgate-wing deck stops just past the last front door (as the Harvey wing does)
   for (let f = 1; f <= 3; f++) {
     const y = f * FH;
     // decks
-    let g = boxGeom(dx0, y - 0.22, dz0, 20.7, y, dz1); boxUV(g, 2); B.add('deck', g);
+    let g = boxGeom(dx0, y - 0.22, dz0, XE, y, dz1); boxUV(g, 2); B.add('deck', g);
     g = boxGeom(dx0, y - 0.22, dz1, dx1, y, 18.4); boxUV(g, 2); B.add('deck', g);
     // edge beams
-    B.add('steel', boxGeom(dx1 - 0.05, y - 0.42, dz1 - 0.05, 20.7, y - 0.2, dz1 + 0.05));
+    B.add('steel', boxGeom(dx1 - 0.05, y - 0.42, dz1 - 0.05, XE, y - 0.2, dz1 + 0.05));
     B.add('steel', boxGeom(dx1 - 0.05, y - 0.42, dz1, dx1 + 0.05, y - 0.2, 18.4));
     // balustrade: red steel posts and handrail with clear glass infill panels (metal-and-glass access decks)
     const H = 1.1;
@@ -589,20 +589,20 @@ function galleries(B) {
         B.add('balGlass', g);
       }
     };
-    rail(dx1, dz1, 20.7, dz1);
-    rail(20.7, dz0 + 0.05, 20.7, dz1);
+    rail(dx1, dz1, XE, dz1);
+    rail(XE, dz0 + 0.05, XE, dz1);
     rail(dx1, dz1, dx1, 18.4);
     rail(dx0 + 0.05, 18.4, dx1, 18.4);
     // soffit lights
-    for (let x = 14.5; x < 20.5; x += 2.2) B.add('bulb', new THREE.CylinderGeometry(0.09, 0.09, 0.03, 12).translate(x, y - 0.235, (dz0 + dz1) / 2));
+    for (let x = 14.5; x < XE - 0.2; x += 2.2) B.add('bulb', new THREE.CylinderGeometry(0.09, 0.09, 0.03, 12).translate(x, y - 0.235, (dz0 + dz1) / 2));
     for (let z = 13.8; z < 18.2; z += 2.2) B.add('bulb', new THREE.CylinderGeometry(0.09, 0.09, 0.03, 12).translate((dx0 + dx1) / 2, y - 0.235, z));
   }
   // columns
-  const cols = [[dx1, dz1], [16.9, dz1], [20.7, dz1], [dx1, 15.4], [dx1, 18.4]];
+  const cols = [[dx1, dz1], [16.9, dz1], [XE, dz1], [dx1, 15.4], [dx1, 18.4]];
   for (const [x, z] of cols) B.add('steel', boxGeom(x - 0.08, -0.4, z - 0.08, x + 0.08, 11.2, z + 0.08));
   // canopy over the top deck
   const cy = 3 * FH + 2.55;
-  B.add('steel', boxGeom(dx0, cy, dz0, 20.85, cy + 0.14, dz1 + 0.12));
+  B.add('steel', boxGeom(dx0, cy, dz0, XE + 0.15, cy + 0.14, dz1 + 0.12));
   B.add('steel', boxGeom(dx0, cy, dz1, dx1 + 0.12, cy + 0.14, 18.55));
 }
 
@@ -648,7 +648,7 @@ export function buildFloorPlates(M, base, wallsJson) {
   const plates = [], walls = [];
   const [X0, Z0, X1, Z1] = wallsJson.window;
   const outline = [[0, 0], [10.9, 0], [10.9, -0.34], [22.61, -0.34], [22.61, 11.03], [11.7, 11.03], [11.7, 21.27], [0.34, 21.27], [0.34, 9.2], [0, 9.2]];
-  const gallery = [[11.7, 11.03], [20.7, 11.03], [20.7, 12.45], [13.15, 12.45], [13.15, 18.4], [11.7, 18.4]];
+  const gallery = [[11.7, 11.03], [19.9, 11.03], [19.9, 12.45], [13.15, 12.45], [13.15, 18.4], [11.7, 18.4]];
   for (let f = 0; f < 4; f++) {
     const y = f * FH + 0.03;
     const grp = new THREE.Group(); grp.visible = false; grp.name = 'plate' + f;
@@ -682,7 +682,11 @@ export function buildFloorPlates(M, base, wallsJson) {
     }
     const wg = mergeGeometries(geos.map(g => g.index ? g.toNonIndexed() : g), false);
     wg.computeVertexNormals();
-    const wm = new THREE.Mesh(wg, M.plaster); wm.visible = false; wm.castShadow = true; wm.receiveShadow = true; wm.name = 'walls' + f;
+    // the vectorised plan's outer walls run a little proud of the brick (the Harvey wing is set back 0.34 m): trim them
+    // to the façades so no white plaster shows outside the building
+    const wmat = M.plaster.clone(); wmat.onBeforeCompile = M.plaster.onBeforeCompile; wmat.customProgramCacheKey = () => 'planwalls';
+    wmat.clippingPlanes = [...(M.plaster.clippingPlanes || []), new THREE.Plane(new THREE.Vector3(1, 0, 0), -0.4), new THREE.Plane(new THREE.Vector3(-1, 0, 0), 22.5), new THREE.Plane(new THREE.Vector3(0, 0, 1), 0.25), new THREE.Plane(new THREE.Vector3(0, 0, -1), 21.15)];
+    const wm = new THREE.Mesh(wg, wmat); wm.visible = false; wm.castShadow = true; wm.receiveShadow = true; wm.name = 'walls' + f;
     walls.push(wm);
   }
   return { plates, walls };

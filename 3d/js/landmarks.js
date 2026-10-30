@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1793376738';
+import { boxUV } from './building.js?v=1793378651';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -74,10 +74,12 @@ function pinnacle(K, x, y, z, s = 0.9, h = 4.2) {
 export function landmarkMaterials(tex, base) {
   const T = (n, o) => tex(base + 'tex/' + n, o);
   const sandMap = T('sandstone_w.jpg'), sandN = T('sandstone_normal.jpg', { srgb: false });
+  sandMap.anisotropy = sandN.anisotropy = 16;
   const mhRoof = T('mh_roof.jpg'); const mhSide = T('mh_side.png', { wrap: false }); const mhGable = T('mh_gable.png', { wrap: false });
   return {
-    sand: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, roughness: 0.92, color: new THREE.Color(1.08, 1.0, 0.95) }),
-    stone: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, roughness: 0.82, color: new THREE.Color(1.3, 1.22, 1.12) }),
+    // St Mary's is deep red Cheshire sandstone, darkened with age; dressings a shade lighter
+    sand: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.4, 1.4), roughness: 0.9, color: new THREE.Color(0.86, 0.5, 0.42) }),
+    stone: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.2, 1.2), roughness: 0.82, color: new THREE.Color(1.0, 0.66, 0.56) }),
     glass: new THREE.MeshStandardMaterial({ color: '#1b2026', roughness: 0.08, metalness: 0.55, envMapIntensity: 1.6 }),
     lead: new THREE.MeshStandardMaterial({ color: '#4b5051', roughness: 0.72, metalness: 0.1 }),
     slate: new THREE.MeshStandardMaterial({ color: '#4c5157', roughness: 0.62 }),
