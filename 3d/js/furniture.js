@@ -5,9 +5,9 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT, tex } from './materials.js?v=1793401587';
-import { FLOOR_H } from './data.js?v=1793401587';
-import { Forest } from './trees.js?v=1793401587';
+import { CUT, tex } from './materials.js?v=1793404269';
+import { FLOOR_H } from './data.js?v=1793404269';
+import { Forest } from './trees.js?v=1793404269';
 
 const FH = FLOOR_H;
 const DIR = { '+x': [1, 0], '-x': [-1, 0], '+z': [0, 1], '-z': [0, -1] };
@@ -47,6 +47,11 @@ export function furnitureMaterials(base) {
     black: new THREE.MeshStandardMaterial({ color: '#1c1b1a', metalness: 0.6, roughness: 0.42 }),
     green: new THREE.MeshStandardMaterial({ color: '#2e4a3e', roughness: 0.5 }),
     navyK: new THREE.MeshStandardMaterial({ color: '#253049', roughness: 0.5 }),
+    // site palettes: The Print House (charcoal and pale oak, per its CGIs) and Oldham Street Lofts (sage shaker, warm oak)
+    charcoalK: new THREE.MeshStandardMaterial({ color: '#3a3c3f', roughness: 0.42 }),
+    sageK: new THREE.MeshStandardMaterial({ color: '#8d9e8a', roughness: 0.48 }),
+    dove: velvet('#b8b4ae', '#e8e4de'), charcoalF: velvet('#3d3f43', '#8f939a'), oatmeal: velvet('#cdbfaa', '#f1e6d4'),
+    oakPale: new THREE.MeshStandardMaterial({ map: timber, color: '#f2e2c8', roughness: 0.5 }),
     paint: new THREE.MeshStandardMaterial({ color: '#ebe5da', roughness: 0.62 }),
     tv: new THREE.MeshPhysicalMaterial({ color: '#07080a', roughness: 0.06, metalness: 0.3, clearcoat: 1 }),
     rug1: new THREE.MeshStandardMaterial({ map: T('rug1.jpg'), roughness: 1 }),

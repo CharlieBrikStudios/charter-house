@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1793401587';
+import { boxUV } from './building.js?v=1793404269';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -90,6 +90,9 @@ export function landmarkMaterials(tex, base) {
     mhSide: new THREE.MeshStandardMaterial({ map: mhSide, roughness: 0.25, metalness: 0.2, side: THREE.DoubleSide }),
     mhGable: new THREE.MeshStandardMaterial({ map: mhGable, alphaTest: 0.5, roughness: 0.3, side: THREE.DoubleSide }),
     plinth: new THREE.MeshStandardMaterial({ color: '#a19d95', roughness: 0.92 }),
+    // St Joseph's (1861-62, M. E. Hadfield): hammer-dressed Yorkshire gritstone with Hollington stone dressings
+    grit: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.6, 1.6), roughness: 0.93, color: new THREE.Color(0.74, 0.68, 0.58) }),
+    dress: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.0, 1.0), roughness: 0.8, color: new THREE.Color(1.0, 0.82, 0.7) }),
     grass: null,
   };
 }
@@ -322,5 +325,109 @@ export function buildMarketHallOSM(L, tex, base, poly, groundAt) {
     const m = new THREE.Mesh(g, L[k]); m.castShadow = true; m.receiveShadow = true; grp.add(m);
   }
   grp.userData.top = y0 + APEX; grp.userData.strips = strips;
+  return grp;
+}
+
+// ---------------------------------------------------------------- St Joseph's RC Church, Tatton Street (Grade II, 1861-62)
+// Basilican: nave with clerestory, lean-to aisles, a three-sided apse, no tower. West front: two lancets either side of
+// an ogee-headed door under a crocketed gable, two three-light geometric windows above, a cinquefoil roundel in the gable.
+// Built in its own frame (x from the west front to the apse, z across) and placed on its OpenStreetMap footprint.
+export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
+  const K = new Kit();
+  const NX = 26, NW = 5.5, NH = 13, AW = 4.5, AH = 6.6, RIDGE = 19.6;
+  const tri = (x0, x1, w, y0, y1, key) => {   // a gable prism along x: half-width w, eaves y0, ridge y1
+    const sh = new THREE.Shape([new THREE.Vector2(-w, 0), new THREE.Vector2(w, 0), new THREE.Vector2(0, y1 - y0)]);
+    const g = new THREE.ExtrudeGeometry(sh, { depth: x1 - x0, bevelEnabled: false }); g.rotateY(Math.PI / 2); g.translate(x0, y0, 0); K.add(key, g); return g;
+  };
+  // plinth and the nave walls up to the clerestory
+  K.add('dress', box(-0.15, -1.5, -NW - AW - 0.15, NX + 0.15, 0.6, NW + AW + 0.15));
+  K.add('grit', box(0, 0, -NW, NX, NH, NW));
+  tri(-0.25, NX + 0.2, NW + 0.45, NH, RIDGE, 'slate');
+  K.add('dress', box(-0.12, NH - 0.35, -NW - 0.12, NX, NH, NW + 0.12));
+  // aisles with lean-to roofs against the clerestory
+  for (const sg of [-1, 1]) {
+    K.add('grit', box(0.6, 0, sg > 0 ? NW : -NW - AW, NX - 0.6, AH, sg > 0 ? NW + AW : -NW));
+    const r = new THREE.BufferGeometry(); const zo = sg * (NW + AW + 0.35), zi = sg * NW;
+    const v = [[0.4, AH, zo], [NX - 0.4, AH, zo], [NX - 0.4, AH + 2.3, zi], [0.4, AH + 2.3, zi]];
+    const idx = sg > 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2];
+    r.setAttribute('position', new THREE.Float32BufferAttribute(idx.flatMap(i => v[i]), 3)); r.computeVertexNormals();
+    r.setAttribute('uv', new THREE.Float32BufferAttribute(idx.flatMap(i => [v[i][0] / 2, (v[i][1] + Math.abs(v[i][2])) / 1.4]), 2)); K.add('slate', r);
+    // five bays: buttresses, paired aisle lancets, three-light clerestory windows
+    for (let i = 0; i <= 5; i++) {
+      const bx = 0.6 + i * (NX - 1.2) / 5;
+      K.add('dress', box(bx - 0.35, 0, sg > 0 ? NW + AW : -NW - AW - 0.6, bx + 0.35, AH - 0.8, sg > 0 ? NW + AW + 0.6 : -NW - AW));
+      if (i < 5) {
+        const c = bx + (NX - 1.2) / 10;
+        K.win('x', sg, sg * (NW + AW), c - 0.75, 1.9, 0.9, 2.6, { lights: 1, transom: false, k: 0.85, deep: 0.14 });
+        K.win('x', sg, sg * (NW + AW), c + 0.75, 1.9, 0.9, 2.6, { lights: 1, transom: false, k: 0.85, deep: 0.14 });
+        K.win('x', sg, sg * NW, c, 9.4, 2.4, 1.7, { lights: 3, transom: false, k: 0.8, deep: 0.14 });
+      }
+    }
+  }
+  // three-sided apse at the liturgical east end, slate half-pyramid roof
+  {
+    const ax = NX, aw = NW, depth = 4.6;
+    const pts = [[ax, -aw], [ax + depth * 0.62, -aw * 0.62], [ax + depth, 0], [ax + depth * 0.62, aw * 0.62], [ax, aw]];
+    const sh = new THREE.Shape(pts.map(([px, pz]) => new THREE.Vector2(px, -pz)));
+    const g = new THREE.ExtrudeGeometry(sh, { depth: NH - 0.6, bevelEnabled: false }); g.rotateX(-Math.PI / 2); K.add('grit', g);
+    const apex = [ax, RIDGE - 0.4, 0], ring = pts.map(([px, pz]) => [ax + (px - ax) * 1.06, NH - 0.6, pz * 1.06]);
+    const pos = []; for (let i = 0; i < ring.length - 1; i++) pos.push(...ring[i], ...apex, ...ring[i + 1]);
+    const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); rg.computeVertexNormals();
+    const p = rg.attributes.position, uv = []; for (let i = 0; i < p.count; i++) uv.push((p.getX(i) + p.getZ(i)) / 2, p.getY(i) / 1.4); rg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    // keep the faces pointing out and up
+    { const a = rg.attributes.position.array; for (let i = 0; i < a.length; i += 9) { const ux = a[i + 3] - a[i], uz = a[i + 5] - a[i + 2], vx = a[i + 6] - a[i], vz = a[i + 8] - a[i + 2]; if (uz * vx - ux * vz < 0) for (let k = 0; k < 3; k++) { const t = a[i + 3 + k]; a[i + 3 + k] = a[i + 6 + k]; a[i + 6 + k] = t; } } rg.computeVertexNormals(); }
+    K.add('slate', rg);
+    // the apse windows: tall three-light lights on the three faces
+    for (let i = 0; i < 3; i++) {
+      const a = pts[i + 1 > 3 ? 3 : i], b = pts[i + 1], [mx, mz] = [(pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2];
+      const ang = Math.atan2(pts[i + 1][1] - pts[i][1], pts[i + 1][0] - pts[i][0]);
+      const wg = new THREE.ShapeGeometry(archShape(1.6, 4.2, 0.85)); wg.rotateY(-ang - Math.PI / 2 + Math.PI); wg.translate(mx + Math.cos(ang - Math.PI / 2) * -0.03, 5.0, mz + Math.sin(ang - Math.PI / 2) * -0.03); K.add('glass', wg);
+      const rr = archShape(2.1, 4.2, 0.85); rr.holes.push(archShape(1.6, 4.2, 0.85)); const sg2 = new THREE.ExtrudeGeometry(rr, { depth: 0.16, bevelEnabled: false });
+      sg2.rotateY(-ang - Math.PI / 2 + Math.PI); sg2.translate(mx, 5.0, mz); K.add('dress', sg2);
+    }
+    K.add('dress', box(ax + depth - 0.12, RIDGE - 0.6, -0.1, ax + depth + 0.12, RIDGE + 0.9, 0.1));
+  }
+  // the west front: crocketed gable, two lancets beside an ogee door, two three-light windows, cinquefoil roundel
+  {
+    const fx = 0;
+    K.add('grit', box(fx - 0.35, 0, -NW - 0.3, fx + 0.05, NH, NW + 0.3));
+    const gable = new THREE.Shape([new THREE.Vector2(-NW - 0.3, 0), new THREE.Vector2(NW + 0.3, 0), new THREE.Vector2(0, RIDGE + 0.8 - NH)]);
+    const gg = new THREE.ExtrudeGeometry(gable, { depth: 0.6, bevelEnabled: false }); gg.rotateY(Math.PI / 2); gg.translate(fx - 0.45, NH, 0); K.add('grit', gg);
+    // coping and crockets up both rakes, a cross at the apex
+    for (const sg of [-1, 1]) {
+      const len = Math.hypot(NW + 0.3, RIDGE + 0.8 - NH), ang = Math.atan2(RIDGE + 0.8 - NH, NW + 0.3);
+      const cp = box(-len / 2, -0.12, -0.38, len / 2, 0.12, 0.38); cp.rotateZ(ang); cp.rotateY(sg > 0 ? -Math.PI / 2 : Math.PI / 2);
+      cp.translate(fx - 0.15, NH + (RIDGE + 0.8 - NH) / 2 + 0.12, sg * (NW + 0.3) / 2); K.add('dress', cp);
+      for (let i = 1; i < 7; i++) { const t = i / 7, c = new THREE.SphereGeometry(0.17, 6, 4); c.translate(fx - 0.15, NH + t * (RIDGE + 0.8 - NH) + 0.32, sg * (NW + 0.3) * (1 - t)); K.add('dress', c); }
+      pinnacle(K, fx - 0.2, NH - 0.2, sg * (NW + 0.6), 0.7, 3.2);
+    }
+    K.add('dress', box(fx - 0.3, RIDGE + 0.8, -0.13, fx, RIDGE + 2.3, 0.13)); K.add('dress', box(fx - 0.3, RIDGE + 1.5, -0.55, fx, RIDGE + 1.75, 0.55));
+    // door (pointed, standing in for the ogee head) with a gabled hood, lancets either side
+    K.win('z', -1, fx - 0.35, 0, 0.0, 2.0, 2.6, { lights: 1, transom: false, k: 0.7, deep: 0.3 });
+    K.add('door', box(fx - 0.3, 0, -0.95, fx - 0.24, 2.6, 0.95));
+    for (const sg of [-1, 1]) K.win('z', -1, fx - 0.35, sg * 2.6, 0.9, 0.85, 3.0, { lights: 1, transom: false, k: 0.9, deep: 0.16 });
+    for (const sg of [-1, 1]) K.win('z', -1, fx - 0.35, sg * 2.4, 6.2, 2.5, 3.0, { lights: 3, transom: false, k: 0.8, deep: 0.18 });
+    const ro = new THREE.CircleGeometry(1.05, 5); ro.rotateY(-Math.PI / 2); ro.translate(fx - 0.48, 15.6, 0); K.add('glass', ro);
+    const rr = new THREE.RingGeometry(1.05, 1.45, 30); rr.rotateY(-Math.PI / 2); rr.translate(fx - 0.5, 15.6, 0); K.add('dress', rr);
+    // aisle ends: lower lean-to walls with a single lancet each
+    for (const sg of [-1, 1]) { K.add('grit', box(fx + 0.6 - 0.35, 0, sg > 0 ? NW : -NW - AW, fx + 0.6, AH, sg > 0 ? NW + AW : -NW)); K.win('z', -1, fx + 0.25, sg * (NW + AW / 2), 2.2, 0.8, 2.3, { lights: 1, transom: false, k: 0.85, deep: 0.12 }); }
+  }
+  // two-storey sacristy on the south side
+  {
+    const sx0 = 15.5, sx1 = 26.8, sz0 = -NW - AW, sz1 = sz0 - 7.5;
+    K.add('grit', box(sx0, 0, sz1, sx1, 7.2, sz0));
+    const g = new THREE.Shape([new THREE.Vector2(-3.95, 0), new THREE.Vector2(3.95, 0), new THREE.Vector2(0, 3.4)]);
+    const rg = new THREE.ExtrudeGeometry(g, { depth: sx1 - sx0 + 0.4, bevelEnabled: false }); rg.rotateY(Math.PI / 2); rg.translate(sx0 - 0.2, 7.2, (sz0 + sz1) / 2); K.add('slate', rg);
+    for (let i = 0; i < 3; i++) { const c = sx0 + 1.8 + i * 3.6; K.win('x', -1, sz1, c, 1.2, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); K.win('x', -1, sz1, c, 4.4, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); }
+  }
+  const grp = new THREE.Group(); grp.name = 'stjoseph';
+  for (const [k, geos] of Object.entries(K.b)) {
+    const g = mergeGeometries(geos.map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false);
+    if (!g) continue;
+    if (k === 'grit' || k === 'dress' || k === 'sand' || k === 'stone') boxUV(g, k === 'sand' || k === 'grit' ? 2.4 : 3.0);   // coursed gritstone at its real scale
+    const mat = k === 'door' ? new THREE.MeshStandardMaterial({ color: '#3b2a20', roughness: 0.6 }) : k === 'sand' ? L.grit : k === 'stone' ? L.dress : L[k];
+    const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; grp.add(m);
+  }
+  grp.rotation.y = rot; grp.position.set(x, y, z);
   return grp;
 }

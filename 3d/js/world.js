@@ -106,6 +106,10 @@ export function obb(pts) {
 
 // ------------------------------------------------------------------ town facade material (procedural windows over real brick)
 export const townUniforms = { uLit: { value: 0 }, uTime: { value: 0 } };
+// a hole cut in the ground for a building whose garden and lower ground floor sit below the street (Underbank Lofts):
+// the polygon (world x, z), up to 32 points; uHoleN = 0 leaves the terrain whole
+export const holeUniforms = { uHoleN: { value: 0 }, uHoleP: { value: Array.from({ length: 32 }, () => new THREE.Vector2()) } };
+export function setGroundHole(poly) { const n = Math.min(32, poly.length); holeUniforms.uHoleN.value = n; for (let i = 0; i < n; i++) holeUniforms.uHoleP.value[i].set(poly[i][0], poly[i][1]); }
 function townMaterial(M) {
   const m = new THREE.MeshStandardMaterial({ map: M.cBrickOld.map, normalMap: M.cBrickOld.normalMap, roughness: 0.9, metalness: 0, envMapIntensity: 0.8 });
   m.normalScale.set(0.8, 0.8);
@@ -289,7 +293,7 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
 }
 
 // ------------------------------------------------------------------ Robinsons Unicorn Brewery (OSM footprint + drone footage)
-function letteringTexture(text, { w = 4096, h = 256, font = '700 170px "Archivo", Arial, sans-serif', fill = '#f3efe6', spacing = 18 } = {}) {
+export function letteringTexture(text, { w = 4096, h = 256, font = '700 170px "Archivo", Arial, sans-serif', fill = '#f3efe6', spacing = 18 } = {}) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
   x.clearRect(0, 0, w, h); x.font = font; x.fillStyle = fill; x.textBaseline = 'middle'; x.textAlign = 'center';
   if ('letterSpacing' in x) x.letterSpacing = spacing + 'px';
@@ -297,67 +301,32 @@ function letteringTexture(text, { w = 4096, h = 256, font = '700 170px "Archivo"
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
 }
 function buildBrewery(M, poly, Wl, roofsFlat, chim, group) {
-  // main brew house: 3 storeys of tall industrial windows, flat roof
-  addBuilding(Wl, roofsFlat, [], chim, { p: poly, h: 11.5, r: 'flat', s: 'works', id: 4242 }, 0);
-  // Frederic Robinson block: 4 storeys at the north-west end of the Apsley Street front
+  // The Apsley Street front (Frederic Robinson Ltd offices, the Unicorn Brewery range, the striped turret and the
+  // brewhouse tower) is modelled in detail by context.js buildBreweryFront(); here: the brewery yards and ranges
+  // behind it on the OSM footprint, cut back so they don't fight the detailed front.
   const A = [-1.42, 44.82], E = [47.5, 71.36];
   const L = Math.hypot(E[0] - A[0], E[1] - A[1]), d = [(E[0] - A[0]) / L, (E[1] - A[1]) / L], n = [-d[1], d[0]];
-  const Bp = [A[0] + d[0] * 24, A[1] + d[1] * 24], Cp = [Bp[0] + n[0] * 15, Bp[1] + n[1] * 15], Dp = [A[0] + n[0] * 15, A[1] + n[1] * 15];
-  addBuilding(Wl, roofsFlat, [], chim, { p: [A, Bp, Cp, Dp], h: 16.2, r: 'flat', s: 'office', id: 4243 }, 0);
-  const gA = groundAt(A[0], A[1]);
-  const signMat = (t) => new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.35, roughness: 0.7, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
-  const face = (p0, p1, y, hgt, tex) => {
-    const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-    const g = new THREE.PlaneGeometry(len * 0.92, hgt);
-    const ang = Math.atan2(-(p1[1] - p0[1]), p1[0] - p0[0]);
-    g.rotateY(ang);
-    // outward normal of p0->p1 for our winding points away from the polygon interior: (dz, -dx)
-    const nx = (p1[1] - p0[1]) / len, nz = -(p1[0] - p0[0]) / len;
-    g.translate((p0[0] + p1[0]) / 2 + nx * 0.06, y, (p0[1] + p1[1]) / 2 + nz * 0.06);
-    const mesh = new THREE.Mesh(g, signMat(tex)); mesh.renderOrder = 3; group.add(mesh);
-    return { nx, nz };
-  };
-  // painted white lettering on the brickwork, as on the real building
-  const f1 = face(A, Bp, gA + 14.9, 1.55, letteringTexture('FREDERIC ROBINSON LTD'));
-  const gB = groundAt(Bp[0], Bp[1]);
-  face(Bp, [Bp[0] + d[0] * 22, Bp[1] + d[1] * 22], gB + 10.2, 1.35, letteringTexture('UNICORN BREWERY', { font: '700 190px "Archivo", Arial, sans-serif' }));
-  // striped brick turret with flagpole at the junction of the two blocks
+  const W2 = (s, t) => [A[0] + d[0] * s + n[0] * t, A[1] + d[1] * s + n[1] * t];
+  const ST = (x, z) => [(x - A[0]) * d[0] + (z - A[1]) * d[1], (x - A[0]) * n[0] + (z - A[1]) * n[1]];
+  // footprint in street coordinates; replace the frontage (s 0..55.7, t 0..6.2) with the notch the front blocks fill
+  const P = poly.map(([x, z]) => ST(x, z));
+  const k0 = P.findIndex(([s, t]) => Math.abs(s) < 0.6 && Math.abs(t) < 0.6), k1 = P.findIndex(([s, t]) => s > 42.5 && s < 44 && t > 15);
+  let bulk = poly;
+  if (k0 >= 0 && k1 > k0) bulk = [...P.slice(0, k0), [-0.4, 0.4], [-0.4, 15.4], [24.3, 15.4], [24.3, 12.4], [42.6, 12.4], ...P.slice(k1)].map(([s, t]) => W2(s, t));
+  addBuilding(Wl, roofsFlat, [], chim, { p: bulk, h: 10.6, r: 'flat', s: 'works', id: 4242 }, 0);
+  const TW = [29, 16.2, 40, 27.2];   // brewhouse tower (built in context.js)
   {
-    const tx = Bp[0] - n[0] * 0.2, tz = Bp[1] - n[1] * 0.2, gy = groundAt(tx, tz);
-    const stripe = new THREE.CanvasTexture((() => { const c = document.createElement('canvas'); c.width = 64; c.height = 256; const x = c.getContext('2d'); for (let i = 0; i < 16; i++) { x.fillStyle = i % 2 ? '#e9e2d4' : '#8c3a2b'; x.fillRect(0, i * 16, 64, 16); } return c; })());
-    stripe.colorSpace = THREE.SRGBColorSpace; stripe.wrapS = stripe.wrapT = THREE.RepeatWrapping; stripe.repeat.set(2, 3);
-    const tm = new THREE.MeshStandardMaterial({ map: stripe, roughness: 0.8 });
-    const t = new THREE.Mesh(new THREE.BoxGeometry(3.6, 6, 3.6), tm); t.position.set(tx, gy + 16.2 + 3, tz); t.rotation.y = Math.atan2(-d[1], d[0]); t.castShadow = true; group.add(t);
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(2.8, 2.2, 4), M.cSlate); cap.position.set(tx, gy + 16.2 + 7.1, tz); cap.rotation.y = Math.atan2(-d[1], d[0]) + Math.PI / 4; group.add(cap);
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 6, 8), new THREE.MeshStandardMaterial({ color: '#e8e4dc', roughness: 0.4 })); pole.position.set(tx, gy + 16.2 + 11, tz); group.add(pole);
-    const flagC = document.createElement('canvas'); flagC.width = 128; flagC.height = 80; { const x = flagC.getContext('2d'); x.fillStyle = '#b01e23'; x.fillRect(0, 0, 128, 80); x.fillStyle = '#f2e7c9'; x.font = 'bold 44px Georgia'; x.textAlign = 'center'; x.fillText('R', 64, 56); }
-    const fl = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.1), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(flagC), side: THREE.DoubleSide, roughness: 0.9 }));
-    fl.material.map.colorSpace = THREE.SRGBColorSpace; fl.position.set(tx + d[0] * 0.95, gy + 16.2 + 13.3, tz + d[1] * 0.95); fl.rotation.y = Math.atan2(-d[1], d[0]); group.add(fl);
-  }
-  // the brewery proper: Victorian brick ranges under slate ridge roofs, a tall brewhouse and the chimney
-  // (the OSM footprint alone reads as one huge flat roof from above)
-  {
-    const inPoly = (x, z) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, zi] = poly[i], [xj, zj] = poly[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+    const inPoly = (x, z) => { let c = false; for (let i = 0, j = bulk.length - 1; i < bulk.length; j = i++) { const [xi, zi] = bulk[i], [xj, zj] = bulk[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
     const ang = Math.atan2(-d[1], d[0]); const ridgeG = [];
-    let lo = 1e9, hi = -1e9, slo = 1e9, shi = -1e9; for (const [x, z] of poly) { const s2 = (x - A[0]) * d[0] + (z - A[1]) * d[1], t2 = (x - A[0]) * n[0] + (z - A[1]) * n[1]; lo = Math.min(lo, t2); hi = Math.max(hi, t2); slo = Math.min(slo, s2); shi = Math.max(shi, s2); }
+    let lo = 1e9, hi = -1e9, slo = 1e9, shi = -1e9; for (const [s2, t2] of P) { lo = Math.min(lo, t2); hi = Math.max(hi, t2); slo = Math.min(slo, s2); shi = Math.max(shi, s2); }
     for (let t = lo + 6; t < hi - 4; t += 9.6) for (let s = slo + 3; s < shi - 3; s += 6) {
-      const x = A[0] + d[0] * s + n[0] * t, z = A[1] + d[1] * s + n[1] * t;
-      if (!inPoly(x, z) || !inPoly(x + d[0] * 3, z + d[1] * 3) || !inPoly(x - d[0] * 3, z - d[1] * 3) || !inPoly(x + n[0] * 4.6, z + n[1] * 4.6) || !inPoly(x - n[0] * 4.6, z - n[1] * 4.6)) continue;
-      const near = Math.hypot(x - Bp[0], z - Bp[1]) < 13; if (near) continue;   // keep clear of the office block and turret
-      const g = new THREE.BoxGeometry(6.05, 6.6, 6.6); g.rotateX(Math.PI / 4); g.rotateY(ang); g.translate(x, groundAt(x, z) + 11.5, z); ridgeG.push(g);
+      const [x, z] = W2(s, t);
+      if (!inPoly(x, z) || !inPoly(...W2(s + 3, t)) || !inPoly(...W2(s - 3, t)) || !inPoly(...W2(s, t + 4.6)) || !inPoly(...W2(s, t - 4.6))) continue;
+      if (s > TW[0] - 3.5 && s < TW[2] + 3.5 && t > TW[1] - 5 && t < TW[3] + 5) continue;   // clear of the brewhouse tower
+      const g = new THREE.BoxGeometry(6.05, 6.6, 6.6); g.rotateX(Math.PI / 4); g.rotateY(ang); g.translate(x, groundAt(x, z) + 10.6, z); ridgeG.push(g);
     }
-    if (ridgeG.length) { const rm = new THREE.Mesh(mergeGeometries(ridgeG, false), M.cSlate); rm.castShadow = rm.receiveShadow = true; group.add(rm); }
-    // brewhouse tower: a tall brick block near the middle of the site, and the round chimney beside it
-    let cx = 0, cz = 0; for (const [x, z] of poly) { cx += x; cz += z; } cx /= poly.length; cz /= poly.length;
-    const hx = cx + d[0] * 8, hz = cz + d[1] * 8;
-    addBuilding(Wl, roofsFlat, [], chim, { p: [[hx - d[0] * 6 - n[0] * 6, hz - d[1] * 6 - n[1] * 6], [hx + d[0] * 6 - n[0] * 6, hz + d[1] * 6 - n[1] * 6], [hx + d[0] * 6 + n[0] * 6, hz + d[1] * 6 + n[1] * 6], [hx - d[0] * 6 + n[0] * 6, hz - d[1] * 6 + n[1] * 6]], h: 22, r: 'flat', s: 'works', id: 4245 }, 0);
-    const chX = hx + d[0] * 11, chZ = hz + d[1] * 11, gC = groundAt(chX, chZ);
-    const ch = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.7, 36, 20), M.cBrickOld); ch.position.set(chX, gC + 18, chZ); ch.castShadow = true; group.add(ch);
-    const cr = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.1, 1.2, 20), M.cBrickOld); cr.position.set(chX, gC + 36.4, chZ); group.add(cr);
+    if (ridgeG.length) { const rm = new THREE.Mesh(mergeGeometries(ridgeG, false), M.cSlate); rm.castShadow = rm.receiveShadow = true; rm.name = 'brewery_roofs'; group.add(rm); }
   }
-  // rooftop plant + white rendered stair block in front of the tall block
-  { const g = new THREE.BoxGeometry(6, 2.2, 4); g.rotateY(Math.atan2(-d[1], d[0])); g.translate((A[0] + Cp[0]) / 2, gA + 16.2 + 1.1, (A[1] + Cp[1]) / 2); chim.push(g); }
-  addBuilding(Wl, roofsFlat, [], chim, { p: [[Bp[0] - n[0] * 0.2 + d[0] * 1, Bp[1] - n[1] * 0.2 + d[1] * 1], [Bp[0] + d[0] * 6, Bp[1] + d[1] * 6], [Bp[0] + d[0] * 6 - n[0] * 5, Bp[1] + d[1] * 6 - n[1] * 5], [Bp[0] + d[0] * 1 - n[0] * 5, Bp[1] + d[1] * 1 - n[1] * 5]].map(q => [q[0] + n[0] * 0, q[1]]), h: 8.5, r: 'flat', s: 'plain', id: 4244 }, 0);
 }
 
 // ------------------------------------------------------------------ main
@@ -378,9 +347,15 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {
       sh.uniforms.tSplat = { value: splat }; sh.uniforms.tAsph = { value: M.asphalt.map }; sh.uniforms.tGrass = { value: M.grass.map };
+      sh.uniforms.uHoleN = holeUniforms.uHoleN; sh.uniforms.uHoleP = holeUniforms.uHoleP;
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vSp; varying vec3 vWp;')
         .replace('#include <uv_vertex>', '#include <uv_vertex>\nvSp = uv; vWp = (modelMatrix * vec4(position, 1.0)).xyz;\n#ifdef USE_MAP\nvMapUv = vWp.xz / 2.4;\n#endif\n#ifdef USE_NORMALMAP\nvNormalMapUv = vWp.xz / 2.4;\n#endif');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D tSplat, tAsph, tGrass; varying vec2 vSp; varying vec3 vWp; float gWet = 0.0;')
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D tSplat, tAsph, tGrass; varying vec2 vSp; varying vec3 vWp; float gWet = 0.0;\nuniform int uHoleN; uniform vec2 uHoleP[32];')
+        .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
+if (uHoleN > 2) { bool inside = false; int j = uHoleN - 1;
+  for (int i = 0; i < 32; i++) { if (i >= uHoleN) break; vec2 a = uHoleP[i], b = uHoleP[j];
+    if (((a.y > vWp.z) != (b.y > vWp.z)) && (vWp.x < (b.x - a.x) * (vWp.z - a.y) / (b.y - a.y) + a.x)) inside = !inside; j = i; }
+  if (inside) discard; }`)
         .replace('#include <map_fragment>', `#include <map_fragment>
 vec4 S = texture2D(tSplat, vec2(vSp.x, 1.0 - vSp.y));
 vec3 asph = texture2D(tAsph, vWp.xz / 7.0).rgb * vec3(0.92, 0.92, 0.95);

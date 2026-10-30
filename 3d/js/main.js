@@ -9,28 +9,31 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, PLANF } from './site.js?v=1793401587';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793401587';
-import { buildOSL } from './oslbuild.js?v=1793401587';
-import { buildOSLFitout } from './oslfit.js?v=1793401587';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793401587';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793401587';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793401587';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793401587';
-import { buildFar, hazeUniforms } from './far.js?v=1793401587';
-import { Forest, windUniforms } from './trees.js?v=1793401587';
-import { Interior } from './interior.js?v=1793401587';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793401587';
-import { buildPHFitout } from './phfit.js?v=1793401587';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793401587';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793401587';
-import { createTour } from './tour.js?v=1793401587';
-import { buildCrowd } from './crowd.js?v=1793401587';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF } from './sales.js?v=1793401587';
-const pitch = IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
-const RK = IS_OSL ? 'osl' : IS_PH;   // which site's rents
-const PROOFS = IS_OSL ? OSL_PROOF : PROOF;
-const AREA_CARDS = IS_OSL ? [] : ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || (c.id !== 'charter' && c.id !== 'print'));   // the area edition pins every Brik site (Charter House demo: no Print House tag)
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1793404269';
+import { buildUBL } from './ublbuild.js?v=1793404269';
+import { buildUBLFitout } from './ublfit.js?v=1793404269';
+import { UBL_LEVELS } from './ubl_data.js?v=1793404269';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793404269';
+import { buildOSL } from './oslbuild.js?v=1793404269';
+import { buildOSLFitout } from './oslfit.js?v=1793404269';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793404269';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793404269';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront } from './context.js?v=1793404269';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole } from './world.js?v=1793404269';
+import { buildFar, hazeUniforms } from './far.js?v=1793404269';
+import { Forest, windUniforms } from './trees.js?v=1793404269';
+import { Interior } from './interior.js?v=1793404269';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793404269';
+import { buildPHFitout } from './phfit.js?v=1793404269';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793404269';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1793404269';
+import { createTour } from './tour.js?v=1793404269';
+import { buildCrowd } from './crowd.js?v=1793404269';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1793404269';
+const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
+const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
+const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
+const AREA_CARDS = IS_OSL ? [] : IS_UBL ? ALL_CARDS.filter(c => c.id !== 'lofts') : ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || (c.id !== 'charter' && c.id !== 'print'));   // the area edition pins every Brik site (Charter House demo: no Print House tag)
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
 
 const BASE = 'assets/';
@@ -38,6 +41,8 @@ const STILL = /still=1/.test(location.search);
 const NOPRE = /nopre=1/.test(location.search);
 const $ = (s) => document.querySelector(s);
 const FH = FLOOR_H;
+// floor levels above the building's base: uniform storeys, except Underbank Lofts (the 1872 building's storeys differ)
+const LV = (f) => IS_UBL ? (UBL_LEVELS[f] ?? f * FH) : f * FH;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isTouch = matchMedia('(pointer: coarse)').matches;
 const small = innerWidth < 760;
@@ -96,6 +101,15 @@ if (IS_OSL) {
   document.querySelectorAll('#views [data-view]').forEach(b => b.textContent = vb[b.dataset.view]);
   $('#btn-clay').title = 'Turn every other building into a plain white architectural model so Oldham Street Lofts stands out';
 }
+if (IS_UBL) {
+  document.querySelectorAll('.brand img, .lcard img').forEach(i => { i.src = BASE + 'brand_ubl.png'; i.alt = 'Underbank Lofts'; });
+  $('.brand .addr').textContent = '3–5 St Petersgate · Stockport · SK1';
+  $('#btn-tour').hidden = true; $('#btn-build').hidden = true; $('#btn-360').hidden = true;
+  const vb = { front: 'The garden side', rear: 'St Petersgate', street: 'High Street', above: 'From above' };
+  document.querySelectorAll('#views [data-view]').forEach(b => b.textContent = vb[b.dataset.view]);
+  $('#btn-clay').title = 'Turn every other building into a plain white architectural model so Underbank Lofts stands out';
+  $('.credit').innerHTML = 'Availability from Brik Studios, updated <span id="upd"></span>. Model built from the Ollier Smurthwaite tender drawings; surroundings approximate.';
+}
 if (START_AREA) {
   document.querySelectorAll('.brand img, .lcard img').forEach(i => { i.src = BASE + 'brand_brik.png'; i.alt = 'Brik Studios'; });
   $('.brand .addr').textContent = 'Stockport Underbanks · our sites and the regeneration';
@@ -104,7 +118,7 @@ document.querySelectorAll('#btn-list .lg').forEach(e => e.textContent = `All ${U
 document.querySelectorAll('#btn-list .sm').forEach(e => e.textContent = `All ${UNITS.length}`);
 $('#list h2').textContent = `All ${UNITS.length} ${IS_OSL ? 'homes' : 'apartments'}`;
 $('#gallery h2').textContent = SITE.name;
-const msgs = ['Laying the brickwork…', `Glazing ${UNITS.length} apartments…`, IS_OSL ? 'Laying the setts on Syddall Street…' : IS_PH ? 'Planting the residents’ garden…' : 'Planting the trees on Churchgate…', 'Checking live availability…', 'Lighting the rooms…'];
+const msgs = ['Laying the brickwork…', `Glazing ${UNITS.length} apartments…`, IS_OSL ? 'Laying the setts on Syddall Street…' : IS_PH || IS_UBL ? 'Planting the residents’ garden…' : 'Planting the trees on Churchgate…', 'Checking live availability…', 'Lighting the rooms…'];
 let mi = 0; const msgTimer = setInterval(() => { lmsg.textContent = msgs[++mi % msgs.length]; }, 1800);
 
 // ------------------------------------------------------------------ lights + sky
@@ -114,7 +128,7 @@ const SM = Q === 'low' ? 1024 : Q === 'high' ? 4096 : 2048;
 sun.shadow.mapSize.set(SM, SM);
 const sc = sun.shadow.camera; sc.left = -46; sc.right = 46; sc.top = 46; sc.bottom = -46; sc.near = 1; sc.far = 260;
 sun.shadow.bias = -0.00025; sun.shadow.normalBias = 0.035;
-sun.target.position.set(...(IS_OSL ? [37, 0, -14] : IS_PH ? [-52, 0, 204] : [11, 0, 10]));   // the shadow map follows the building on sale
+sun.target.position.set(...(IS_OSL ? [37, 0, -14] : IS_PH ? [-52, 0, 204] : IS_UBL ? [-156, -6, 104] : [11, 0, 10]));   // the shadow map follows the building on sale
 scene.add(sun, sun.target);
 const hemi = new THREE.HemisphereLight('#bcd2ec', '#5b4c40', 0.55); scene.add(hemi);
 // even, all-round daylight: a flat ambient on top of the sky/ground light, so no face of any building sits in a dark shadow
@@ -223,6 +237,7 @@ const leafTex = tex(BASE + 'tex/leaves.jpg', { wrap: false });
 const leafAlpha = tex(BASE + 'tex/leaves_a.png', { wrap: false, srgb: false });
 const forest = new Forest(leafTex, M.bark, groundY, leafAlpha);
 if (IS_PH) forest.focus = [-50, 205];
+if (IS_UBL) forest.focus = [-156, 104];
 if (IS_OSL) forest.focus = [37, -14];   // full-detail trees round The Print House instead of Charter House
 const lampHeads = [], festoon = [];
 
@@ -244,7 +259,22 @@ async function build() {
   scene.add(CH.group);
   if (seaton) scene.add(buildSeatonHouse(M, seaton.p, groundAt)); else scene.add(buildSeatonSign(groundAt));
   if (!IS_PH) { const ph = buildPrintHouse(M, { groundAt, forest, base: BASE, context: true }); ph.pick.visible = false; ph.group.remove(ph.pick); scene.add(ph.group); ctxRooms = ph.group.getObjectByName('rooms_ph'); festoon.push(...ph.bulbs); }
-  if (IS_PH) {
+  if (!IS_UBL) {   // Underbank Lofts on its corner of St Petersgate, as another Brik site, in place of the OSM block
+    try { const i = W.bld.findIndex(b => b.id === 832816); if (i >= 0) W.bld.splice(i, 1);
+      const ub = buildUBL(M, { groundAt, forest, base: BASE }); ub.pick.visible = false; ub.group.remove(ub.pick); ub.unitRooms.forEach(r => r.visible = false);
+      const cache = new Map(); ub.group.traverse(o => { if (o.isMesh && o.material && o.material.clippingPlanes && o.material.clippingPlanes.length) { if (!cache.has(o.material)) { const m = o.material.clone(); m.clippingPlanes = null; cache.set(o.material, m); } o.material = cache.get(o.material); } });   // never cut open with the selected building's floors
+      scene.add(ub.group); setGroundHole(ub.siteWorld);
+    } catch (e) { console.warn('underbank context', e); }
+  }
+  if (IS_UBL) {
+    // Underbank Lofts is the building on sale; the OSM block it replaces comes out of the town, Charter House stays as another Brik site
+    const i = W.bld.findIndex(b => b.id === 832816); if (i >= 0) W.bld.splice(i, 1);
+    const other = CH; other.group.getObjectByName('pick') && (other.group.getObjectByName('pick').visible = false);
+    CH = buildUBL(M, { groundAt, forest, base: BASE }); CH.other = other; scene.add(CH.group);
+    setGroundHole(CH.siteWorld);
+    plates = { plates: [], walls: [] };
+    furniture = { groups: [], materials: furnitureMaterials(BASE) };
+  } else if (IS_PH) {
     // The Print House is the building on sale; Charter House stays in the street as another Brik site
     const other = CH; other.group.getObjectByName('pick') && (other.group.getObjectByName('pick').visible = false);
     CH = buildPrintHouse(M, { groundAt, forest, base: BASE }); CH.other = other; scene.add(CH.group); festoon.push(...CH.bulbs);
@@ -273,11 +303,18 @@ async function build() {
     });
     PLACES.churchKeep = (x, z) => { const dx = x - co.c[0], dz = z - co.c[1]; const s2 = dx * ux + dz * uz, t2 = -dx * uz + dz * ux; return Math.abs(s2) < co.h0 + 4 && Math.abs(t2) < co.h1 + 5; };
   }
+  // St Joseph's RC Church, Tatton Street (1861-62, Grade II) in detail on its OpenStreetMap footprint: The Print House looks at it
+  {
+    const i = W.bld.findIndex(b => /St Joseph's Catholic Church/.test(b.n || ''));
+    if (i >= 0) { const b = W.bld.splice(i, 1)[0]; let gy = 1e9; for (const [px, pz] of b.p) gy = Math.min(gy, groundAt(px, pz)); scene.add(buildStJoseph(LMM, { x: -143, z: 212.5, y: gy + 0.15, rot: 0 })); }
+  }
   // Stockport Market Hall (1861) on its footprint, at the head of Churchgate
   {
     const hall = buildMarketHallOSM(LMM, tex, BASE, W.special.markethall, groundAt); scene.add(hall);
     const st0 = hall.userData.strips[0]; PLACES.hall = [st0.xE - 12, hall.userData.top + 3, st0.z1];
   }
+  // the low brewery stores across Apsley Street read as odd wedges with OSM's pitched roofs: flat felt roofs, as in the drone footage
+  for (const b of W.bld) if (b.id === 179636 || b.id === 179637) b.r = 'flat';
   contextGroup = buildContext(M, forest, { lampHeads, festoon });
   scene.add(contextGroup);
   worldGroup = buildWorld(W, M, BASE, forest, {
@@ -292,6 +329,7 @@ async function build() {
     }], far: true,
   });
   scene.add(worldGroup);
+  if (W.special.brewery) scene.add(buildBreweryFront(M));   // Robinsons' street front in detail
   farGroup = buildFar(F, M, { forest, blds: W.bld }); scene.add(farGroup);
   if (farGroup.userData.interchange) PLACES.interchange = farGroup.userData.interchange;
   courtyard = buildCourtyard(M, forest, festoon);
@@ -338,6 +376,15 @@ async function build() {
     VIEWS.street = { pos: new THREE.Vector3(6, groundAt(6, 236) + 38, 236), tgt: new THREE.Vector3(-29, groundAt(-27, 214) + 4, 212) };   // over the street trees, across Seaton House into the garden
     VIEWS.above = { pos: CH.local(36, 72, 34), tgt: CH.local(13, 0, 12) };   // near plan view from the south: the walkways and the garden
     const c = CH.local(13, 0, 11); CLAMP.x0 = c.x - 50; CLAMP.x1 = c.x + 50; CLAMP.z0 = c.z - 50; CLAMP.z1 = c.z + 50; CLAMP.y1 = SY() + 30;
+  }
+  if (IS_UBL) {
+    // Underbank Lofts: the CGI's view from High Street over the residents' garden (extension left, the curved corner right),
+    // the ornate St Petersgate front, High Street at eye level, and above
+    HERO.pos.copy(CH.local(-1, 26, 34)); HERO.tgt.copy(CH.local(-10, 5, -3));
+    VIEWS.rear = { pos: CH.local(-40, 11, 3), tgt: CH.local(-18, 8, -6) };
+    VIEWS.street = { pos: CH.local(-27, 3.7, 19), tgt: CH.local(-7, 6.5, 1) };
+    VIEWS.above = { pos: CH.local(-5, 72, 24), tgt: CH.local(-9, 0, -3) };
+    const c = CH.local(-9, 0, -2); CLAMP.x0 = c.x - 55; CLAMP.x1 = c.x + 55; CLAMP.z0 = c.z - 55; CLAMP.z1 = c.z + 55; CLAMP.y1 = SY() + 34;
   }
   const cpl = new THREE.PointLight('#ffc98a', 0, 14, 1.5); cpl.position.set(16, 2.4, 16); scene.add(cpl); lampLights.push(cpl);
   const lob = new THREE.PointLight('#ffd7a0', 0, 7, 1.8); lob.position.set(8.9, 2.6, -0.8); scene.add(lob); lampLights.push(lob);
@@ -510,7 +557,7 @@ function stepFlight(dt) {
 
 // section plane (floor cut-away)
 let cutTarget = 999;
-const cutY = (f) => SY() + f * FH + 1.32 + (IS_OSL && f === 0 ? Math.max(...CH.houseFloors) : 0);   // Oldham Street: clear the townhouses' raised ground floors too
+const cutY = (f) => SY() + LV(f) + (IS_UBL && f === 0 ? 1.62 : 1.32) + (IS_OSL && f === 0 ? Math.max(...CH.houseFloors) : 0);   // Underbank: keep the sunken garden (+1.4) in the lower ground view   // Oldham Street: clear the townhouses' raised ground floors too
 function setCut(y) { cutTarget = y; if (CUT.constant > 500 && y < 500) CUT.constant = 16; }
 
 // ------------------------------------------------------------------ views
@@ -591,8 +638,9 @@ $('#area').addEventListener('click', (e) => {
 $('#btn-area').onclick = () => toggleArea();
 
 function floorView(f) {
-  const y = f * FH;
-  if (IS_OSL) return f === 0 ? { pos: CH.local(30, y + 54, 44), tgt: CH.local(27, y + 0.5, -7.5) } : { pos: CH.local(60, y + 25, 15), tgt: CH.local(50, y + 0.5, -7.5) };
+  const y = LV(f);
+  if (IS_UBL) return { pos: CH.local(-6, y + 27, 18), tgt: CH.local(-8.5, y + 0.5, -4.5) };
+  if (IS_OSL) return f === 0 ? { pos: CH.local(37, y + 47, 38), tgt: CH.local(34, y + 0.5, -7.5) } : { pos: CH.local(60, y + 25, 15), tgt: CH.local(50, y + 0.5, -7.5) };
   if (IS_PH) return { pos: CH.local(-12, y + 27, -17), tgt: CH.local(12, y + 0.5, 9) };
   return { pos: new THREE.Vector3(-17, y + 25, -21), tgt: new THREE.Vector3(10.5, y + 0.5, 9.5) };
 }
@@ -602,6 +650,13 @@ function unitView(u, alt = viewAlt) {
     const [a, b, c, d] = u.fp, y = u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : u.floor * FH, cu = (a + c) / 2, cv = (b + d) / 2;
     const tgt = CH.local(cu, y + 0.5, cv);
     const pos = u.house ? CH.local(cu + 5, y + 17, cv + 15) : (b < -10) ? CH.local(cu + 14, y + 16, cv + 4) : CH.local(cu + 4, y + 15, cv + 13);
+    if (alt === 1) { const h = pos.clone().sub(tgt); pos.set(tgt.x - h.x, pos.y, tgt.z - h.z); }
+    return { pos, tgt };
+  }
+  if (IS_UBL) {
+    const [a, b, c, d] = u.fp, y = u.level, cu = (a + c) / 2, cv = (b + d) / 2;
+    const tgt = CH.local(cu, y + 0.5, cv);
+    const pos = u.ext ? CH.local(cu - 12, y + 15, cv + 6) : u.slot === 'w' ? CH.local(cu - 3.5, y + 11.5, cv + 8.5) : CH.local(cu + 1, y + 12, cv + 10);
     if (alt === 1) { const h = pos.clone().sub(tgt); pos.set(tgt.x - h.x, pos.y, tgt.z - h.z); }
     return { pos, tgt };
   }
@@ -842,6 +897,7 @@ function viewDirs(u) {
   for (const w of ws) { const k = Math.round(Math.atan2(w.normal.x, w.normal.z) / (Math.PI / 4)); if (!seen.has(k)) seen.set(k, []); seen.get(k).push(w); }
   // The Print House: read the window's face off the plan (n is the plan normal: -v the St Joseph's side, -u Fletcher Street)
   const hint = IS_OSL ? (n, w) => { const [nu, nv] = w.n; return nv > 0.5 ? 'across Syddall Street to the terraces opposite' : nu > 0.5 ? 'over Oldham Street towards Market Street and the Town Hall' : nu < -0.5 ? 'down into the residents’ garden' : 'over the courtyard and the gardens'; }
+    : IS_UBL ? (n, w) => { const [pu, pv] = w.n; return pv > 0.5 ? (u.floor === 0 ? 'into the planted light well, with the garden above' : 'over the residents\u2019 garden to High Street') : pu < -0.5 || (pv > 0.2 && pu < -0.2) ? 'across St Petersgate to the Egerton Arms and the Underbanks' : pu > 0.5 ? 'over the courtyard beside the extension' : 'over the rooftops of the town'; }
     : IS_PH ? (n, w) => { const [pu, pv] = w.n; return pv < -0.5 ? 'to St Joseph\u2019s Church and the primary school' : pu < -0.5 ? 'along Fletcher Street, over the hedge and cobbled wall' : pu > 0.5 && w.id && w.id[0] === 'S' ? 'out of the quiet end of the block, towards St Joseph\u2019s' : 'over the residents\u2019 garden'; }
     : (n) => n.x < -0.7 ? 'across Harvey Street to St Mary\u2019s Gate, with St Mary\u2019s tower above the rooftops' : n.z < -0.7 ? 'across Churchgate to the play park and the big trees' : 'over the residents\u2019 courtyard garden';
   const out = [...seen.values()].map(list => { const w = list[Math.floor(list.length / 2)]; return { w, label: compassWord(w.normal).replace(/^./, c => c.toUpperCase()), hint: hint(w.normal, w) }; });
@@ -849,6 +905,11 @@ function viewDirs(u) {
   if (!PLANF && (u.type === '2A' || u.type === '1D') && PLACES.tower) {
     const end = ws.filter(w => w.normal.x < -0.7).sort((a, b) => a.pos.z - b.pos.z)[0];
     if (end) out.unshift({ w: end, label: 'Down Churchgate', hint: 'straight down Churchgate to St Mary\u2019s Church and the Market Hall', target: new THREE.Vector3(...PLACES.tower) });
+  }
+  // The Print House top floor: the view out over the town to the 1840 viaduct (Charlie's pick, plot 37)
+  if (IS_PH && u.floor === FLOORS.length - 1) {
+    const V = new THREE.Vector3(-715, 11, 435), best = ws.slice().sort((a, b) => b.normal.dot(V.clone().sub(b.pos).setY(0).normalize()) - a.normal.dot(V.clone().sub(a.pos).setY(0).normalize()))[0];
+    if (best) out.unshift({ w: best, label: 'Towards the viaduct', hint: 'over the rooftops of the town centre to the 1840 viaduct', target: V });
   }
   return out;
 }
@@ -863,7 +924,7 @@ function seeView(plot, idx = 0, wo = null) {
   S.plot = plot; setCut(999); CUT.constant = 999; showPlates(null); clearUnitTags();
   if (clayOn) { clayForView = true; setClay(false); }   // the view from a window always shows the real street
   S.mode = 'view'; controls.enabled = false;
-  const eye = w.pos.clone().addScaledVector(w.normal, 0.3); eye.y = IS_OSL ? w.pos.y + 0.15 : SY() + u.floor * FH + 1.5;   // at the glass, so nothing blocks the view
+  const eye = w.pos.clone().addScaledVector(w.normal, 0.3); eye.y = IS_OSL ? w.pos.y + 0.15 : IS_UBL ? SY() + u.level + 1.5 : SY() + u.floor * FH + 1.5;   // at the glass, so nothing blocks the view
   look.base.copy(eye); look.dir.copy(w.normal); look.yaw = look.ty = 0; look.pitch = look.tp = -0.04;
   const D = wo ? null : dirs[idx];
   if (D && D.target) { look.dir.copy(D.target).sub(eye).setY(0).normalize(); look.pitch = look.tp = -0.12; }   // looking down the street from the top floor
@@ -915,7 +976,7 @@ function sunLine(u) {
   const when = s[4] > s[5] * 1.6 ? 'mostly mornings' : s[5] > s[4] * 1.6 ? 'mostly afternoons and evenings' : 'morning and evening';
   return `<div class="sun"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg><span><b>About ${hrs(s[0])} hours of direct sun</b> on midsummer’s day, ${when} (${hm(s[1])}–${hm(s[2] + 0.25)}). Spring and autumn: about ${hrs(s[3])} hours.<i>Estimated from the 3D model.</i></span></div>`;
 }
-const floorWord = (f) => IS_PH ? FLOORS[f].short : f === 0 ? 'G' : String(f);
+const floorWord = (f) => IS_PH || IS_UBL ? FLOORS[f].short : f === 0 ? 'G' : String(f);
 
 let sheetMin = true;
 function renderBack() {
@@ -929,7 +990,7 @@ function renderBack() {
 }
 const NO_INSIDE = true;   // demo meeting: Step inside switched off (interiors, panoramas and code all kept; set false to bring it back)
 const FLOOR_PHOTO = {};
-const FP_PRE = IS_OSL ? 'floors/osl_floor' : IS_PH ? 'floors/ph_floor' : 'floors/floor';
+const FP_PRE = IS_UBL ? 'floors/ubl_floor' : IS_OSL ? 'floors/osl_floor' : IS_PH ? 'floors/ph_floor' : 'floors/floor';
 for (let f = 0; f < FLOORS.length; f++) fetch(BASE + FP_PRE + f + '.jpg', { method: 'HEAD', cache: 'no-store' }).then(r => { if (r.ok) { FLOOR_PHOTO[f] = BASE + FP_PRE + f + '.jpg?v=' + (r.headers.get('last-modified') || '').replace(/\W/g, ''); if (S.mode === 'floor' && S.floor === f) renderPanel(); } }).catch(() => {});
 function openPhoto(f) {
   let d = $('#photobox');
@@ -984,7 +1045,7 @@ function renderPanel() {
     const f = S.hoverFloor ?? (FLOORS.length - 1);
     const fu = floorUnits(f), fa = avail(fu);
     html = `<div class="pscroll">
-      <div class="ph"><span class="label">${IS_OSL ? 'Private preview' : IS_PH ? 'Phase three now selling' : 'Private pre-launch'} · ${UNITS.length - allAv.length} of ${UNITS.length} already secured</span><h1>Choose your floor</h1>
+      <div class="ph"><span class="label">${IS_UBL ? 'The last two homes' : IS_OSL ? 'Private preview' : IS_PH ? 'Phase three now selling' : 'Private pre-launch'} · ${UNITS.length - allAv.length} of ${UNITS.length} ${IS_UBL ? 'sold' : 'already secured'}</span><h1>Choose your floor</h1>
       <p>${IS_OSL ? 'Hover over a floor and its homes light up. Click it to open the floor up, then pick an apartment or a townhouse.' : 'Hover over a floor and its rooms light up. Click it to open the floor plan, then pick an apartment and step inside.'}</p></div>
       <div class="levelbig"><span class="lv">Level</span><span class="n num" id="lvn">${floorWord(f)}</span>
         <div class="meta"><span><b>${fa.length}</b> of ${fu.length} available</span>${fa.length ? `<span>from <b>${fmtGBP(Math.min(...fa.map(u => u.price)))}</b></span>` : ''}<span>${FLOORS[f].note || FLOORS[f].name}</span></div></div>
@@ -994,7 +1055,7 @@ function renderPanel() {
       }).join('')}</div>
       <div class="legend"><span><i class="dot"></i>Available</span><span><i class="dot reserved"></i>Reserved</span><span><i class="dot legals"></i>Sale agreed</span>${UNITS.some(u => st(u).key === 'sold') ? '<span><i class="dot sold"></i>Sold</span>' : ''}</div>
     </div>
-    <div class="pfoot"><span class="note">${IS_OSL ? 'One bedroom apartments and townhouses' : 'One and two bedroom apartments'} from <b class="num" style="color:var(--ink)">${fmtGBP(from)}</b></span><a class="btn wa" href="${waLink()}" target="_blank" rel="noopener">${waIcon}WhatsApp Charlie</a></div>`;
+    <div class="pfoot"><span class="note">${IS_UBL ? 'Two one-bedroom homes left' : IS_OSL ? 'One bedroom apartments and townhouses' : 'One and two bedroom apartments'} from <b class="num" style="color:var(--ink)">${fmtGBP(from)}</b></span><a class="btn wa" href="${waLink()}" target="_blank" rel="noopener">${waIcon}WhatsApp Charlie</a></div>`;
   } else if (S.mode === 'floor') {
     const f = S.floor, fu = floorUnits(f), fa = avail(fu);
     html = `<div class="pscroll">
@@ -1019,12 +1080,13 @@ function renderPanel() {
       <button class="back" data-act="floor" data-floor="${u.floor}">${chev}Level ${floorWord(u.floor)}</button>
       <div class="uhead"><div><span class="label">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''}</span><h2>Plot ${u.plot}</h2></div><span class="status ${s.key}">${s.label}</span></div>
       <div class="acts uacts">
-        ${NO_INSIDE ? '' : `<button class="btn brass wide" data-act="inside">${IS_PH ? 'See the interiors' : hasPano ? 'Step inside · 360°' : 'Step inside'}</button>`}
+        ${NO_INSIDE ? '' : `<button class="btn brass wide" data-act="inside">${IS_PH || IS_UBL ? 'See the interiors' : hasPano ? 'Step inside · 360°' : 'Step inside'}</button>`}
         <button class="btn ${NO_INSIDE ? 'brass' : 'ghost'}${IS_OSL ? ' wide' : ''}" data-act="view">View from window</button>
-        ${IS_OSL ? '' : '<button class="btn ghost" data-act="door">Walk to the door</button>'}
+        ${IS_OSL || IS_UBL ? '' : '<button class="btn ghost" data-act="door">Walk to the door</button>'}
+        ${SPOTS.some(x => x.pano && (x.plot === u.plot || x.type === u.type)) ? '<button class="btn ghost wide" data-act="p360">Photoreal 360° rooms</button>' : ''}
       </div>
       <div class="facts"><div><span class="label">Price</span><b class="num">${fmtGBP(u.price)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
-      <div class="acts uacts"><button class="btn ghost angle" data-act="angle" data-a="0" aria-pressed="${viewAlt === 0}">${IS_OSL ? 'Street angle' : IS_PH ? 'Front angle' : 'Street-side angle'}</button><button class="btn ghost angle" data-act="angle" data-a="1" aria-pressed="${viewAlt === 1}">${IS_OSL ? 'Courtyard angle' : IS_PH ? 'Garden-side angle' : 'Other-side angle'}</button></div>
+      <div class="acts uacts"><button class="btn ghost angle" data-act="angle" data-a="0" aria-pressed="${viewAlt === 0}">${IS_UBL ? 'Garden angle' : IS_OSL ? 'Street angle' : IS_PH ? 'Front angle' : 'Street-side angle'}</button><button class="btn ghost angle" data-act="angle" data-a="1" aria-pressed="${viewAlt === 1}">${IS_UBL ? 'St Petersgate angle' : IS_OSL ? 'Courtyard angle' : IS_PH ? 'Garden-side angle' : 'Other-side angle'}</button></div>
       <div class="acts uacts"><button class="btn ghost" data-act="plan">Floor plan</button><button class="btn ghost more" data-act="details">All details<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M7 17 17 7M9 7h8v8"/></svg></button></div>
       <button class="morehint" data-act="details">Lease, service charge, yield and floor plan <span>Open ›</span></button>
     </div>`;
@@ -1036,7 +1098,7 @@ function renderPanel() {
       </div>
       <p class="aspect">${u.view}.</p>
       ${pitchHTML(u, canBuy)}
-      <img class="planimg" src="${BASE}plans/${IS_OSL ? 'osl_type_' + u.type.replace('+', 'plus') : IS_PH ? 'ph_type_' + u.type : 'unit' + u.plot}.jpg" alt="Floor plan of plot ${u.plot}">
+      <img class="planimg" src="${BASE}plans/${IS_UBL ? (u.plot === 1 || u.plot === 13 ? 'ubl_plot_' + u.plot : 'ubl_floor_' + u.floor) : IS_OSL ? 'osl_type_' + u.type.replace('+', 'plus') : IS_PH ? 'ph_type_' + u.type : 'unit' + u.plot}.jpg" alt="Floor plan of plot ${u.plot}">
       <div class="proof">${PROOFS.map(r => `<div><span>${r.k}</span><span>${r.v}</span></div>`).join('')}${canBuy ? `<div><span>Reserve</span><span>${RESERVE(SITE.reservation)}</span></div>` : ''}</div>
       <div class="kv">
         <div><span>Forecast rent (Brik estimate)</span><span class="num">${fmtGBP(rent)} pcm</span></div>
@@ -1076,8 +1138,9 @@ $('#panel').addEventListener('click', (e) => {
   if (b.dataset.act === 'floor') return toFloor(+b.dataset.floor);
   if (b.dataset.act === 'door') return walkToDoor(S.plot);
   if (b.dataset.act === 'walk3d') return stepInside(S.plot);
+  if (b.dataset.act === 'p360') { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; } return; }
   if (b.dataset.act === 'inside' && !PLANF) { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; return; } }
-  if (b.dataset.act === 'inside') return PLANF ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === 'ph_kitchen'))) : stepInside(S.plot);
+  if (b.dataset.act === 'inside') return PLANF ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === (IS_UBL ? (S.plot === 13 ? 'ubl_loft' : 'ubl_living') : 'ph_kitchen')))) : stepInside(S.plot);
   if (b.dataset.act === 'view') return seeView(S.plot);
   if (b.dataset.act === 'plan') { showPlan('card'); $('#zoomplan').classList.add('on'); return; }
   if (b.dataset.plot) return toUnit(+b.dataset.plot);
@@ -1091,7 +1154,7 @@ $('#panel').addEventListener('pointerover', (e) => {
 $('#panel').addEventListener('pointerleave', () => { if (S.mode === 'explore') setHoverFloor(null); S.hoverPlot = null; });
 function showPlan(k) {
   const pu = unitByPlot.get(S.plot);
-  $('#zp-img').src = IS_OSL ? (k === 'card' ? `${BASE}plans/osl_type_${pu.type.replace('+', 'plus')}.jpg` : `${BASE}plans/osl_floor_${pu.floor}.jpg`) : IS_PH ? (k === 'card' ? `${BASE}plans/ph_type_${pu.type}.jpg` : `${BASE}plans/ph_floor_${pu.floor}.jpg`) : k === 'card' ? `${BASE}plans/unit${S.plot}.jpg` : `${BASE}plans/plot${S.plot}.png`;
+  $('#zp-img').src = IS_UBL ? (k === 'card' && (pu.plot === 1 || pu.plot === 13) ? `${BASE}plans/ubl_plot_${pu.plot}.jpg` : `${BASE}plans/ubl_floor_${pu.floor}.jpg`) : IS_OSL ? (k === 'card' ? `${BASE}plans/osl_type_${pu.type.replace('+', 'plus')}.jpg` : `${BASE}plans/osl_floor_${pu.floor}.jpg`) : IS_PH ? (k === 'card' ? `${BASE}plans/ph_type_${pu.type}.jpg` : `${BASE}plans/ph_floor_${pu.floor}.jpg`) : k === 'card' ? `${BASE}plans/unit${S.plot}.jpg` : `${BASE}plans/plot${S.plot}.png`;
   document.querySelectorAll('[data-zp]').forEach(b => b.dataset.zp !== 'close' && b.setAttribute('aria-pressed', b.dataset.zp === k));
 }
 $('#zoomplan').onclick = (e) => { const b = e.target.closest('[data-zp]'); if (b && b.dataset.zp !== 'close') { showPlan(b.dataset.zp); return; } $('#zoomplan').classList.remove('on'); };
@@ -1124,7 +1187,7 @@ function buildFloorGlow() {
   const shape = new THREE.Shape(off.map(([x, z]) => new THREE.Vector2(x, -z)));
   for (let f = 0; f < FLOORS.length; f++) {
     const h = FH - 0.16;
-    const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.translate(0, f * FH + 0.08, 0);
+    const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.translate(0, LV(f) + 0.08, 0);
     const m = new THREE.MeshBasicMaterial({ color: '#ffcf88', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide });
     const mesh = new THREE.Mesh(g, m); mesh.renderOrder = 4;
     const eg = new THREE.EdgesGeometry(g, 30);
@@ -1203,7 +1266,7 @@ function buildWinPins(u) {
     el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M12 3v18M5 12h14"/></svg><span>View</span>';
     el.onclick = (e) => { e.stopPropagation(); seeView(u.plot, 0, w); };
     $('#labels').appendChild(el);
-    const p = w.pos.clone().addScaledVector(w.normal, -0.25); p.y = PLANF ? Math.min(w.pos.y, SY() + u.floor * FH + 1.0 + (u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : 0)) : SY() + u.floor * FH + 1.0;
+    const p = w.pos.clone().addScaledVector(w.normal, -0.25); p.y = PLANF ? Math.min(w.pos.y, SY() + (IS_UBL ? u.level : u.floor * FH) + 1.0 + (u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : 0)) : SY() + u.floor * FH + 1.0;
     winPins.push({ el, p });
   });
 }
@@ -1216,7 +1279,7 @@ function buildUnitTags(f) {
   clearUnitTags();
   unitTagGroup = new THREE.Group();
   for (const u of floorUnits(f)) {
-    const [x0, z0, x1, z1] = PLANF ? [u.fp[0], -u.fp[3], u.fp[2], -u.fp[1]] : u.fp, y = (u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : f * FH) + 0.07, i = 0.16;
+    const [x0, z0, x1, z1] = PLANF ? [u.fp[0], -u.fp[3], u.fp[2], -u.fp[1]] : u.fp, y = (IS_UBL ? u.level : u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : f * FH) + 0.07, i = 0.16;
     const col = new THREE.Color(st(u).color);
     const g = new THREE.PlaneGeometry(x1 - x0 - 2 * i, z1 - z0 - 2 * i); g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, y, (z0 + z1) / 2);
     // multiplicative tint: works on the HDR floor before tone mapping, so it reads in bright sun too
@@ -1225,7 +1288,7 @@ function buildUnitTags(f) {
     const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(x1 - x0 - 2 * i, 0.02, z1 - z0 - 2 * i)), new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.7 }));
     edge.position.set((x0 + x1) / 2, y + 0.01, (z0 + z1) / 2);
     // glowing brass ring laid on top of the cut walls, shown when the apartment is hovered or chosen
-    const ry = f * FH + 1.36, t = 0.09, rw = [];
+    const ry = (IS_UBL ? u.level : f * FH) + 1.36, t = 0.09, rw = [];
     for (const [ax0, az0, ax1, az1] of [[x0 + i, z0 + i, x1 - i, z0 + i + t], [x0 + i, z1 - i - t, x1 - i, z1 - i], [x0 + i, z0 + i, x0 + i + t, z1 - i], [x1 - i - t, z0 + i, x1 - i, z1 - i]]) {
       const bg = new THREE.BoxGeometry(ax1 - ax0, 0.05, az1 - az0); bg.translate((ax0 + ax1) / 2, ry, (az0 + az1) / 2); rw.push(bg);
     }
@@ -1247,11 +1310,11 @@ function buildUnitTags(f) {
     el.onpointerenter = () => { S.hoverPlot = u.plot; }; el.onpointerleave = () => { S.hoverPlot = null; };
     $('#labels').appendChild(el);
     const tp = new THREE.Vector3((x0 + x1) / 2, y + 0.2, (z0 + z1) / 2); if (PLANF) tp.applyMatrix4(CH.group.matrixWorld);
-    const vg = new THREE.BoxGeometry(x1 - x0 - 2 * i + 0.1, 1.12, z1 - z0 - 2 * i + 0.1); vg.translate((x0 + x1) / 2, f * FH + 0.64, (z0 + z1) / 2);
+    const vg = new THREE.BoxGeometry(x1 - x0 - 2 * i + 0.1, 1.12, z1 - z0 - 2 * i + 0.1); vg.translate((x0 + x1) / 2, (IS_UBL ? u.level : f * FH) + 0.64, (z0 + z1) / 2);
     const veil = new THREE.Mesh(vg, new THREE.MeshBasicMaterial({ color: '#2b2723', transparent: true, opacity: 0, depthWrite: false, toneMapped: false, side: THREE.DoubleSide })); veil.renderOrder = 8; veil.visible = false; unitTagGroup.add(veil);
     unitTags.push({ el, plot: u.plot, p: tp, mesh, edge, veil });
   }
-  if (PLANF) { unitTagGroup.position.copy(CH.group.position); unitTagGroup.quaternion.copy(CH.group.quaternion); try { unitTagGroup.add((IS_OSL ? (a, b, c, d) => buildOSLFitout(a, b, c, d, CH.houseFloors) : buildPHFitout)(floorUnits(f), f, FH, phFurnMats ||= furnitureMaterials(BASE))); } catch (e) { console.warn('ph fit-out', e); } }
+  if (PLANF) { unitTagGroup.position.copy(CH.group.position); unitTagGroup.quaternion.copy(CH.group.quaternion); try { unitTagGroup.add((IS_UBL ? buildUBLFitout : IS_OSL ? (a, b, c, d) => buildOSLFitout(a, b, c, d, CH.houseFloors) : buildPHFitout)(floorUnits(f), f, FH, phFurnMats ||= furnitureMaterials(BASE))); } catch (e) { console.warn('ph fit-out', e); } }
   else {   // the stair and lift core every front door is reached from
     const el = document.createElement('div'); el.className = 'tag core'; el.innerHTML = `<div class="b"><strong>⇅</strong><em>${f === 0 ? 'Entrance · stairs and lift' : 'Stairs and lift · walkway'}</em></div><div class="stem"></div><div class="pin"></div>`;
     $('#labels').appendChild(el); unitTags.push({ el, plot: -1, p: new THREE.Vector3(8.8, f * FH + 0.3, 8.7), mesh: null, edge: null, veil: null });
@@ -1265,6 +1328,9 @@ function buildUnitTags(f) {
 const LANDMARKS = IS_OSL ? [
   ['Syddall Street', [-4, 0.8, -26]], ['Oldham Street', [62, 0.8, -11]], ['Henry Street', [-12, 0.8, 4]], ['Church Street', [26, 0.8, 22]],
   ['Market Street', [106, 0.8, -52]], ["Residents' garden", [48, 2.5, -14]], ['Hyde Town Hall', [129, 14, -76]], ['Hyde Central station · 9 min walk', [-8, 3, -330]],
+] : IS_UBL ? [
+  ['St Petersgate', [-183, 1, 114]], ['High Street', [-160, 1, 93.5]], ['Residents\u2019 garden', [-154.8, 2.2, 98.6]], ['Egerton Arms', [-187, 7, 99]],
+  ['Sunken light well', [-160, 0.3, 101.4]],
 ] : IS_PH ? [
   ['Wellington Street', [-18, 1, 214]], ['Fletcher Street', [-45.5, 1, 185.7]], ['Seaton House · Brik Studios HQ', [-32, 12, 212]], ["Residents' garden", [-49, 3, 210]],
   ["St Joseph's Primary School", [-74, 6, 170]], ["St Joseph's Church", [-128, 16, 207]],
@@ -1535,6 +1601,9 @@ $('#fm-skip').onclick = () => endFilm(false);
 const GALLERY = IS_OSL ? [
   ['osl_hero', 'The corner of Syddall Street and Oldham Street'], ['osl_oldham', 'Oldham Street, with the entrance'], ['osl_court', 'The residents’ garden and the covered walkway'],
   ['osl_living', 'Kitchen and living room'], ['osl_shower', 'Shower room'],
+] : IS_UBL ? [
+  ['ubl_corner', 'The corner of St Petersgate and High Street'], ['ubl_garden', 'The residents’ garden and the extension entrance'], ['ubl_lightwell', 'The garden and the light well outside Plot 1'],
+  ['ubl_loft', 'Plot 13: kitchen and living under the rooflights'], ['ubl_living', 'Kitchen and living in the converted building'], ['ubl_bed', 'Bedroom'], ['ubl_bath', 'Shower room'],
 ] : IS_PH ? [
   ['ph_front', 'Seaton House on Wellington Street: Brik Studios’ new home'], ['ph_court', 'The residents’ garden and the walkways'], ['ph_kitchen', 'Kitchen and living, ground floor'],
   ['ph_bed', 'Bedroom, black accents and oak'], ['ph_bath', 'Shower room in monochrome tile'],
@@ -1560,11 +1629,13 @@ $('#btn-gallery').onclick = () => openGallery(0);
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('.sheet').classList.remove('on'));
 let lf = 'all';
 function renderList() {
-  const F = IS_OSL ? [['all', 'All'], ['available', 'Available'], ['1', 'Apartments'], ['3', 'Townhouses'], ['u160', 'Under £160k'], ['corner', 'Corner'], ['picks', 'Charlie’s picks']]
+  const F = IS_UBL ? [['all', 'All'], ['available', 'Available'], ['old', 'Converted 1872 building'], ['ext', 'New-build extension'], ['corner', 'Corner']]
+    : IS_OSL ? [['all', 'All'], ['available', 'Available'], ['1', 'Apartments'], ['3', 'Townhouses'], ['u160', 'Under £160k'], ['corner', 'Corner'], ['picks', 'Charlie’s picks']]
     : [['all', 'All'], ['available', 'Available'], ['1', 'One bedroom'], ['2', 'Two bedroom'], ['u190', 'Under £190k'], IS_PH ? ['park', 'Side block'] : ['park', 'Park facing'], ['corner', 'Corner'], ['picks', 'Charlie’s picks']];
   $('#l-filters').innerHTML = F.map(([k, t]) => `<button class="chip" data-f="${k}" aria-pressed="${lf === k}">${t}</button>`).join('');
   const test = { all: () => true, available: u => u.status === 'Available', 1: u => u.beds === 1, 2: u => u.beds === 2, 3: u => u.beds === 3, u160: u => u.price < 160000 && u.status === 'Available', u190: u => u.price < 190000 && u.status === 'Available',
-    park: u => IS_PH ? !!u.side : /Park/.test(u.note), corner: u => IS_PH ? (u.type === '2A' || u.type === '1C') : /[Cc]orner/.test(u.note) || (IS_OSL && u.plot === 1), picks: u => !!PICKS[u.plot] };
+    old: u => !u.ext, ext: u => !!u.ext,
+    park: u => IS_PH ? !!u.side : /Park/.test(u.note), corner: u => IS_UBL ? u.slot === 'w' : IS_PH ? (u.type === '2A' || u.type === '1C') : /[Cc]orner/.test(u.note) || (IS_OSL && u.plot === 1), picks: u => !!PICKS[u.plot] };
   const rows = UNITS.filter(test[lf] || test.all).sort((a, b) => lf === 'u190' || lf === 'u160' ? a.price - b.price : a.plot - b.plot);
   $('#l-body').innerHTML = rows.map(u => `<tr class="r" data-plot="${u.plot}"><td><b style="font-family:var(--f-display);font-size:17px">${u.plot}</b> <span style="color:var(--ink-3)">${u.apt}</span>${PICKS[u.plot] ? ' <span class="pick">Pick</span>' : ''}</td><td>${FLOORS[u.floor].name}</td><td>${u.beds} bed · ${u.type}</td><td>${u.sqft} sq ft</td><td style="color:var(--ink-2)">${u.note}</td><td>${fmtGBP(u.price)}</td><td>${fmtGBP(rentFor(u, RK).pcm)} pcm</td><td><span class="status ${st(u).key}">${st(u).label}</span></td></tr>`).join('');
 }
@@ -1864,8 +1935,8 @@ let SPOTS = [], spotPins = [], clayForTour = false;
 let PANO_INDEX = [];   // photoreal panoramas present in assets/pano (index.json, written when they are rendered)
 const T = { spot: -1, prev: null, door: null };
 function buildSpots() {
-  if (IS_OSL) { SPOTS = []; return; }
-  if (IS_PH) {
+  if (IS_OSL || IS_UBL) { SPOTS = []; }
+  else if (IS_PH) {
     const L = (u, y, v) => CH.local(u, y, v), F = FLOOR_H;
     SPOTS = [
       { id: 'wellington', name: 'Wellington Street', at: eyeAt(-9.5, 205), look: V3(-26.5, groundAt(-26.5, 213) + 5, 213), note: 'Seaton House, Brik Studios’ new home, with The Print House behind it.' },
@@ -1892,9 +1963,9 @@ function buildSpots() {
       { id: 'market', name: 'Market Place', at: eyeAt(-178, -13), look: V3(-205, 10, -10), note: 'The 1861 Market Hall, two minutes’ walk from your front door.', glide: false },
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
-    // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    if (!NO_INSIDE) for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793401587`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
+  // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
+  for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793404269`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
   spotPins = SPOTS.map((sp, i) => { const el = document.createElement('button'); el.className = 'spin'; el.style.opacity = 0; el.style.pointerEvents = 'none'; el.innerHTML = `<span>${sp.name}</span><i></i>`; el.onclick = () => goSpot(i); $('#labels').appendChild(el); return el; });
@@ -2127,7 +2198,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793401587').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793404269').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');

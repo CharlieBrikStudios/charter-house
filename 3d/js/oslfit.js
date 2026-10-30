@@ -3,15 +3,15 @@
 // Built in the sheet frame (local x = s along Syddall Street, z = t back from the frontage), inside the model's transform.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1793401587';
-import { Kit, sofa, armchair, bed, bedside, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793401587';
-import { OSL_KEAST } from './osl_data.js?v=1793401587';
+import { CUT } from './materials.js?v=1793404269';
+import { Kit, sofa, armchair, bed, bedside, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793404269';
+import { OSL_KEAST } from './osl_data.js?v=1793404269';
 
 let MATS = null;
 function mats() {
   if (MATS) return MATS;
   const m = (c, r = 0.6, mt = 0, extra = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: mt, clippingPlanes: [CUT], ...extra });
-  MATS = { wall: m('#efe7dc', 0.9), tile: m('#8f9599', 0.35), carpet: m('#b9ad9f', 1), lvt: m('#b48a62', 0.55), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
+  MATS = { tileWall: m('#a9a8a5', 0.3), sageTile: m('#93a993', 0.22), blackM: m('#1d1e20', 0.35, 0.6), wall: m('#ece6dd', 0.9), tile: m('#8f9599', 0.35), carpet: m('#b9ad9f', 1), lvt: m('#b48a62', 0.55), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
     glass: new THREE.MeshStandardMaterial({ color: '#cfe6e2', roughness: 0.05, transparent: true, opacity: 0.35, clippingPlanes: [CUT] }), oak: m('#a87b4f', 0.45), mirror: m('#e6eaec', 0.05, 1), stair: m('#cbbfae', 0.7) };
   return MATS;
 }
@@ -21,14 +21,14 @@ const A1 = {   // the 1A: kitchen-living to Syddall Street, shower room in the m
   walls: [[3.15, 1.65, 3.25, 4.1], [4.7, 1.65, 4.8, 4.1], [3.15, 1.6, 4.8, 1.7], [3.15, 4.05, 3.6, 4.15], [4.4, 4.05, 4.8, 4.15], [4.15, 0, 4.25, 1.65], [5.65, 3.08, 7.9, 3.18]],
   tall: [[5.85, 3.2, 7.6, 4.1]], tile: [[3.25, 1.7, 4.7, 4.05]], carpet: [[4.25, 0, 7.9, 3.08]], lvt: [[0, 0, 3.15, 5.3], [3.15, 4.1, 7.9, 5.3]],
   bath: { r: [3.25, 1.7, 4.7, 4.05], shower: 'W0' }, kitchen: [1.5, 4.1], dining: [1.15, 1.55],
-  sofa: { at: [1.65, 4.82], face: [0, -1], len: 1.9 }, coffee: [1.65, 3.85], rug: [1.65, 3.7, 1.9, 1.5],
+  sofa: { at: [1.65, 4.82], face: [0, -1], len: 1.9, back: 0.46 }, coffee: [1.65, 3.85], rug: [1.65, 3.7, 1.9, 1.5],
   beds: [{ at: [6.4, 1.06], face: [0, 1], w: 1.35 }],
 };
 const H3 = {   // the townhouse ground floor: kitchen and dining to the front, stairs and WC, living room onto the garden
   walls: [[2.4, 2.75, 5.5, 2.85], [5.95, 2.75, 6.7, 2.85], [6.6, 2.85, 6.7, 4.04], [5.25, 2.85, 5.35, 4.04]],
   tile: [[5.35, 2.85, 6.6, 4.04]], lvt: [[0, 0, 11.0, 4.0]],
   stairs: [2.45, 2.9, 5.2, 3.95], wc: [5.35, 2.85, 6.6, 4.04], kitchen: [0.7, 3.4], dining: [5.0, 1.35],
-  sofa: { at: [8.6, 0.5], face: [0, 1], len: 2.0 }, coffee: [8.6, 1.6], rug: [8.6, 1.75, 2.1, 1.7], arm: { at: [9.8, 3.25], face: [-0.6, -0.8] },
+  sofa: { at: [8.6, 0.5], face: [0, 1], len: 2.0, back: 0.48 }, coffee: [8.6, 1.6], rug: [8.6, 1.75, 2.1, 1.7], arm: { at: [9.8, 3.25], face: [-0.6, -0.8] },
 };
 // the 1B (corner) and 1C (Oldham Street wing) sit in the same place on every floor: absolute sheet coordinates
 const B1 = { walls: [[59.6, 4.85, 63.0, 4.95], [59.55, 5.95, 59.65, 8.2], [59.6, 8.2, 63.0, 8.3], [59.55, 8.95, 59.65, 9.95]],
@@ -44,7 +44,8 @@ export function buildOSLFitout(units, F, FH, FM, houseFloors = [0, 0, 0]) {
   const M = mats();
   const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
   const K = new Kit();
-  const fab = (u, k) => ['taupe', 'sage', 'navy'][(u.plot + k) % 3];
+  const pieces = [];   // where the photoreal renders swap in designer pieces (model frame)
+  const fab = (u, k) => k ? (u.house ? 'oatmeal' : 'linen') : (u.house ? 'oatmeal' : 'dove');   // Oldham Street: dove-grey sofas, linen beds (CGI)
   for (const u of units) {
     const s0 = u.fp[0], s1 = u.fp[2];
     const yF = u.house ? houseFloors[Math.floor((u.plot - 1) / 3)] : F * FH, y0 = yF + 0.05, wallH = FH - 0.25;
@@ -59,13 +60,14 @@ export function buildOSLFitout(units, F, FH, FM, houseFloors = [0, 0, 0]) {
       g.translate((ax + bx) / 2, (ya + yb) / 2, (az + bz) / 2); add(k, g);
     };
     const at = (L, W, face) => { const [x, z] = X(L, W); K.at(x, y0, z, Dd(face[0], face[1])); };
+    const piece = (t, L, W, face, o = {}) => { const [x, z] = X(L, W), [fx, fz] = Dd(face[0], face[1]); pieces.push({ t, x, y: y0, z, fx, fz, plot: u.plot, ...o }); };
     const T = u.house ? H3 : u.type === '1A' ? A1 : u.type === '1B' ? B1 : C1;
     for (const [a, b, c, d] of T.walls) box(a, b, c, d, y0, y0 + wallH, 'wall');
     for (const [a, b, c, d] of T.tall || []) box(a, b, c, d, y0, y0 + 2.3, 'wall');
     for (const r of T.lvt || []) box(r[0], r[1], r[2], r[3], y0, y0 + 0.008, 'lvt');
     for (const r of T.tile || []) box(r[0], r[1], r[2], r[3], y0, y0 + 0.012, 'tile');
     for (const r of T.carpet || []) box(r[0], r[1], r[2], r[3], y0, y0 + 0.01, 'carpet');
-    const col = u.floor % 2 ? 'navyK' : 'green';
+    const col = 'sageK';   // sage shaker kitchens with dark worktops, as the launch CGI
     if (Array.isArray(T.kitchen)) {   // along the W = 0 wall, from L a to b
       const [ka, kb] = T.kitchen, len = kb - ka; at((ka + kb) / 2, 0.31, [0, 1]); const [sx, sz] = X(ka + len * 0.7, 0.31), [hx, hz] = X(ka + len * 0.25, 0.31);
       kitchen(K, { len, col, sink: K.localX(sx, sz), hob: K.localX(hx, hz) });
@@ -74,13 +76,16 @@ export function buildOSLFitout(units, F, FH, FM, houseFloors = [0, 0, 0]) {
     } else {   // a run along s = const (1C)
       const [a, b] = T.kitchen.t, len = b - a; K.at(T.kitchen.s, y0, (a + b) / 2, T.kitchen.face); kitchen(K, { len, col, sink: K.localX(T.kitchen.s, a + len * 0.3), hob: K.localX(T.kitchen.s, a + len * 0.75) });
     }
-    { const [L, W] = T.dining; at(L, W, [1, 0]); diningTable(K, { w: 0.8, d: 0.8, round: true, top: 'walnut' }); at(L - 0.6, W, [1, 0]); chair(K, {}); at(L + 0.6, W, [-1, 0]); chair(K, {}); }
+    { const [L, W] = T.dining; at(L, W, [1, 0]); diningTable(K, { w: 0.8, d: 0.8, round: true, top: 'oak' }); at(L - 0.6, W, [1, 0]); chair(K, { fab: 'charcoalF' }); at(L + 0.6, W, [-1, 0]); chair(K, { fab: 'charcoalF' }); }
     if (T.rug) { const [L, W, w, d] = T.rug; at(L, W, [1, 0]); rug(K, { w: d, d: w, m: 'rug1' }); }
-    { const s = T.sofa; at(s.at[0], s.at[1], s.face); sofa(K, { len: s.len, fab: fab(u, 0) }); }
-    { const [L, W] = T.coffee; at(L, W, [1, 0]); coffeeTable(K, {}); }
-    if (T.arm) { at(T.arm.at[0], T.arm.at[1], T.arm.face); armchair(K, { fab: 'cognac' }); }
+    { const s = T.sofa; at(s.at[0], s.at[1], s.face); sofa(K, { len: s.len, fab: fab(u, 0), cushions: ['charcoalF', 'sage'] });
+      piece('sofa', s.at[0], s.at[1], s.face, { len: s.len });
+      if (s.back) piece('art', s.at[0] - s.face[0] * s.back, s.at[1] - s.face[1] * s.back, s.face, { w: 1.0, h: 0.75, yc: 1.5 }); }
+    { const [L, W] = T.coffee; at(L, W, [1, 0]); coffeeTable(K, {}); piece('coffee', L, W, [1, 0]); }
+    if (T.arm) { at(T.arm.at[0], T.arm.at[1], T.arm.face); armchair(K, { fab: 'cognac' }); piece('armchair', T.arm.at[0], T.arm.at[1], T.arm.face); }
+    { const [L, W] = T.dining; piece('dining', L, W, [1, 0]); }
     for (const b of T.beds || []) {
-      at(b.at[0], b.at[1], b.face); bed(K, { w: b.w, fab: fab(u, 1), throwM: 'mustard' });
+      at(b.at[0], b.at[1], b.face); bed(K, { w: b.w, fab: fab(u, 1), throwM: 'sage', pillow2: 'linenGrey' });
       const half = b.w / 2 + 0.33, back = 0.85;
       for (const sd of [-1, 1]) { const L = b.at[0] + (b.face[1] ? sd * half : -b.face[0] * back), W = b.at[1] + (b.face[1] ? -b.face[1] * back : sd * half); at(L, W, b.face); bedside(K); }
     }
@@ -89,6 +94,9 @@ export function buildOSLFitout(units, F, FH, FM, houseFloors = [0, 0, 0]) {
     // shower room: tray and glass screen at one end, basin on an oak vanity, WC, mirror
     if (T.bath) {
       const [a0, b0, a1, b1] = T.bath.r, sh = T.bath.shower;
+      // large grey tiles to dado height all round, sage-green vertical tiles in the shower, black fittings
+      for (const [a, b2, c, d] of [[a0, b0, a1, b0 + 0.02], [a0, b1 - 0.02, a1, b1], [a0, b0, a0 + 0.02, b1], [a1 - 0.02, b0, a1, b1]]) box(a, b2, c, d, y0, y0 + 1.2, 'tileWall');
+      if (sh === 'W0') box(a0, b0, a1, b0 + 0.025, y0, y0 + 2.2, 'sageTile'); else if (sh === 'S1') box(a1 - 0.025, b0, a1, b1, y0, y0 + 2.2, 'sageTile'); else box(a0, b1 - 0.025, a1, b1, y0, y0 + 2.2, 'sageTile');
       if (sh === 'W0') {   // layout frame: shower at the W0 end
         box(a0, b0, a1, b0 + 0.9, y0, y0 + 0.04, 'ceramic'); box(a0 + 0.05, b0 + 0.9, a0 + (a1 - a0) * 0.6, b0 + 0.91, y0 + 0.04, y0 + 2.0, 'glass');
         const m = (b0 + 0.9 + b1) / 2;
@@ -107,7 +115,7 @@ export function buildOSLFitout(units, F, FH, FM, houseFloors = [0, 0, 0]) {
       }
     }
   }
-  const grp = new THREE.Group(); grp.name = 'oslFit' + F;
+  const grp = new THREE.Group(); grp.name = 'oslFit' + F; grp.userData.pieces = pieces;
   for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(list, false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = k !== 'glass'; me.name = 'oslfit_' + k; grp.add(me); }
   for (const [k, list] of Object.entries(K.b)) { const g = mergeGeometries(list.map(x => (x.index ? x.toNonIndexed() : x)), false); if (!g || !FM[k]) continue; const me = new THREE.Mesh(g, FM[k]); me.castShadow = me.receiveShadow = true; me.name = 'oslfurn_' + k; grp.add(me); }
   return grp;
