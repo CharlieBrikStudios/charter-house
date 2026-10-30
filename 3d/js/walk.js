@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793368956';
+import { FLOOR_H as FH } from './data.js?v=1793369182';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -422,6 +422,10 @@ export function buildApartment(u, ctx) {
         if (di) { add('white', box(pos + o - 0.012, y0, a0 - 0.07, pos + o + 0.012, y0 + 2.17, a0)); add('white', box(pos + o - 0.012, y0, a1, pos + o + 0.012, y0 + 2.17, a1 + 0.07)); add('white', box(pos + o - 0.012, y0 + 2.1, a0 - 0.07, pos + o + 0.012, y0 + 2.17, a1 + 0.07)); }
         else { add('white', box(a0 - 0.07, y0, pos + o - 0.012, a0, y0 + 2.17, pos + o + 0.012)); add('white', box(a1, y0, pos + o - 0.012, a1 + 0.07, y0 + 2.17, pos + o + 0.012)); add('white', box(a0 - 0.07, y0 + 2.1, pos + o - 0.012, a1 + 0.07, y0 + 2.17, pos + o + 0.012)); }
       }
+      // the door itself: solid oak, standing open against the hinge side, with a brass lever
+      const wid = a1 - a0 - 0.05;
+      if (di) { add('oak', box(pos + 0.03, y0 + 0.01, a0 + 0.02, pos + 0.03 + wid, y0 + 2.04, a0 + 0.065)); add('brass', box(pos + wid - 0.1, y0 + 1.0, a0 + 0.065, pos + wid - 0.02, y0 + 1.025, a0 + 0.11)); }
+      else { add('oak', box(a0 + 0.02, y0 + 0.01, pos + 0.03, a0 + 0.065, y0 + 2.04, pos + 0.03 + wid)); add('brass', box(a0 + 0.065, y0 + 1.0, pos + wid - 0.1, a0 + 0.11, y0 + 1.025, pos + wid - 0.02)); }
     }
   }
   // shower room: walk-in shower with fluted glass screen, wall-hung WC, basin on an oak vanity, backlit mirror

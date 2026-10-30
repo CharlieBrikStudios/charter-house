@@ -9,21 +9,21 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793368956';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793368956';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793368956';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793368956';
-import { buildContext, buildCourtyard, groundY } from './context.js?v=1793368956';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793368956';
-import { buildFar, hazeUniforms } from './far.js?v=1793368956';
-import { Forest, windUniforms } from './trees.js?v=1793368956';
-import { Interior } from './interior.js?v=1793368956';
-import { buildFurniture, LAYOUTS } from './furniture.js?v=1793368956';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793368956';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793368956';
-import { createTour } from './tour.js?v=1793368956';
-import { buildCrowd } from './crowd.js?v=1793368956';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793368956';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA } from './site.js?v=1793369182';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793369182';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793369182';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793369182';
+import { buildContext, buildCourtyard, groundY } from './context.js?v=1793369182';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms } from './world.js?v=1793369182';
+import { buildFar, hazeUniforms } from './far.js?v=1793369182';
+import { Forest, windUniforms } from './trees.js?v=1793369182';
+import { Interior } from './interior.js?v=1793369182';
+import { buildFurniture, LAYOUTS } from './furniture.js?v=1793369182';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793369182';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM } from './landmarks.js?v=1793369182';
+import { createTour } from './tour.js?v=1793369182';
+import { buildCrowd } from './crowd.js?v=1793369182';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor } from './sales.js?v=1793369182';
 const pitch = IS_PH ? phPitch : chPitch, PICKS = IS_PH ? PH_PICKS : CH_PICKS;
 const AREA_CARDS = ALL_CARDS.filter(c => IS_PH ? c.id !== 'print' : START_AREA || c.id !== 'charter');   // the area edition pins every Brik site
 const SY = () => (CH && CH.y0) || 0;   // the selected building's ground-floor level in world space
@@ -562,8 +562,9 @@ function unitView(u) {
   const out = new THREE.Vector3(c.x - 15, 0, c.z - 15);
   if (c.x > 12) out.set(c.x - 8, 0, c.z - 20);
   if (c.z > 12) out.set(c.x - 20, 0, c.z - 6);
-  const near = c.clone().lerp(new THREE.Vector3(out.x, c.y, out.z), 0.32);   // close in, looking down into the flat
-  return { pos: new THREE.Vector3(near.x, y + 11.5, near.z), tgt: c };
+  const near = c.clone().lerp(new THREE.Vector3(out.x, c.y, out.z), 0.2);   // right down into the flat, looking in from just above
+  const span = Math.max(x1 - x0, z1 - z0);
+  return { pos: new THREE.Vector3(near.x, y + 4.5 + span * 0.55, near.z), tgt: c };
 }
 function primaryWindow(u) {
   const ws = CH.windows.filter(w => w.plot === u.plot);
@@ -1128,6 +1129,12 @@ function buildUnitTags(f) {
     unitTags.push({ el, plot: u.plot, p: tp, mesh, edge, veil });
   }
   if (IS_PH) { unitTagGroup.position.copy(CH.group.position); unitTagGroup.quaternion.copy(CH.group.quaternion); }
+  else {   // the stair and lift core every front door is reached from
+    const el = document.createElement('div'); el.className = 'tag core'; el.innerHTML = `<div class="b"><strong>⇅</strong><em>${f === 0 ? 'Entrance · stairs and lift' : 'Stairs and lift · walkway'}</em></div><div class="stem"></div><div class="pin"></div>`;
+    $('#labels').appendChild(el); unitTags.push({ el, plot: -1, p: new THREE.Vector3(8.8, f * FH + 0.3, 8.7), mesh: null, edge: null, veil: null });
+    const lg = new THREE.BoxGeometry(1.7, 0.02, 1.9); lg.translate(7.8, f * FH + 0.06, 7.4);
+    unitTagGroup.add(new THREE.Mesh(lg, new THREE.MeshStandardMaterial({ color: '#6d7377', metalness: 0.7, roughness: 0.35 })));
+  }
   buildBaths(f);
   scene.add(unitTagGroup);
 }
@@ -1217,7 +1224,7 @@ function pick() {
     return { floor: hits.length ? hits[0].object.userData.floor : null };
   }
   if (S.mode === 'floor' || S.mode === 'unit') {
-    const objs = unitTagGroup ? unitTagGroup.children.filter(o => o.isMesh) : [];
+    const objs = unitTagGroup ? unitTagGroup.children.filter(o => o.isMesh && o.userData.plot != null) : [];
     let hits = ray.intersectObjects(objs, false);
     if (!hits.length) hits = ray.intersectObjects([...CH.unitHit.values()].filter(m => m.userData.floor === S.floor), false);
     return { plot: hits.length ? hits[0].object.userData.plot : null };
@@ -1456,6 +1463,7 @@ function updateHighlights(dt) {
     if (u) U.uHiColor.value.set(st(u).color);
   }
   if (unitTagGroup) for (const t of unitTags) {
+    if (t.plot < 0) continue;
     const on = S.hoverPlot === t.plot || S.plot === t.plot;
     const shade = S.plot != null && !on;   // a unit is selected: shade the others so it pops
     const want = tintFor(t.plot, on, shade);
@@ -1713,7 +1721,7 @@ function buildSpots() {
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
     // photoreal path-traced 360s (rendered offline from this model; listed in assets/pano/index.json)
-    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793368956`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793369182`, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -1943,7 +1951,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793368956').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793369182').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_PH ? p.site === 'ph' : p.site !== 'ph')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
