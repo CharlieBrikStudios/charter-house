@@ -7,21 +7,23 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { CUT } from './materials.js?v=1793407000';
-import { Kit, bed, bedside, chair, rug, coffeeTable } from './furniture.js?v=1793407000';
-import { UBL_LEVELS } from './ubl_data.js?v=1793407000';
+import { CUT } from './materials.js?v=1793411289';
+import { Kit, bed, bedside, chair, rug, coffeeTable } from './furniture.js?v=1793411289';
+import { UBL_LEVELS } from './ubl_data.js?v=1793411289';
+import { plankTexture, weaveTexture, tileTexture, stoneTexture, rugTexture, finishUV } from './finishes.js?v=1793411289';
 
 let MATS = null;
 function mats() {
   if (MATS) return MATS;
   const m = (c, r = 0.6, mt = 0, extra = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: mt, clippingPlanes: [CUT], side: THREE.DoubleSide, ...extra });
+  const tx = (map, r) => m('#ffffff', r, 0, { map });
   MATS = {
-    wall: m('#f1eee9', 0.92), skirt: m('#24262a', 0.5), door: m('#22252a', 0.45), lvt: m('#cdb79a', 0.5), sisal: m('#c7b391', 1), porc: m('#c9c6c0', 0.35),
-    charcoal: m('#2b2d31', 0.48), quartz: m('#ece9e4', 0.18), splash: m('#7d7a76', 0.3), led: new THREE.MeshBasicMaterial({ color: '#ffe6c2', clippingPlanes: [CUT], toneMapped: false }),
-    black: m('#141518', 0.38, 0.5), brass: m('#c39a55', 0.28, 1), travertine: m('#d9cfbf', 0.7), leather: m('#5a3f2c', 0.55), glassT: new THREE.MeshPhysicalMaterial({ color: '#d4e4e2', roughness: 0.04, transparent: true, opacity: 0.3, clippingPlanes: [CUT] }),
+    wall: m('#f1eee9', 0.92), skirt: m('#24262a', 0.5), door: m('#22252a', 0.45), lvt: tx(plankTexture({ base: '#d8bc97', along: 'u', seed: 3 }), 0.48), sisal: tx(weaveTexture({ base: '#c9b694' }), 1), porc: tx(tileTexture({ base: '#cbc7c0', grout: '#aaa59d' }), 0.35),
+    charcoal: m('#2b2d31', 0.48), quartz: m('#ece9e4', 0.18), splash: tx(stoneTexture({ base: '#86827c', w: 0.6, h: 0.3, veins: true }), 0.3), led: new THREE.MeshBasicMaterial({ color: '#ffe6c2', clippingPlanes: [CUT], toneMapped: false }),
+    black: m('#141518', 0.38, 0.5), brass: m('#c39a55', 0.28, 1), travertine: tx(stoneTexture({ base: '#dccfbb' }), 0.6), leather: m('#5a3f2c', 0.55), glassT: new THREE.MeshPhysicalMaterial({ color: '#d4e4e2', roughness: 0.04, transparent: true, opacity: 0.3, clippingPlanes: [CUT] }),
     boucle: m('#ece6db', 1), velvetG: new THREE.MeshPhysicalMaterial({ color: '#4f5c3c', roughness: 0.8, sheen: 1, sheenColor: new THREE.Color('#b7c49a'), sheenRoughness: 0.45, clippingPlanes: [CUT], side: THREE.DoubleSide }),
     walnut: m('#5d3d26', 0.42), oakW: m('#b88a5c', 0.5), grey: m('#a7a39c', 0.9), linen: m('#ece7df', 0.95), ceramic: m('#ffffff', 0.08), chrome: m('#cfd2d5', 0.22, 1), mirror: m('#e6eaec', 0.04, 1),
-    plaster: m('#f3f0eb', 0.95), sky: new THREE.MeshBasicMaterial({ color: '#dfeaf5', clippingPlanes: [CUT], side: THREE.DoubleSide }), rugW: m('#b9ad9c', 1), rugD: m('#6e655b', 1),
+    plaster: m('#f3f0eb', 0.95), sky: new THREE.MeshBasicMaterial({ color: '#dfeaf5', clippingPlanes: [CUT], side: THREE.DoubleSide }), rugW: tx(rugTexture({ base: '#c4b8a6', band: '#a59886', line: '#6b5f52' }), 1), rugD: tx(rugTexture({ base: '#5f574e', band: '#7b7064', line: '#d8ccb6' }), 1),
   };
   return MATS;
 }
@@ -267,7 +269,7 @@ export function buildUBLFitout(units, F, FH, FM) {
     }
   }
   const grp = new THREE.Group(); grp.name = 'ublFit' + F; grp.userData.pieces = pieces;
-  for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(list.map(x => x.index ? x.toNonIndexed() : x).map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = !['glassT', 'sky', 'led'].includes(k); me.name = 'ublfit_' + k; grp.add(me); }
+  for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(finishUV(list.map(x => x.index ? x.toNonIndexed() : x), M[k]).map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = !['glassT', 'sky', 'led'].includes(k); me.name = 'ublfit_' + k; grp.add(me); }
   for (const [k, list] of Object.entries(K.b)) { const g = mergeGeometries(list.map(x => (x.index ? x.toNonIndexed() : x)), false); if (!g || !FM[k]) continue; const me = new THREE.Mesh(g, FM[k]); me.castShadow = me.receiveShadow = true; me.name = 'ublfurn_' + k; grp.add(me); }
   return grp;
 }

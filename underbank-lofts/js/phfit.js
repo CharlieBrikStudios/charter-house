@@ -4,8 +4,9 @@
 // Built in the Print House model's plan frame (x = u, z = -v), so the group sits inside the model's transform.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1793407000';
-import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793407000';
+import { CUT } from './materials.js?v=1793411289';
+import { weaveTexture, tileTexture, finishUV } from './finishes.js?v=1793411289';
+import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793411289';
 
 // which side of each main-block slot its kitchen runs along (kitchens pair back to back across the party walls)
 const KSIDE = { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1 };
@@ -44,7 +45,7 @@ let MATS = null;
 function mats() {
   if (MATS) return MATS;
   const m = (c, r = 0.6, mt = 0, extra = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: mt, clippingPlanes: [CUT], ...extra });
-  MATS = { panel: m('#2e3033', 0.55), tileWall: m('#3b3d40', 0.25), blackM: m('#1d1e20', 0.35, 0.6), wall: m('#ddd7ce', 0.9), cap: m('#2f2925', 0.9), tile: m('#8f9599', 0.35), carpet: m('#b9ad9f', 1), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
+  MATS = { panel: m('#2e3033', 0.55), tileWall: m('#ffffff', 0.25, 0, { map: tileTexture({ base: '#3d3f42', grout: '#2b2c2e', w: 0.6, h: 0.3, nx: 2, ny: 4, gloss: true }) }), blackM: m('#1d1e20', 0.35, 0.6), wall: m('#ddd7ce', 0.9), cap: m('#2f2925', 0.9), tile: m('#ffffff', 0.35, 0, { map: tileTexture({ base: '#959a9d', grout: '#7c8184' }) }), carpet: m('#ffffff', 1, 0, { map: weaveTexture({ base: '#bdb1a3', size: 0.3, carpet: true }) }), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
     glass: new THREE.MeshStandardMaterial({ color: '#cfe6e2', roughness: 0.05, transparent: true, opacity: 0.35, clippingPlanes: [CUT] }), oak: m('#a87b4f', 0.45), tank: m('#d9dcde', 0.5), mirror: m('#e6eaec', 0.05, 1) };
   return MATS;
 }
@@ -125,7 +126,7 @@ export function buildPHFitout(units, F, FH, FM) {
     for (const [L0, W0, L1, W1, h] of T.plant || []) box(L0, W0, L1, W1, y0, y0 + h, 'tank');
   }
   const grp = new THREE.Group(); grp.name = 'phFit' + F; grp.userData.pieces = pieces;
-  for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(list, false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = k !== 'glass'; me.name = 'phfit_' + k; grp.add(me); }
+  for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(finishUV(list, M[k]), false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = k !== 'glass'; me.name = 'phfit_' + k; grp.add(me); }
   for (const [k, list] of Object.entries(K.b)) { const g = mergeGeometries(list.map(x => (x.index ? x.toNonIndexed() : x)), false); if (!g || !FM[k]) continue; const me = new THREE.Mesh(g, FM[k]); me.castShadow = me.receiveShadow = true; me.name = 'phfurn_' + k; grp.add(me); }
   return grp;
 }
