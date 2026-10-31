@@ -9,10 +9,10 @@
 // Heights in metres above the converted building's lower ground floor (+52.00 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UBL_SITE, UBL_UNITS, UBL_LEVELS, UBL_EXT_LEVELS } from './ubl_data.js?v=1793404237';
-import { roomBox } from './building.js?v=1793404237';
-import { roomMaterial } from './materials.js?v=1793404237';
-import { insetPoly } from './world.js?v=1793404237';
+import { UBL_SITE, UBL_UNITS, UBL_LEVELS, UBL_EXT_LEVELS } from './ubl_data.js?v=1793407000';
+import { roomBox } from './building.js?v=1793407000';
+import { roomMaterial } from './materials.js?v=1793407000';
+import { insetPoly } from './world.js?v=1793407000';
 
 const NF = 5;
 const EAVES = 15.4, RIDGE = 18.4;                     // +67.40 / +70.40
@@ -316,8 +316,8 @@ export function buildUBL(M, opts = {}) {
     const Rm = roofGeo([[0, -10.27], [4.86, -11.8], [4.86, 3.85], [0, 3.85]], EXT_EAVES, EXT_RIDGE, 2.3); Rm.slopes.forEach(g => add('slate', g)); add('roofLead', Rm.crown);
     const Ra = roofGeo([[-2.54, -9.47], [0, -10.27], [0, -0.06], [-2.54, -0.06]], EXT_EAVES, EXT_EAVES + 1.3, 1.1); Ra.slopes.forEach(g => add('slate', g)); add('roofLead', Ra.crown);
     { const pitch = Math.atan2(EXT_RIDGE - EXT_EAVES, 2.62);
-      for (const [u, v, ang] of [[0.95, -7.2, Math.PI], [0.95, -3.2, Math.PI], [3.95, -8.6, 0], [3.95, 0.4, 0]]) {   // ang: downhill direction (0 = +u)
-        const g = new THREE.BoxGeometry(0.78, 0.07, 1.18); g.rotateX(pitch); g.rotateY(-ang + Math.PI / 2); g.translate(u, EXT_EAVES + 1.15, v); add("rooflight", g); } }
+      for (const [u, v, ang] of [[3.95, -8.6, 0], [3.95, -4.6, 0], [3.95, 0.4, 0]]) {   // on the slope over the side passage (ang: downhill direction, 0 = +u)
+        const g = new THREE.BoxGeometry(0.78, 0.07, 1.18); g.rotateX(pitch); g.rotateY(-ang + Math.PI / 2); g.translate(u, EXT_EAVES + 1.23, v); add("rooflight", g); } }
   }
 
   // ======================================================== the garden, the light wells, walls and railings

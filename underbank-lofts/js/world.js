@@ -185,6 +185,15 @@ float gWin = 0.0, gLit = 0.0, gFrame = 0.0;`)
   float gl = inW * (1.0 - frameW);
   float r = hsh(vec2(bi + fl * 17.0, sd * 113.0));
   vec3 glass = mix(vec3(0.045, 0.055, 0.065), vec3(0.16, 0.15, 0.13), step(0.72, r) * step(0.5, fract((ly - sill) / wh * 1.7)));
+  // depth: the reveal's shadow along the head and one jamb, and blinds or net curtains half down in some windows
+  if (okBay && !shopGF) {
+    float dTop = (sill + wh) - ly, dSide = lx - x0;
+    glass *= mix(0.45, 1.0, smoothstep(0.03, 0.2, dTop)) * mix(0.6, 1.0, smoothstep(0.02, 0.12, dSide));
+    float r2 = hsh(vec2(bi * 1.7 + fl * 5.3, sd * 41.0));
+    float drop = 0.25 + 0.35 * r2;
+    if (r2 > 0.55 && dTop < wh * drop) glass = mix(glass, vec3(0.62, 0.58, 0.52) * (0.55 + 0.25 * r), 0.75);
+    else if (r2 < 0.12) glass = mix(glass, vec3(0.78, 0.76, 0.72), 0.35 * step(0.5, fract(lx * 9.0)));
+  }
   diffuseColor.rgb = mix(diffuseColor.rgb, rendered ? vec3(0.22, 0.24, 0.25) : vec3(0.92, 0.91, 0.87), frameW);
   diffuseColor.rgb = mix(diffuseColor.rgb, glass, gl);
   gWin = gl; gFrame = frameW;
