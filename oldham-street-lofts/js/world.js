@@ -399,8 +399,10 @@ vec4 S = texture2D(tSplat, vec2(vSp.x, 1.0 - vSp.y));
 vec3 asph = texture2D(tAsph, vWp.xz / 7.0).rgb * vec3(0.92, 0.92, 0.95);
 vec3 grs = texture2D(tGrass, vWp.xz / 5.0).rgb * vec3(0.95, 1.08, 0.82);
 grs *= 0.88 + 0.24 * texture2D(tGrass, vWp.xz / 41.0).g;
-diffuseColor.rgb = mix(diffuseColor.rgb, asph, S.g);
-diffuseColor.rgb = mix(diffuseColor.rgb, grs, S.r);
+float nEdge = texture2D(tGrass, vWp.xz / 3.1).g - 0.5;   // crisp, slightly ragged edges instead of the splat's soft blur
+float wA = smoothstep(0.32, 0.68, S.g + nEdge * 0.08), wG = smoothstep(0.3, 0.7, S.r + nEdge * 0.3);
+diffuseColor.rgb = mix(diffuseColor.rgb, asph, wA);
+diffuseColor.rgb = mix(diffuseColor.rgb, grs, wG);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.13, 0.17, 0.18), S.b);
 diffuseColor.rgb *= mix(0.62, 1.0, S.a);
 gWet = S.b;`)
