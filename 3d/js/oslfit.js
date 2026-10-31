@@ -3,10 +3,10 @@
 // Built in the sheet frame (local x = s along Syddall Street, z = t back from the frontage), inside the model's transform.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1793452974';
-import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1793452974';
-import { Kit, sofa, armchair, bed, bedside, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793452974';
-import { OSL_KEAST } from './osl_data.js?v=1793452974';
+import { CUT } from './materials.js?v=1793454264';
+import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1793454264';
+import { Kit, sofa, armchair, bed, bedside, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793454264';
+import { OSL_KEAST } from './osl_data.js?v=1793454264';
 
 let MATS = null;
 function mats() {
