@@ -7,10 +7,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { CUT } from './materials.js?v=1793429750';
-import { Kit, bed, bedside, chair, rug, coffeeTable } from './furniture.js?v=1793429750';
-import { UBL_LEVELS } from './ubl_data.js?v=1793429750';
-import { plankTexture, weaveTexture, tileTexture, stoneTexture, rugTexture, finishUV } from './finishes.js?v=1793429750';
+import { CUT } from './materials.js?v=1793442054';
+import { Kit, bed, bedside, chair, rug, coffeeTable } from './furniture.js?v=1793442054';
+import { UBL_LEVELS } from './ubl_data.js?v=1793442054';
+import { plankTexture, weaveTexture, tileTexture, stoneTexture, rugTexture, finishUV } from './finishes.js?v=1793442054';
 
 let MATS = null;
 function mats() {
@@ -72,11 +72,10 @@ export function buildUBLFitout(units, F, FH, FM) {
       const g = new THREE.BoxGeometry(s1 - s, hh, t); g.rotateY(ang); g.translate(u0 + du * m, y0 + hh / 2, v0 + dv * m); add('wall', g);
       const sk = new THREE.BoxGeometry(s1 - s, 0.15, t + 0.03); sk.rotateY(ang); sk.translate(u0 + du * m, y0 + 0.075, v0 + dv * m); add('skirt', sk);
     }
-    for (let i = 1; i < cuts.length - 1; i += 2) {   // black four-panel door, open a little, and its architrave
+    for (let i = 1; i < cuts.length - 1; i += 2) {   // the doorway's black architrave and head (no leaf standing out into the room)
       const a = cuts[i], b = cuts[i + 1], w = b - a, m = (a + b) / 2, hd = Math.min(2.05, (ceil ? ceil(u0 + du * m, v0 + dv * m) - y0 : h) - 0.05);
       for (const sx of [a - 0.06, b]) { const ar = new THREE.BoxGeometry(0.06, hd + 0.06, t + 0.04); ar.rotateY(ang); ar.translate(u0 + du * (sx + 0.03), y0 + (hd + 0.06) / 2, v0 + dv * (sx + 0.03)); add('door', ar); }
       const hdr = new THREE.BoxGeometry(w + 0.12, 0.06, t + 0.04); hdr.rotateY(ang); hdr.translate(u0 + du * m, y0 + hd + 0.03, v0 + dv * m); add('door', hdr);
-      const leaf = new THREE.BoxGeometry(w - 0.02, hd - 0.01, 0.04); leaf.translate(w / 2 - 0.01, (hd - 0.01) / 2, 0); leaf.rotateY(-1.2); leaf.rotateY(ang); leaf.translate(u0 + du * (a + 0.01), y0, v0 + dv * (a + 0.01)); add('door', leaf);
     }
   };
   // kitchen run: charcoal handleless base and wall units, quartz worktop, stone splashback, LED strip; faces (fx, fz)

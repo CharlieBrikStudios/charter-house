@@ -4,9 +4,9 @@
 // Built in the Print House model's plan frame (x = u, z = -v), so the group sits inside the model's transform.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1793429750';
-import { weaveTexture, tileTexture, finishUV } from './finishes.js?v=1793429750';
-import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793429750';
+import { CUT } from './materials.js?v=1793442054';
+import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1793442054';
+import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793442054';
 
 // which side of each main-block slot its kitchen runs along (kitchens pair back to back across the party walls)
 const KSIDE = { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1 };
@@ -45,7 +45,7 @@ let MATS = null;
 function mats() {
   if (MATS) return MATS;
   const m = (c, r = 0.6, mt = 0, extra = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: mt, clippingPlanes: [CUT], ...extra });
-  MATS = { panel: m('#2e3033', 0.55), tileWall: m('#ffffff', 0.25, 0, { map: tileTexture({ base: '#3d3f42', grout: '#2b2c2e', w: 0.6, h: 0.3, nx: 2, ny: 4, gloss: true }) }), blackM: m('#1d1e20', 0.35, 0.6), wall: m('#ddd7ce', 0.9), cap: m('#2f2925', 0.9), tile: m('#ffffff', 0.35, 0, { map: tileTexture({ base: '#959a9d', grout: '#7c8184' }) }), carpet: m('#ffffff', 1, 0, { map: weaveTexture({ base: '#bdb1a3', size: 0.3, carpet: true }) }), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
+  MATS = { panel: m('#2e3033', 0.55), tileWall: m('#ffffff', 0.25, 0, { map: tileTexture({ base: '#3d3f42', grout: '#2b2c2e', w: 0.6, h: 0.3, nx: 2, ny: 4, gloss: true }) }), blackM: m('#1d1e20', 0.35, 0.6), wall: m('#ddd7ce', 0.9), cap: m('#2f2925', 0.9), tile: m('#ffffff', 0.35, 0, { map: tileTexture({ base: '#959a9d', grout: '#7c8184' }) }), carpet: m('#ffffff', 1, 0, { map: weaveTexture({ base: '#bdb1a3', size: 0.3, carpet: true }) }), lvt: m('#ffffff', 0.42, 0, { map: plankTexture({ base: '#dcc8aa', seed: 7 }) }), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
     glass: new THREE.MeshStandardMaterial({ color: '#cfe6e2', roughness: 0.05, transparent: true, opacity: 0.35, clippingPlanes: [CUT] }), oak: m('#a87b4f', 0.45), tank: m('#d9dcde', 0.5), mirror: m('#e6eaec', 0.05, 1) };
   return MATS;
 }
@@ -72,6 +72,7 @@ export function buildPHFitout(units, F, FH, FM) {
     const piece = (t, L, W, face, o = {}) => { const [x, z] = X(L, W), [fx, fz] = D(face[0], face[1]); pieces.push({ t, x, y: y0, z, fx, fz, plot: u.plot, ...o }); };
     // partitions, floors
     for (const [L0, W0, L1, W1] of T.walls) box(L0, W0, L1, W1, y0, y0 + wallH, 'wall');
+    box(0.02, 0.02, T.len - 0.02, T.wid - 0.02, y0 - 0.012, y0 + 0.004, 'lvt');   // pale oak boards through the flat (as the CGIs); tiles and carpet sit on top
     for (const r of T.tile) box(r[0], r[1], r[2], r[3], y0, y0 + 0.012, 'tile');
     for (const r of T.carpet) box(r[0], r[1], r[2], r[3], y0, y0 + 0.01, 'carpet');
     // kitchen along the W = 0 wall
