@@ -9,10 +9,10 @@
 // Heights in metres above the converted building's lower ground floor (+52.00 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UBL_SITE, UBL_UNITS, UBL_LEVELS, UBL_EXT_LEVELS } from './ubl_data.js?v=1793411289';
-import { roomBox } from './building.js?v=1793411289';
-import { roomMaterial } from './materials.js?v=1793411289';
-import { insetPoly } from './world.js?v=1793411289';
+import { UBL_SITE, UBL_UNITS, UBL_LEVELS, UBL_EXT_LEVELS } from './ubl_data.js?v=1793415621';
+import { roomBox } from './building.js?v=1793415621';
+import { roomMaterial } from './materials.js?v=1793415621';
+import { insetPoly } from './world.js?v=1793415621';
 
 const NF = 5;
 const EAVES = 15.4, RIDGE = 18.4;                     // +67.40 / +70.40
@@ -446,7 +446,7 @@ export function buildUBL(M, opts = {}) {
     for (const [u, v, y, r] of G._shrubs || []) { const p = W(u, y, v); opts.forest.add?.(p.x, p.z, { kind: 'pot', h: r * 1.4, r, y: p.y, seed: Math.round(u * 31 + v * 7) }); }
     { const p = W(-7.4, GARDEN, -5.9); opts.forest.add?.(p.x, p.z, { kind: 'birch', h: 6.0, r: 1.5, y: p.y, seed: 4407 }); }
     // clipped box hedges along the garden side of the boundary wall, lavender and grasses on the bank
-    for (let i = 0; i < BOUND.length - 1; i++) { const a = BOUND[i + 1 === BOUND.length ? i : i], b = BOUND[i + 1]; for (let t = 0.15; t < 1; t += 0.3) { const u = a[0] + (b[0] - a[0]) * t, v = a[1] + (b[1] - a[1]) * t + 0.55; const p = W(u, GARDEN, v); opts.forest.add?.(p.x, p.z, { kind: 'hedge', h: 0.9, r: 0.5, y: p.y, seed: 4500 + i * 10 + Math.round(t * 10) }); } }
+    for (let i = 0; i < BOUND.length - 1; i++) { const a = BOUND[i + 1 === BOUND.length ? i : i], b = BOUND[i + 1]; for (let t = 0.15; t < 1; t += 0.3) { const bv = a[1] + (b[1] - a[1]) * t, u = a[0] + (b[0] - a[0]) * t, v = bv + 0.55; if (v > -Math.max(1.3, Math.min(2.6, -bv - 1.1)) - 0.45) continue; const p = W(u, GARDEN, v); opts.forest.add?.(p.x, p.z, { kind: 'hedge', h: 0.9, r: 0.5, y: p.y, seed: 4500 + i * 10 + Math.round(t * 10) }); } }   // hedges only where there is garden between the wall and the light well
   }
   // rooms behind the glass (light up with the floor)
   const roomTex = new THREE.TextureLoader().load((opts.base || 'assets/') + 'tex/room_atlas.jpg'); roomTex.colorSpace = THREE.SRGBColorSpace;
