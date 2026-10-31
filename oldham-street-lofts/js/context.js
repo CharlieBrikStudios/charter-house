@@ -3,8 +3,8 @@
 // Positions are approximate, from Google Earth and the Ollier Smurthwaite site/context drawings.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxGeom, boxUV } from './building.js?v=1793442054';
-import { groundAt, letteringTexture } from './world.js?v=1793442054';
+import { boxGeom, boxUV } from './building.js?v=1793445294';
+import { groundAt, letteringTexture } from './world.js?v=1793445294';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -601,8 +601,8 @@ export function buildCourtyard(M, forest, festoon) {
 // red brick with pilasters and big small-paned windows, white painted lettering in the parapets; a white rendered stair
 // tower in front; the red-and-cream striped turret with its flagpole; the brewhouse tower rising behind.
 // Built in street coordinates: s along the frontage from its west corner A, t back into the site.
-export function buildBreweryFront(M) {
-  const A = [-1.42, 44.82], E = [47.5, 71.36];
+export function buildBreweryFront(M, off = [0, 0]) {
+  const A = [-1.42 + off[0], 44.82 + off[1]], E = [47.5 + off[0], 71.36 + off[1]];   // off: shifted along Harvey Street towards Underbank (Charlie, 31 Oct)
   const L = Math.hypot(E[0] - A[0], E[1] - A[1]), d = [(E[0] - A[0]) / L, (E[1] - A[1]) / L], n = [-d[1], d[0]];
   const gAt = (s, t) => groundY(A[0] + d[0] * s + n[0] * t, A[1] + d[1] * s + n[1] * t);
   const group = new THREE.Group(); group.name = 'brewery_front';
