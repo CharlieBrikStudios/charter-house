@@ -3,15 +3,16 @@
 // Built in the sheet frame (local x = s along Syddall Street, z = t back from the frontage), inside the model's transform.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1793409961';
-import { Kit, sofa, armchair, bed, bedside, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793409961';
-import { OSL_KEAST } from './osl_data.js?v=1793409961';
+import { CUT } from './materials.js?v=1793411278';
+import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1793411278';
+import { Kit, sofa, armchair, bed, bedside, kitchen, chair, diningTable, coffeeTable, rug } from './furniture.js?v=1793411278';
+import { OSL_KEAST } from './osl_data.js?v=1793411278';
 
 let MATS = null;
 function mats() {
   if (MATS) return MATS;
   const m = (c, r = 0.6, mt = 0, extra = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: mt, clippingPlanes: [CUT], ...extra });
-  MATS = { tileWall: m('#a9a8a5', 0.3), sageTile: m('#93a993', 0.22), blackM: m('#1d1e20', 0.35, 0.6), wall: m('#ece6dd', 0.9), tile: m('#8f9599', 0.35), carpet: m('#b9ad9f', 1), lvt: m('#b48a62', 0.55), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
+  MATS = { tileWall: m('#ffffff', 0.3, 0, { map: tileTexture({ base: '#b0afab', grout: '#9a9995', w: 0.6, h: 0.3, nx: 2, ny: 4 }) }), sageTile: m('#ffffff', 0.22, 0, { map: tileTexture({ base: '#95ab95', grout: '#e6e4de', w: 0.3, h: 0.075, nx: 3, ny: 8, joint: 0.002, bond: true, gloss: true }) }), blackM: m('#1d1e20', 0.35, 0.6), wall: m('#ece6dd', 0.9), tile: m('#ffffff', 0.35, 0, { map: tileTexture({ base: '#959a9d', grout: '#7c8184' }) }), carpet: m('#ffffff', 1, 0, { map: weaveTexture({ base: '#bcb0a1', size: 0.3, carpet: true }) }), lvt: m('#ffffff', 0.5, 0, { map: plankTexture({ base: '#bf9468', seed: 5 }) }), ceramic: m('#ffffff', 0.08), chrome: m('#d8dadd', 0.25, 1),
     glass: new THREE.MeshStandardMaterial({ color: '#cfe6e2', roughness: 0.05, transparent: true, opacity: 0.35, clippingPlanes: [CUT] }), oak: m('#a87b4f', 0.45), mirror: m('#e6eaec', 0.05, 1), stair: m('#cbbfae', 0.7) };
   return MATS;
 }
@@ -116,7 +117,7 @@ export function buildOSLFitout(units, F, FH, FM, houseFloors = [0, 0, 0]) {
     }
   }
   const grp = new THREE.Group(); grp.name = 'oslFit' + F; grp.userData.pieces = pieces;
-  for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(list, false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = k !== 'glass'; me.name = 'oslfit_' + k; grp.add(me); }
+  for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(finishUV(list, M[k]), false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = k !== 'glass'; me.name = 'oslfit_' + k; grp.add(me); }
   for (const [k, list] of Object.entries(K.b)) { const g = mergeGeometries(list.map(x => (x.index ? x.toNonIndexed() : x)), false); if (!g || !FM[k]) continue; const me = new THREE.Mesh(g, FM[k]); me.castShadow = me.receiveShadow = true; me.name = 'oslfurn_' + k; grp.add(me); }
   return grp;
 }
