@@ -5,9 +5,9 @@
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PH_SITE, PH_FH, PH_UNITS } from './ph_data.js?v=1793429754';
-import { roomBox } from './building.js?v=1793429754';
-import { roomMaterial } from './materials.js?v=1793429754';
+import { PH_SITE, PH_FH, PH_UNITS } from './ph_data.js?v=1793442057';
+import { roomBox } from './building.js?v=1793442057';
+import { roomMaterial } from './materials.js?v=1793442057';
 
 const FH = PH_FH, NF = 5;
 const MAIN = [0, 0, 27.2, 10.2];      // u0 v0 u1 v1
@@ -30,6 +30,15 @@ export function buildPrintHouse(M, opts = {}) {
   group.position.set(PH_SITE.origin[0], y0, PH_SITE.origin[1]); group.rotation.y = B.theta;
   group.userData.y0 = y0;
   const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
+  // split a geometry's triangles by face normal (test(n) true -> second part): the inside faces of the brick facades and the
+  // undersides of slabs and roofs are plaster, so the cut-aways and the photoreal rooms read as finished interiors
+  const splitBy = (g, test) => {
+    if (g.index) g = g.toNonIndexed();
+    const pos = g.attributes.position, nt = pos.count / 3, pick = new Array(nt), a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    for (let t = 0; t < nt; t++) { a.fromBufferAttribute(pos, 3 * t); b.fromBufferAttribute(pos, 3 * t + 1).sub(a); c.fromBufferAttribute(pos, 3 * t + 2).sub(a); pick[t] = test(b.cross(c).normalize()); }
+    const part = (want) => { const out = new THREE.BufferGeometry(); for (const [nm, at] of Object.entries(g.attributes)) { const sz = at.itemSize, arr = []; for (let t = 0; t < nt; t++) if (pick[t] === want) for (let k = 0; k < 3 * sz; k++) arr.push(at.array[3 * t * sz + k]); out.setAttribute(nm, new THREE.Float32BufferAttribute(arr, sz)); } return out; };
+    return [part(false), part(true)];
+  };
   // box in plan coords: u0..u1 along x, v0..v1 -> z = -v
   const box = (u0, v0, u1, v1, ya, yb) => { const g = new THREE.BoxGeometry(Math.max(0.01, u1 - u0), Math.max(0.01, yb - ya), Math.max(0.01, v1 - v0)); g.translate((u0 + u1) / 2, (ya + yb) / 2, -(v0 + v1) / 2); return g; };
   const TOPB = (NF - 1) * FH;            // top of the brick storeys (zinc top floor above)
@@ -49,8 +58,9 @@ export function buildPrintHouse(M, opts = {}) {
     // brick-sized UVs
     const p = g.attributes.position, uv = new Float32Array(p.count * 2);
     for (let i = 0; i < p.count; i++) { uv[2 * i] = (p.getX(i) + p.getZ(i)) / 2.2; uv[2 * i + 1] = p.getY(i) / 2.2; }
-    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.userData.brickUV = true;
-    add(mat, g);
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    const [outer, inner] = splitBy(g, (nv) => nv.x * n[0] - nv.z * n[1] < -0.7); outer.userData.brickUV = true;
+    add(mat, outer); if (inner.attributes.position.count) add('plasterIn', inner);
     // frames, glass, sills for each opening
     for (const o of openings) {
       const w = o.b - o.a, h = o.y1 - o.y0, c = (o.a + o.b) / 2;
@@ -200,6 +210,7 @@ export function buildPrintHouse(M, opts = {}) {
     steel: new THREE.MeshStandardMaterial({ color: '#1f2225', roughness: 0.42, metalness: 0.6, clippingPlanes: M.brick?.clippingPlanes }),
     deck: new THREE.MeshStandardMaterial({ color: '#55595d', roughness: 0.8, metalness: 0.2, clippingPlanes: M.brick?.clippingPlanes }),
     balGlass: M.balGlass, roof: new THREE.MeshStandardMaterial({ color: '#4a4c4f', roughness: 0.9, clippingPlanes: M.brick?.clippingPlanes }), lawn: M.grass, path: (() => { const m = M.paving.clone(); m.color = new THREE.Color('#cfc6b6'); m.roughness = 1; return m; })(), planter: new THREE.MeshStandardMaterial({ color: '#2b2e31', roughness: 0.55, metalness: 0.4 }),
+    plasterIn: new THREE.MeshStandardMaterial({ color: '#ebe7e1', roughness: 0.92, clippingPlanes: M.brick?.clippingPlanes }),
     soil: new THREE.MeshStandardMaterial({ color: '#3b2c22', roughness: 1 }), oak: new THREE.MeshStandardMaterial({ color: '#a5774a', roughness: 0.6 }),
   };
   const meshes = {};
@@ -210,8 +221,9 @@ export function buildPrintHouse(M, opts = {}) {
       for (let i = 0; i < p.count; i++) { const ax = Math.abs(nn.getX(i)), ay = Math.abs(nn.getY(i)); uv[2 * i] = (ay > 0.7 ? p.getX(i) : ax > 0.7 ? p.getZ(i) : p.getX(i)) / 2.2; uv[2 * i + 1] = (ay > 0.7 ? p.getZ(i) : p.getY(i)) / 2.2; }
       gg.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     }
-    const g = mergeGeometries(list, false); if (!g) continue;
+    let g = mergeGeometries(list, false); if (!g) continue;
     if (!g.attributes.uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+    if (k === 'roof') { const [top, under] = splitBy(g, (nv) => nv.y < -0.7); g = top; (G.soffit ||= []).push(under); }
     const m = new THREE.Mesh(g, mats[k] || M.stone); m.castShadow = !['glass', 'balGlass', 'room', 'lawn', 'path'].includes(k); m.receiveShadow = true; m.name = 'ph_' + k;
     group.add(m); meshes[k] = m;
   }
@@ -247,7 +259,12 @@ export function buildPrintHouse(M, opts = {}) {
     }
     const sg = mergeGeometries(slab.map(g => g.index ? g.toNonIndexed() : g), false);
     { const p = sg.attributes.position, uv = sg.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 1.6, p.getZ(i) / 1.6); }   // oak boards at a real scale
-    const sm = new THREE.Mesh(sg, M.timber || M.plaster || M.stone); sm.receiveShadow = true; sm.name = 'ph_slabs'; group.add(sm);
+    const [sTop, sUnder] = splitBy(sg, (nv) => nv.y < -0.7);
+    const sm = new THREE.Mesh(sTop, M.timber || M.plaster || M.stone); sm.receiveShadow = true; sm.name = 'ph_slabs'; group.add(sm);
+    { // plaster ceilings: the undersides of the slabs and of the roof deck
+      const sf = mergeGeometries([...(G.soffit || []), sUnder].map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false);
+      if (sf) { const so = new THREE.Mesh(sf, mats.plasterIn); so.receiveShadow = true; so.name = 'ph_soffit'; group.add(so); }
+    }
     const wm = new THREE.Mesh(mergeGeometries(walls, false), M.plaster || M.stone); wm.castShadow = false; wm.receiveShadow = true; wm.name = 'ph_party'; group.add(wm);
   }
   // picking volumes

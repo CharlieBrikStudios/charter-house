@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793429754';
+import { FLOOR_H as FH } from './data.js?v=1793442057';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -430,6 +430,10 @@ export function buildApartment(u, ctx) {
       const di = cells[0][2]; const alongIs = cells.map(c => di ? c[1] : c[0]); const lo = Math.min(...alongIs), hi = Math.max(...alongIs);
       const width = (hi - lo + 1) * RES; if (width > 1.25 || width < 0.5) continue;
       const line = cells[0][di ? 0 : 1];
+      // a real doorway has plan wall at both ends of the opening; where two areas of an open plan merely narrow (against a
+      // kitchen run, a wardrobe, a column) a door frame would stand on its own in the room, so leave it out
+      const wallAt = (along, k) => { for (let t = 1; t <= 4; t++) for (const q of [line - 1, line, line + 1, line + 2]) { const ii = di ? q : along + k * t, jj = di ? along + k * t : q; if (ii >= 0 && jj >= 0 && ii < nx && jj < nz && wallMask[idx(ii, jj)]) return true; } return false; };
+      if (!wallAt(lo, -1) || !wallAt(hi, 1)) { globalThis.__doorSkips = (globalThis.__doorSkips || 0) + 1; continue; }
       const pos = di ? gx0 + (line + 1) * RES : gz0 + (line + 1) * RES;
       const a0 = (di ? gz0 : gx0) + lo * RES, a1 = (di ? gz0 : gx0) + (hi + 1) * RES;
       // head (fills the opening above 2.1 m) and architrave on both faces
