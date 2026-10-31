@@ -338,7 +338,10 @@ export function letteringTexture(text, { w = 4096, h = 256, font = '700 170px "A
   x.shadowColor = 'rgba(0,0,0,0.25)'; x.shadowBlur = 4; x.fillText(text, w / 2, h / 2 + 6);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
 }
-function buildBrewery(M, poly, Wl, roofsFlat, chim, group) {
+function buildBrewery(M, poly, Wl, roofsFlat, chim, group, bulkPolys = null) {
+  // the brewery ranges behind and beside the detailed street front, from a footprint worked out offline (the OSM outline
+  // less the front's blocks and its yard), flat felt roofs
+  if (bulkPolys && bulkPolys.length) { bulkPolys.forEach((p, i) => addBuilding(Wl, roofsFlat, [], chim, { p, h: 10.6, r: 'flat', s: 'works', id: 4242 + i * 7 }, 0)); return; }
   // The Apsley Street front (Frederic Robinson Ltd offices, the Unicorn Brewery range, the striped turret and the
   // brewhouse tower) is modelled in detail by context.js buildBreweryFront(); here: the brewery yards and ranges
   // behind it on the OSM footprint, cut back so they don't fight the detailed front.
@@ -414,7 +417,7 @@ gWet = S.b;`)
   const Wl = new Wall(), roofsFlat = [], roofsSlate = [], roofsLead = [], chim = [];
   for (const id of (opts.white || [])) { const b = W.bld.find(q => q.id === id); if (b) b.white = true; }
   W.bld.forEach((b, i) => addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead));
-  if (W.special.brewery) buildBrewery(M, W.special.brewery, Wl, roofsFlat, chim, group);
+  if (W.special.brewery) buildBrewery(M, W.special.brewery, Wl, roofsFlat, chim, group, W.special.brewery_bulk);
   const tm = townMaterial(M);
   const wm = new THREE.Mesh(Wl.geometry(), tm); wm.castShadow = true; wm.receiveShadow = true; wm.name = 'town_walls'; group.add(wm);
   const worldUV = (g, sc) => { const p = g.attributes.position, uv = new Float32Array(p.count * 2); for (let i = 0; i < p.count; i++) { uv[i * 2] = p.getX(i) / sc; uv[i * 2 + 1] = p.getZ(i) / sc; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return g; };
