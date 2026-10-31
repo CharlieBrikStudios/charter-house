@@ -53,6 +53,29 @@ export const groundAt = (x, z) => terrainH(x, z) + G0;
 
 const rng = (seed) => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
+const FLAT_TONES = [[0.55, 0.55, 0.56], [0.62, 0.61, 0.6], [0.78, 0.77, 0.75], [0.7, 0.7, 0.71], [1.0, 0.99, 0.97], [0.9, 0.85, 0.78]];
+// roofing felt in 1 m rolls with lapped seams, weathering, ponding stains and the odd patch repair; 8 m tile
+let FELT = null;
+function feltTexture() {
+  if (FELT) return FELT;
+  const N = 1024, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d'), img = x.createImageData(N, N), d = img.data;
+  const h2 = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const K = Math.PI * 2 / 8, sm = (u, v, k, sd) => Math.sin(u * K * k + sd) * Math.sin(v * K * k + sd * 2.1) * 0.5 + Math.sin((u + v) * K * k + sd * 3.3) * 0.5;   // periodic over the 8 m tile
+  for (let py = 0; py < N; py++) for (let px = 0; px < N; px++) {
+    const u = px / N * 8, v = py / N * 8, roll = Math.floor(v), fr = v - roll;
+    let t = 0.78 + 0.04 * sm(u, v, 1, 1) + 0.03 * sm(u, v, 5, 2) + 0.05 * (h2(px, py) - 0.5);
+    t *= 0.96 + 0.06 * h2(roll, 3);                              // each roll a slightly different age
+    if (fr < 0.03) t *= 0.78; else if (fr < 0.06) t *= 1.06;      // the lap: shadow line then the raised edge
+    const st = sm(u, v, 2, 7) * 0.6 + sm(u, v, 3, 4) * 0.4; if (st > 0.5) t *= 1 - (st - 0.5) * 0.3;   // light ponding stains
+    t = Math.max(0, Math.min(1.2, t));
+    const o = (py * N + px) * 4; d[o] = 168 * t; d[o + 1] = 165 * t; d[o + 2] = 160 * t; d[o + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  x.globalAlpha = 0.18; x.fillStyle = '#2d2c2b';   // patch repairs
+  for (let k = 0; k < 6; k++) { const w = 40 + h2(k, 9) * 90, hh = 30 + h2(k, 4) * 60; x.fillRect(h2(k, 1) * (N - w), h2(k, 2) * (N - hh), w, hh); }
+  FELT = new THREE.CanvasTexture(c); FELT.wrapS = FELT.wrapT = THREE.RepeatWrapping; FELT.colorSpace = THREE.SRGBColorSpace; FELT.anisotropy = 8;
+  return FELT;
+}
 
 // ------------------------------------------------------------------ geometry helpers
 export function polyArea(p) { let a = 0; for (let i = 0; i < p.length; i++) { const q = p[i], r = p[(i + 1) % p.length]; a += q[0] * r[1] - r[0] * q[1]; } return a / 2; }
@@ -293,6 +316,12 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
     // flat roof slightly below the parapet line
     const shape = new THREE.Shape(p.map(q => new THREE.Vector2(q[0], -q[1])));
     const g = new THREE.ShapeGeometry(shape); g.rotateX(-Math.PI / 2); g.translate(0, yTop - 0.4, 0);
+    { // each roof its own covering: weathered black felt, mid-grey felt, pale single-ply membrane, or gravel ballast
+      const tn = FLAT_TONES[Math.floor(hash(b.id * 3.7 + 1) * FLAT_TONES.length)], jit = 0.92 + 0.16 * hash(b.id * 9.1);
+      const n = g.attributes.position.count, col = new Float32Array(n * 3);
+      for (let k = 0; k < n; k++) { col[k * 3] = tn[0] * jit; col[k * 3 + 1] = tn[1] * jit; col[k * 3 + 2] = tn[2] * jit; }
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    }
     roofsFlat.push(g);
     // a little rooftop plant on bigger flat roofs
     if (Math.abs(polyArea(p)) > 400 && hash(b.id * 5.1) < 0.6) {
@@ -388,8 +417,8 @@ gWet = S.b;`)
   const wm = new THREE.Mesh(Wl.geometry(), tm); wm.castShadow = true; wm.receiveShadow = true; wm.name = 'town_walls'; group.add(wm);
   const worldUV = (g, sc) => { const p = g.attributes.position, uv = new Float32Array(p.count * 2); for (let i = 0; i < p.count; i++) { uv[i * 2] = p.getX(i) / sc; uv[i * 2 + 1] = p.getZ(i) / sc; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return g; };
   if (roofsFlat.length) {
-    const g = worldUV(mergeGeometries(roofsFlat.map(x => x.index ? x.toNonIndexed() : x), false), 7);
-    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: M.paving.map, color: '#a9a6a2', roughness: 0.95 })); m.receiveShadow = true; m.castShadow = true; m.name = 'town_roofs'; group.add(m);
+    const g = worldUV(mergeGeometries(roofsFlat.map(x => { x = x.index ? x.toNonIndexed() : x; if (!x.attributes.color) x.setAttribute('color', new THREE.BufferAttribute(new Float32Array(x.attributes.position.count * 3).fill(0.75), 3)); return x; }), false), 8);
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: feltTexture(), vertexColors: true, roughness: 0.93 })); m.receiveShadow = true; m.castShadow = true; m.name = 'town_roofs'; group.add(m);
   }
   if (roofsLead.length) {
     const g = worldUV(mergeGeometries(roofsLead.map(x => x.index ? x.toNonIndexed() : x), false), 3);
