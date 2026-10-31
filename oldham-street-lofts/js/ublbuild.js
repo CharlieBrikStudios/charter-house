@@ -9,10 +9,10 @@
 // Heights in metres above the converted building's lower ground floor (+52.00 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UBL_SITE, UBL_UNITS, UBL_LEVELS, UBL_EXT_LEVELS } from './ubl_data.js?v=1793424417';
-import { roomBox } from './building.js?v=1793424417';
-import { roomMaterial } from './materials.js?v=1793424417';
-import { insetPoly } from './world.js?v=1793424417';
+import { UBL_SITE, UBL_UNITS, UBL_LEVELS, UBL_EXT_LEVELS } from './ubl_data.js?v=1793429750';
+import { roomBox } from './building.js?v=1793429750';
+import { roomMaterial } from './materials.js?v=1793429750';
+import { insetPoly } from './world.js?v=1793429750';
 
 const NF = 5;
 const EAVES = 15.4, RIDGE = 18.4;                     // +67.40 / +70.40
@@ -317,7 +317,7 @@ export function buildUBL(M, opts = {}) {
     const Ra = roofGeo([[-2.54, -9.47], [0, -10.27], [0, -0.06], [-2.54, -0.06]], EXT_EAVES, EXT_EAVES + 1.3, 1.1); Ra.slopes.forEach(g => add('slate', g)); add('roofLead', Ra.crown);
     { const pitch = Math.atan2(EXT_RIDGE - EXT_EAVES, 2.62);
       for (const [u, v, ang] of [[3.95, -8.6, 0], [3.95, -4.6, 0], [3.95, 0.4, 0]]) {   // on the slope over the side passage (ang: downhill direction, 0 = +u)
-        const g = new THREE.BoxGeometry(0.78, 0.07, 1.18); g.rotateX(pitch); g.rotateY(-ang + Math.PI / 2); g.translate(u, EXT_EAVES + 1.23, v); add("rooflight", g); } }
+        const g = new THREE.BoxGeometry(0.78, 0.07, 1.18); g.rotateX(-pitch); g.rotateY(-ang + Math.PI / 2); g.translate(u, EXT_EAVES + 1.2, v); add("rooflight", g); } }   // tilted down the slope (it was tilted against it, so the panes stood up like fins)
   }
 
   // ======================================================== the garden, the light wells, walls and railings
@@ -465,7 +465,8 @@ export function buildUBL(M, opts = {}) {
       const y = UBL_LEVELS[f], hgt = (f < NF - 1 ? UBL_LEVELS[f + 1] : EAVES) - y - 0.3;
       for (const x of [-10.57, -4.55]) walls.push(box(x - 0.1, 0.42, x + 0.1, 8.2, y, y + hgt).toNonIndexed());
       walls.push(box(-19.5, 8.0, -0.42, 8.2, y, y + hgt).toNonIndexed());   // the corridor wall along the rear
-      const ye = UBL_EXT_LEVELS[f]; walls.push(box(-2.12, -5.5, 4.44, -5.35, ye, ye + 2.8).toNonIndexed(), box(-2.12, -3.45, 4.44, -3.3, ye, ye + 2.8).toNonIndexed());
+      const ye = UBL_EXT_LEVELS[f], he = Math.min(2.8, (f < NF - 1 ? UBL_EXT_LEVELS[f + 1] : EXT_EAVES) - ye - 0.3);   // top floor: stop under the eaves, or the walls poke through the slates
+      walls.push(box(-2.12, -5.5, 4.44, -5.35, ye, ye + he).toNonIndexed(), box(-2.12, -3.45, 4.44, -3.3, ye, ye + he).toNonIndexed());
     }
     const sg = mergeGeometries(slab, false);
     { const p = sg.attributes.position, uv = sg.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 1.6, p.getZ(i) / 1.6); }
