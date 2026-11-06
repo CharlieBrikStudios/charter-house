@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H } from './data.js?v=1793997219';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1793997219';
+import { UNITS, FLOOR_H } from './data.js?v=1794000245';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1794000245';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -68,6 +68,9 @@ export function boxGeom(x0, y0, z0, x1, y1, z1) {
   g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
   return g;
 }
+
+// the Churchgate entrance floor: level with the pavement there (street level -0.55 + the 0.14 kerb), not the ground floor
+const ENT_V = -0.41;
 
 // ---------------------------------------------------------------- façade definitions
 // window spec: { id, c (u centre), v0, v1, w, type: 'win2'|'win1'|'blind'|'door'|'arch', floor }
@@ -166,9 +169,9 @@ export function buildCharterHouse(M, base) {
     const h = new THREE.Path();
     if (o.type === 'arch') {
       const x0 = o.c - 1.3, x1 = o.c + 1.3, spring = 3.3;
-      h.moveTo(x0, 0); h.lineTo(x1, 0); h.lineTo(x1, spring);
+      h.moveTo(x0, ENT_V); h.lineTo(x1, ENT_V); h.lineTo(x1, spring);
       h.absarc(o.c, spring, 1.3, 0, Math.PI, false);
-      h.lineTo(x0, 0);
+      h.lineTo(x0, ENT_V);
     } else {
       const x0 = o.c - o.w / 2, x1 = o.c + o.w / 2;
       h.moveTo(x0, o.v0); h.lineTo(x1, o.v0); h.lineTo(x1, o.v1); h.lineTo(x0, o.v1); h.lineTo(x0, o.v0);
@@ -340,19 +343,21 @@ export function buildCharterHouse(M, base) {
       g.translate(c, spring, T / 2 - 0.05);
       fa.place(g); boxUV(g); B.add(i === 11 ? 'stone' : 'brick2', g);
     }
-    // jambs
+    // jambs (down to the pavement: the entrance is level with Churchgate, Charlie 6 Nov)
     for (const s of [-1, 1]) {
-      const g = boxGeom(c + s * r - (s < 0 ? 0.3 : 0), 0, -0.05, c + s * r + (s > 0 ? 0.3 : 0), spring, 0.05);
+      const g = boxGeom(c + s * r - (s < 0 ? 0.3 : 0), ENT_V, -0.05, c + s * r + (s > 0 ? 0.3 : 0), spring, 0.05);
       fa.place(g); boxUV(g); B.add('brick2', g);
     }
     // recessed screen: doors, sign transom, fanlight
     const dz = 0.32;
     const screen = (a, b, c2, d, key = 'frame') => { const g = boxGeom(a, b, dz, c2, d, dz + 0.1); fa.place(g); B.add(key, g); };
-    screen(c - r, 0, c - r + 0.08, spring); screen(c + r - 0.08, 0, c + r, spring);
-    screen(c - 0.04, 0, c + 0.04, 2.5);                     // meeting stile
+    screen(c - r, ENT_V, c - r + 0.08, spring); screen(c + r - 0.08, ENT_V, c + r, spring);
+    screen(c - 0.04, ENT_V, c + 0.04, 2.5);                     // meeting stile
     screen(c - r, 2.45, c + r, 2.55); screen(c - r, 3.18, c + r, 3.3);
-    for (const dx of [-0.65, 0.65]) screen(c + dx - 0.03, 0, c + dx + 0.03, 2.45);
-    screen(c - r, 0, c + r, 0.12, 'door');
+    for (const dx of [-0.65, 0.65]) screen(c + dx - 0.03, ENT_V, c + dx + 0.03, 2.45);
+    screen(c - r, ENT_V, c + r, ENT_V + 0.12, 'door');
+    // stone threshold flush with the paving, from the pavement edge in under the doors
+    { const g = boxGeom(c - r - 0.3, ENT_V - 0.2, -0.8, c + r + 0.3, ENT_V - 0.02, dz + 0.14); fa.place(g); boxUV(g, 1.2); B.add('stone', g); }
     // fanlight radial bars
     for (let i = 1; i < 6; i++) {
       const a = Math.PI * i / 6;
@@ -361,7 +366,7 @@ export function buildCharterHouse(M, base) {
     }
     const tor = new THREE.TorusGeometry(0.45, 0.025, 6, 24, Math.PI); tor.translate(c, spring, dz + 0.05); fa.place(tor); B.add('frame', tor);
     // glass (doors + fanlight)
-    const gd = new THREE.PlaneGeometry(2.5, 3.2); gd.rotateY(Math.PI); gd.translate(c, 1.65, dz + 0.04); fa.place(gd); B.add('glass', gd);
+    const gd = new THREE.PlaneGeometry(2.5, 3.25 - ENT_V); gd.rotateY(Math.PI); gd.translate(c, (3.25 + ENT_V) / 2, dz + 0.04); fa.place(gd); B.add('glass', gd);
     const fan = new THREE.CircleGeometry(r - 0.05, 32, 0, Math.PI); fan.rotateY(Math.PI); fan.translate(c, spring, dz + 0.04); fa.place(fan); B.add('glass', fan);
     // sign transom panel (brand wordmark)
     const signTex = new THREE.TextureLoader().load(base + 'brand_charterhouse.png'); signTex.colorSpace = THREE.SRGBColorSpace; signTex.anisotropy = 8;
@@ -383,7 +388,7 @@ export function buildCharterHouse(M, base) {
       const sh2 = new THREE.Mesh(sg2, shadowM); sh2.renderOrder = 2; group.add(sh2);
     }
     // lobby behind
-    const lg = roomBox(c - 1.4, 0, dz + 0.12, c + 1.4, 4.7, 4.5, 3, 0.4); fa.place(lg);
+    const lg = roomBox(c - 1.4, ENT_V, dz + 0.12, c + 1.4, 4.7, 4.5, 3, 0.4); fa.place(lg);
     rooms.push({ plot: 'lobby', geom: lg });
     windows.push({ id: 'ARCH', floor: 0, facade: 'cbC', plot: null, pos: fa.point(c, 1.8, 0.3), normal: fa.n.clone(), w: 2.6, h: 4.6 });
   }
@@ -643,28 +648,59 @@ function frontDoors(B) {
     for (const t of [0.1, 0.9]) { const x = x0 + (x1 - x0) * (along === 'x' ? t : 0.5), z = z0 + (z1 - z0) * (along === 'z' ? t : 0.5); B.add('steel', boxGeom(x - 0.03, y, z - 0.03, x + 0.03, y + 0.42, z + 0.03)); }
     B.add('cushion', boxGeom(x0 + 0.03, y + 0.46, z0 + 0.03, x1 - 0.03, y + 0.52, z1 - 0.03));
     const L = along === 'x' ? x1 - x0 : z1 - z0;
-    [[0.22, 'cushionA'], [0.78, 'cushionB']].forEach(([t, k]) => { const g = new THREE.BoxGeometry(along === 'x' ? 0.36 : 0.1, 0.34, along === 'x' ? 0.1 : 0.36); g.rotateX(along === 'x' ? -0.2 : 0); g.rotateZ(along === 'z' ? 0.2 : 0);
+    // two or three scatter cushions in a mix of the three fabrics, each at its own slouch
+    const CK = ['cushionA', 'cushionB', 'cushion'], nC = R() < 0.35 ? 3 : 2, ts = nC === 3 ? [0.18, 0.5, 0.82] : [0.2 + R() * 0.06, 0.74 + R() * 0.06];
+    ts.map(t => [t, CK[Math.floor(R() * 3)], 0.3 + R() * 0.1]).forEach(([t, k, sz]) => { const g = new THREE.BoxGeometry(along === 'x' ? sz : 0.1, sz - 0.02, along === 'x' ? 0.1 : sz); g.rotateX(along === 'x' ? -0.12 - R() * 0.2 : 0); g.rotateZ(along === 'z' ? 0.12 + R() * 0.2 : 0); g.rotateY((R() - 0.5) * 0.3);
       const cx = along === 'x' ? x0 + L * t : (x0 + 0.06), cz = along === 'z' ? z0 + L * t : (z0 + 0.06); g.translate(cx, y + 0.68, cz); B.add(k, g); });
   };
   const trough = (x0, z0, x1, z1, y) => { B.add('potCharcoal', boxGeom(x0, y + 0.82, z0, x1, y + 1.02, z1));
     const n = Math.max(2, Math.round(Math.max(x1 - x0, z1 - z0) / 0.25));
     for (let i = 0; i < n; i++) { const t = (i + 0.5) / n, x = x0 + (x1 - x0) * t, z = z0 + (z1 - z0) * t; ball(x, y + 1.04, z, 0.13, i % 2 ? 'leafLight' : 'leafDark'); blooms(x, y + 1.08, z, 0.12, 6);
       if (i % 2 === 0) { const g = new THREE.IcosahedronGeometry(0.07, 1); g.scale(1, 2.2, 1); g.translate(x, y + 0.82, z); B.add('leafLight', g); } } };   // trailing over the front
+  // a bit more planting to choose from, so no two front doors are dressed alike (Charlie, 6 Nov: "not exact copy paste each time")
+  const grass = (x, y, z, sc) => { cyl(x, y, z, 0.12 * sc, 0.15 * sc, 0.4 * sc, 'potStone');
+    for (let i = 0; i < 11; i++) { const g = new THREE.ConeGeometry(0.022 * sc, 0.6 * sc * (0.75 + R() * 0.5), 4); g.translate(0, 0.3 * sc, 0); g.rotateZ((R() - 0.5) * 0.8); g.rotateX((R() - 0.5) * 0.8); g.translate(x + (R() - 0.5) * 0.1 * sc, y + 0.4 * sc, z + (R() - 0.5) * 0.1 * sc); B.add(R() < 0.5 ? 'leafLight' : 'leafDark', g); } };
+  const olive = (x, y, z, sc) => { cyl(x, y, z, 0.15 * sc, 0.19 * sc, 0.38 * sc, R() < 0.5 ? 'potClay' : 'potStone'); cyl(x, y + 0.38 * sc, z, 0.02, 0.026, 0.62 * sc, 'timber');
+    ball(x, y + sc + 0.16 * sc, z, 0.22 * sc, 'leafLight'); ball(x + 0.09 * sc, y + 0.92 * sc, z + 0.05 * sc, 0.15 * sc, 'leafDark'); ball(x - 0.08 * sc, y + 1.12 * sc, z - 0.04 * sc, 0.13 * sc, 'leafLight'); };
+  const potScaled = (x, y, z, sc, kind) => { const k = kind ?? Math.floor(R() * 5);
+    if (k === 0) { cyl(x, y, z, 0.15 * sc, 0.2 * sc, 0.46 * sc, R() < 0.6 ? 'potCharcoal' : 'potStone'); ball(x, y + 0.7 * sc, z, 0.25 * sc, 'leafDark'); }
+    else if (k === 1) { cyl(x, y, z, 0.12 * sc, 0.17 * sc, 0.3 * sc, R() < 0.7 ? 'potClay' : 'potCharcoal'); ball(x, y + 0.31 * sc, z, 0.17 * sc, 'leafLight'); blooms(x, y + 0.36 * sc, z, 0.15 * sc, 10 + Math.floor(R() * 10)); }
+    else if (k === 2) grass(x, y, z, sc);
+    else if (k === 3) olive(x, y, z, sc);
+    else { const s2 = sc * 0.75; potScaled(x, y, z, sc, 1); potScaled(x + 0.24 * sc, y, z + 0.12 * sc, s2, R() < 0.5 ? 0 : 2); } };
+  // one front door: a mat (size, colour and angle vary), a lantern to one side, planting at one or both flanks where there is room.
+  // axis 'x': the wall runs along x at z = w0 and the deck is +z; axis 'z': along z at x = w0, deck +x
+  const dressDoor = (axis, u, w0, y, keepOut) => {
+    const W = (a, o) => axis === 'x' ? [a, w0 + o] : [w0 + o, a];
+    const mw = 0.86 + R() * 0.12, md = 0.5 + R() * 0.1, ang = (R() - 0.5) * 0.1, [mx, mz] = W(u + (R() - 0.5) * 0.05, md / 2 + 0.05);
+    const grey = R() < 0.3;
+    for (const [inset, key, t0, t1] of [[0, grey ? 'potCharcoal' : 'coirEdge', 0.002, 0.014], [0.04, grey ? 'potStone' : 'coir', 0.004, 0.017]]) {
+      const g = new THREE.BoxGeometry(axis === 'x' ? mw - 2 * inset : md - 2 * inset, t1 - t0, axis === 'x' ? md - 2 * inset : mw - 2 * inset); g.rotateY(ang); g.translate(mx, y + (t0 + t1) / 2, mz); B.add(key, g);
+    }
+    const side = R() < 0.5 ? -1 : 1, free = (a) => !keepOut.some(([p, q]) => a > p - 0.3 && a < q + 0.3);
+    { const la = u + side * 0.66; if (free(la)) { const [lx, lz] = W(la, 0); lantern(lx, y, lz, axis === 'x' ? 0 : 1, axis === 'x' ? 1 : 0); } }
+    for (const sd of [side, -side]) {
+      if (sd === side && R() < 0.55) continue;   // usually planting on the side away from the lantern; sometimes both
+      const a = u + sd * (0.66 + R() * 0.12); if (!free(a)) continue;
+      const [px, pz] = W(a, 0.22 + R() * 0.06); potScaled(px, y, pz, 0.8 + R() * 0.45);
+    }
+  };
   for (let f = 1; f <= 3; f++) {
     const y = f * FH;
-    // Churchgate-wing walkway: doors in the wall at z = 11.03, deck to z = 12.45
-    const dz = 11.03;
-    for (const x of [19.32, 17.83, 13.98]) { mat(x - 0.46, dz + 0.04, x + 0.46, dz + 0.6, y); lantern(x + (x === 13.98 ? 0.66 : -0.66), y, dz, 0, 1); }
-    topiary(18.57, y, dz + 0.24); flowerPot(13.38, y, dz + 0.22);
-    bench(14.95, dz + 0.02, 16.15, dz + 0.4, y, 'x'); flowerPot(14.68, y, dz + 0.22); topiary(16.45, y, dz + 0.24); flowerPot(16.95, y, dz + 0.22);
+    // Churchgate-wing walkway: doors in the wall at z = 11.03, deck to z = 12.45; the bench moves along floor by floor
+    const dz = 11.03, doorsC = [19.32, 17.83, 13.98];
+    const bx = [14.85, 15.05, 15.0][f - 1], bl = [1.2, 1.0, 1.1][f - 1], benchC = [bx, bx + bl];
+    for (const x of doorsC) dressDoor('x', x, dz, y, [benchC, ...doorsC.filter(o => o !== x).map(o => [o - 0.5, o + 0.5])]);
+    if (f !== 2 || R() < 0.5) bench(benchC[0], dz + 0.02, benchC[1], dz + 0.4, y, 'x'); else { potScaled(15.2, y, dz + 0.26, 1.15, 3); potScaled(15.85, y, dz + 0.24, 0.9); }
     // Harvey-wing walkway: doors in the wall at x = 11.7, deck to x = 13.15
-    const dx = 11.7;
-    for (const z of [16.5, 17.9]) { mat(dx + 0.04, z - 0.46, dx + 0.6, z + 0.46, y); lantern(dx, y, z - 0.66, 1, 0); }
-    topiary(dx + 0.24, y, 17.2); flowerPot(dx + 0.22, y, 15.62);
-    bench(dx + 0.02, 14.0, dx + 0.4, 15.2, y, 'z'); topiary(dx + 0.24, y, 13.7);
-    // planters hooked over the inside of the rail, trailing flowers
-    for (const [a, b] of [[14.2, 15.3], [16.4, 17.5], [18.5, 19.5]]) trough(a, 12.45 - 0.24, b, 12.45 - 0.06, y);
-    for (const [a, b] of [[14.4, 15.4], [16.6, 17.6]]) trough(13.15 - 0.24, a, 13.15 - 0.06, b, y);
+    const dx = 11.7, doorsH = [16.5, 17.9];
+    const benchH = f === 3 ? [14.1, 15.0] : [14.0, 15.2];
+    for (const z of doorsH) dressDoor('z', z, dx, y, [benchH, ...doorsH.filter(o => o !== z).map(o => [o - 0.5, o + 0.5])]);
+    bench(dx + 0.02, benchH[0], dx + 0.4, benchH[1], y, 'z'); potScaled(dx + 0.24, y, 13.7, 0.85 + R() * 0.35);
+    // planters hooked over the inside of the rail, trailing flowers (a different run on each floor)
+    const tr = [[[14.2, 15.3], [16.4, 17.5], [18.5, 19.5]], [[13.9, 14.8], [16.0, 17.3], [18.7, 19.6]], [[14.5, 15.7], [17.0, 18.0]]][f - 1];
+    for (const [a, b] of tr) trough(a, 12.45 - 0.24, b, 12.45 - 0.06, y);
+    for (const [a, b] of [[[14.4, 15.4], [16.6, 17.6]], [[14.0, 15.1], [16.9, 17.6]], [[15.0, 16.2]]][f - 1]) trough(13.15 - 0.24, a, 13.15 - 0.06, b, y);
   }
   // ground-floor flats open onto the courtyard
   for (const x of [13.6, 19.8]) { mat(x - 0.5, 11.07, x + 0.5, 11.7, -0.05); lantern(x - 0.7, -0.05, 11.03, 0, 1); topiary(x + 0.75, -0.05, 11.3); flowerPot(x - 0.75, -0.05, 11.28); }

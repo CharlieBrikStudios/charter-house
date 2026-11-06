@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1793997219';
+import { boxUV } from './building.js?v=1794000245';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -79,12 +79,13 @@ export function landmarkMaterials(tex, base) {
   const mhRoof = T('mh_roof2.jpg'); const mhSide = T('mh_side2.jpg', { wrap: false }); const mhGable = T('mh_gable.png', { wrap: false });
   return {
     // St Mary's is deep red Cheshire sandstone, darkened with age; dressings a shade lighter
-    sand: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.4, 1.4), roughness: 0.9, color: new THREE.Color(0.86, 0.5, 0.42) }),
-    stone: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.2, 1.2), roughness: 0.82, color: new THREE.Color(1.0, 0.66, 0.56) }),
+    sand: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.4, 1.4), roughness: 0.92, color: new THREE.Color(0.52, 0.56, 0.68) }),   // 6 Nov: weathered grey-brown (Charlie's photos, Street View), not the bright red it was
+    stone: new THREE.MeshStandardMaterial({ map: sandMap, normalMap: sandN, normalScale: new THREE.Vector2(1.2, 1.2), roughness: 0.85, color: new THREE.Color(0.74, 0.8, 0.94) }),
     glass: new THREE.MeshStandardMaterial({ color: '#1b2026', roughness: 0.08, metalness: 0.55, envMapIntensity: 1.6 }),
     lead: new THREE.MeshStandardMaterial({ color: '#4b5051', roughness: 0.72, metalness: 0.1 }),
     slate: new THREE.MeshStandardMaterial({ color: '#4c5157', roughness: 0.62 }),
-    clock: new THREE.MeshStandardMaterial({ color: '#f1ece0', roughness: 0.4, emissive: new THREE.Color('#fff2d0'), emissiveIntensity: 0.06 }),
+    clock: new THREE.MeshStandardMaterial({ color: '#f7f6f2', roughness: 0.4, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0.05 }),
+    clockBlack: new THREE.MeshStandardMaterial({ color: '#141414', roughness: 0.5, metalness: 0.3 }),
     gold: new THREE.MeshStandardMaterial({ color: '#c9a24f', metalness: 1, roughness: 0.3 }),
     iron: new THREE.MeshStandardMaterial({ color: '#ecebe5', roughness: 0.45, metalness: 0.15 }),
     mhRoof: new THREE.MeshStandardMaterial({ map: mhRoof, roughness: 0.3, metalness: 0.1, envMapIntensity: 0.9 }),
@@ -103,13 +104,23 @@ export function landmarkMaterials(tex, base) {
 }
 
 // ---------------------------------------------------------------- St Mary's Church
-export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Math.PI / 4 } = {}) {
+export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Math.PI / 4, clip = null } = {}) {
   const K = new Kit();
   const H0 = 0;  // church floor level in its frame
-  // raised churchyard: grass plinth with sandstone retaining wall
-  const yard = box(-36, -7, -22, 30, H0 - 0.05, 12); K.add('wall', yard);
-  for (const [x0, z0, x1, z1] of [[-36, 12, 30, 12.7], [-36, -22.7, 30, -22], [-36.7, -22.7, -36, 12.7], [30, -22.7, 30.7, 12.7]]) K.add('sand', box(x0, -7, z0, x1, H0 + 0.9, z1));
-  for (const [x0, z0, x1, z1] of [[-36.1, 12, 30.1, 12.8], [-36.1, -22.8, 30.1, -22]]) K.add('stone', box(x0, H0 + 0.9, z0, x1, H0 + 1.05, z1));
+  // raised churchyard: grass plinth with a low sandstone retaining wall and coping. On the Churchgate side the wall follows the back
+  // of the pavement (clip: world x, z -> clear of the road), as Street View shows it; it used to run straight out into the road
+  // (Charlie, 6 Nov)
+  const cs = Math.cos(rot), sn = Math.sin(rot), W = (a, b) => [x + a * cs + b * sn, z - a * sn + b * cs];
+  const bMax = (a) => { let b = 12; if (clip) while (b > -10 && !clip(...W(a, b + 0.7))) b -= 0.25; return b; };
+  const STEP = 1.0, A0 = -36, A1 = 30;
+  for (let a = A0; a < A1 - 1e-6; a += STEP) {
+    const a1 = Math.min(A1, a + STEP), bm = Math.min(bMax(a), bMax(a1));
+    K.add('wall', box(a, -7, -22, a1, H0 - 0.05, bm));
+    K.add('sand', box(a, -7, bm, a1, H0 + 0.9, bm + 0.7)); K.add('stone', box(a - 0.02, H0 + 0.9, bm - 0.05, a1 + 0.02, H0 + 1.05, bm + 0.78));
+  }
+  const bEast = bMax(A1), bWest = bMax(A0);
+  for (const [x0, z0, x1, z1] of [[-36, -22.7, 30, -22], [-36.7, -22.7, -36, bWest + 0.7], [30, -22.7, 30.7, bEast + 0.7]]) K.add('sand', box(x0, -7, z0, x1, H0 + 0.9, z1));
+  K.add('stone', box(-36.1, H0 + 0.9, -22.8, 30.1, H0 + 1.05, -22));
   // ---- west tower 7.6 m square, parapet at 26.5 m
   const tw = 3.8, tx0 = -30.2, tx1 = tx0 + 2 * tw, TH = 26.5;
   K.add('sand', box(tx0, H0, -tw, tx1, TH, tw));
@@ -127,12 +138,18 @@ export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Mat
     K.win(ax, sg, wp, ax === 'x' ? tx0 + tw : 0, 17.4, 1.9, 2.4, { lights: 2, transom: false, k: 0.8 });
   }
   K.win('z', 1, tx1, 0, 17.4, 1.9, 2.4, { lights: 2, transom: false, k: 0.8 });
+  // louvre boards across the belfry openings, just proud of the dark glazing
+  for (let y = 17.55; y < 19.6; y += 0.2) {
+    for (const sg of [-1, 1]) K.add('lead', box(tx0 + tw - 0.88, y, sg * (tw + 0.07) - 0.025, tx0 + tw + 0.88, y + 0.07, sg * (tw + 0.07) + 0.025));
+    for (const xw of [tx0 - 0.07, tx1 + 0.07]) K.add('lead', box(xw - 0.025, y, -0.88, xw + 0.025, y + 0.07, 0.88));
+  }
   K.win('z', -1, tx0, 0, 5.2, 3.0, 4.6, { lights: 3, k: 0.8 });                // west window
   K.win('z', -1, tx0, 0, 0.0, 1.9, 2.4, { lights: 1, transom: false, k: 0.75 }); // west door
   for (const [ax, sg, wp, c] of [['x', 1, tw + 0.03, tx0 + tw], ['x', -1, -tw - 0.03, tx0 + tw], ['z', -1, tx0 - 0.03, 0]]) {
     const face = new THREE.CircleGeometry(1.05, 40); const ring = new THREE.RingGeometry(1.05, 1.2, 40);
     const hands = box(-0.04, -0.05, 0, 0.04, 0.75, 0.02), hands2 = box(-0.035, -0.05, 0, 0.035, 0.55, 0.02); hands2.rotateZ(-2.1);
-    for (const [g, m, off] of [[face, 'clock', 0], [ring, 'gold', 0.01], [hands, 'gold', 0.03], [hands2, 'gold', 0.03]]) {
+    const marks = []; for (let h = 0; h < 12; h++) { const g = box(-0.035, 0.82, 0, 0.035, h % 3 ? 0.95 : 1.0, 0.012); g.rotateZ(h * Math.PI / 6); marks.push(g); }
+    for (const [g, m, off] of [[face, 'clock', 0], [ring, 'clockBlack', 0.01], [hands, 'clockBlack', 0.03], [hands2, 'clockBlack', 0.03], ...marks.map(g => [g, 'clockBlack', 0.015])]) {
       if (ax === 'x') { if (sg < 0) g.rotateY(Math.PI); g.translate(c, 12.6, wp + sg * off); }
       else { g.rotateY(-Math.PI / 2); g.translate(wp - off, 12.6, c); }
       K.add(m, g);
@@ -159,8 +176,9 @@ export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Mat
   // low-pitched nave roof behind the parapet
   { const g = new THREE.CylinderGeometry(nw, nw, 32, 4, 1); g.rotateZ(Math.PI / 2); g.scale(1, 0.34, 1); g.translate(nx0 + 16, NH + 0.4, 0); K.add('lead', g); }
   // south porch
-  K.add('sand', box(nx0 + 6, H0, nw, nx0 + 11, 6.4, nw + 4.5)); battlements(K, nx0 + 6, nw + 4.5, nx0 + 11, nw + 4.5, 6.4);
-  K.win('x', 1, nw + 4.5, nx0 + 8.5, 0, 2.0, 2.2, { lights: 1, transom: false, k: 0.7 });
+  const pd = Math.max(2.5, Math.min(4.5, Math.min(bMax(nx0 + 6), bMax(nx0 + 11)) - nw - 0.6));
+  K.add('sand', box(nx0 + 6, H0, nw, nx0 + 11, 6.4, nw + pd)); battlements(K, nx0 + 6, nw + pd, nx0 + 11, nw + pd, 6.4);
+  K.win('x', 1, nw + pd, nx0 + 8.5, 0, 2.0, 2.2, { lights: 1, transom: false, k: 0.7 });
   // ---- chancel (14th c.): 14 m x 11.5 m, walls 9 m, steeper slate roof, great east window
   const cx0 = nx1, cx1 = cx0 + 14, cw = 5.75, CH = 9;
   K.add('sand', box(cx0, H0, -cw, cx1, CH, cw));
@@ -174,9 +192,9 @@ export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Mat
   // churchyard gateway (Wyatt, three pointed arches) on the Churchgate side
   for (const gx of [-4, 0, 4]) {
     const g = new THREE.ExtrudeGeometry((() => { const s = new THREE.Shape(); s.moveTo(-1.9, 0); s.lineTo(1.9, 0); s.lineTo(1.9, 4.6); s.lineTo(-1.9, 4.6); s.lineTo(-1.9, 0); s.holes.push(archShape(gx === 0 ? 2.6 : 1.8, gx === 0 ? 2.4 : 1.8, 0.8)); return s; })(), { depth: 0.8, bevelEnabled: false });
-    g.translate(nx0 + 14 + gx, H0 - 0.3, 12.0); K.add('sand', g);
+    g.translate(nx0 + 14 + gx, H0 - 0.3, Math.min(12.0, bMax(nx0 + 14 + gx))); K.add('sand', g);
   }
-  pinnacle(K, nx0 + 14, H0 + 4.3, 12.4, 0.5, 2.2);
+  pinnacle(K, nx0 + 14, H0 + 4.3, Math.min(12.4, bMax(nx0 + 14) + 0.4), 0.5, 2.2);
 
   // merge & build
   const grp = new THREE.Group(); grp.name = 'stmarys';

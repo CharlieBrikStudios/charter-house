@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793997219';
+import { FLOOR_H as FH } from './data.js?v=1794000245';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -335,7 +335,20 @@ export function buildApartment(u, ctx) {
     const dirV = run.p1.clone().sub(run.p0).normalize(), p = (atEnd ? run.p1 : run.p0).clone().addScaledVector(dirV, atEnd ? 0.06 : -0.06).addScaledVector(run.n, 0.06);
     const [i, j] = toCell(p.x, p.z); return i >= 0 && j >= 0 && i < nx && j < nz && !!free[idx(i, j)];
   };
-  const placeX = (run, a, b, y0b, y1b, depth, key) => place(run, a - (a <= 0.001 && run.o0 ? depth : 0), b + (b >= run.len - 0.001 && run.o1 ? depth : 0), y0b, y1b, depth, key);
+  // at an inside corner both runs used to reach into the same depth x depth square, and the two overlapping solids' coincident
+  // faces path-trace as black specks (27's cornice steps, 6 Nov): each run now stops short and one shared block fills the square
+  const cornerDone = new Set();
+  const placeX = (run, a, b, y0b, y1b, depth, key) => {
+    const s0 = a <= 0.001, s1 = b >= run.len - 0.001;
+    const a2 = s0 ? (run.o0 ? a - depth : a + depth) : a, b2 = s1 ? (run.o1 ? b + depth : b - depth) : b;
+    place(run, a2, b2, y0b, y1b, depth, key);
+    for (const [hit, at] of [[s0 && !run.o0, 0], [s1 && !run.o1, run.len - depth]]) {
+      if (!hit) continue;
+      const dirV = run.p1.clone().sub(run.p0).normalize(), c = run.p0.clone().addScaledVector(dirV, at + depth / 2).addScaledVector(run.n, depth / 2);
+      const k = [key, c.x.toFixed(2), c.z.toFixed(2), y0b.toFixed(3), depth].join('|'); if (cornerDone.has(k)) continue; cornerDone.add(k);
+      place(run, at, at + depth, y0b, y1b, depth, key);
+    }
+  };
   for (const run of [...runs, ...stubs]) { run.o0 = openEnd(run, false); run.o1 = openEnd(run, true); }
   const lights = [], arts = [];
   for (const st of stubs) { const PK = 'paint_' + (st.room.type === 'bath' ? 'bath' : st.room.type === 'bedroom' ? 'bedroom' : st.room.type === 'hall' ? 'hall' : 'living'); place(st, -0.012, st.len + 0.012, 0, CEIL, 0.012, PK); if (st.room.type !== 'bath') { place(st, 0, st.len, 0, 0.19, 0.022, PK); place(st, 0, st.len, 0.17, 0.2, 0.032, PK); } }
