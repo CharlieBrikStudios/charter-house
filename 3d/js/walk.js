@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1793992270';
+import { FLOOR_H as FH } from './data.js?v=1793996070';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -328,6 +328,15 @@ export function buildApartment(u, ctx) {
     const c = run.p0.clone().addScaledVector(dirV, (a + b) / 2).addScaledVector(run.n, depth / 2);
     g.translate(c.x, y0 + (y0b + y1b) / 2, c.z); add(key, g);
   };
+  // a run end is open when the floor carries on past it (an external corner, a pier, the edge of a doorway): the paint skin,
+  // skirting, dado and cornice then run on by their own depth so they close round the corner (Charlie's Plot 26 bedroom, 6 Nov:
+  // black notches at the corners where the profiles stopped short and showed the void behind)
+  const openEnd = (run, atEnd) => {
+    const dirV = run.p1.clone().sub(run.p0).normalize(), p = (atEnd ? run.p1 : run.p0).clone().addScaledVector(dirV, atEnd ? 0.06 : -0.06).addScaledVector(run.n, 0.06);
+    const [i, j] = toCell(p.x, p.z); return i >= 0 && j >= 0 && i < nx && j < nz && !!free[idx(i, j)];
+  };
+  const placeX = (run, a, b, y0b, y1b, depth, key) => place(run, a - (a <= 0.001 && run.o0 ? depth : 0), b + (b >= run.len - 0.001 && run.o1 ? depth : 0), y0b, y1b, depth, key);
+  for (const run of [...runs, ...stubs]) { run.o0 = openEnd(run, false); run.o1 = openEnd(run, true); }
   const lights = [], arts = [];
   for (const st of stubs) { const PK = 'paint_' + (st.room.type === 'bath' ? 'bath' : st.room.type === 'bedroom' ? 'bedroom' : st.room.type === 'hall' ? 'hall' : 'living'); place(st, -0.012, st.len + 0.012, 0, CEIL, 0.012, PK); if (st.room.type !== 'bath') { place(st, 0, st.len, 0, 0.19, 0.022, PK); place(st, 0, st.len, 0.17, 0.2, 0.032, PK); } }
   for (const run of runs) {
@@ -336,7 +345,7 @@ export function buildApartment(u, ctx) {
     // solid intervals between windows
     const solid = []; let s = 0; for (const w of run.win) { if (w.a > s) solid.push([s, Math.min(w.a, run.len)]); s = Math.max(s, w.b); } if (s < run.len) solid.push([s, run.len]);
     // paint skin (covers brick on the inside of the external walls) incl. below/above windows
-    for (const [a, b] of solid) place(run, a, b, 0, CEIL, 0.012, PK);
+    for (const [a, b] of solid) placeX(run, a, b, 0, CEIL, 0.012, PK);
     for (const w of run.win) { const a = Math.max(0, w.a), b = Math.min(run.len, w.b); place(run, a, b, 0, Math.max(0.02, w.sill), 0.012, PK); place(run, a, b, Math.min(CEIL - 0.02, w.head), CEIL, 0.012, PK); }
     if (R.type === 'bath') {
       // large-format marble to 2.2 m in 600 x 1200 tiles
@@ -344,10 +353,10 @@ export function buildApartment(u, ctx) {
       continue;
     }
     // skirting, dado rail, picture-frame panels above and below, cornice
-    place(run, 0, run.len, 0, 0.19, 0.022, PK); place(run, 0, run.len, 0.17, 0.2, 0.032, PK);
+    placeX(run, 0, run.len, 0, 0.19, 0.022, PK); placeX(run, 0, run.len, 0.17, 0.2, 0.032, PK);
     for (const [a, b] of solid) {
       const L = b - a; if (L < 0.18) continue;
-      place(run, a, b, 0.92, 0.98, 0.034, PK);
+      placeX(run, a, b, 0.92, 0.98, 0.034, PK);
       const nP = Math.max(1, Math.round(L / 0.72)), pw = L / nP;
       for (let k = 0; k < nP; k++) {
         const pa = a + k * pw + 0.1, pb = a + (k + 1) * pw - 0.1; if (pb - pa < 0.12) continue;
@@ -401,7 +410,7 @@ export function buildApartment(u, ctx) {
   // cornice: a stepped profile right round every room at the ceiling
   for (const run of [...runs, ...stubs]) {
     const PK = 'paint_' + (run.room.type === 'bath' ? 'bath' : 'hall');
-    place(run, 0, run.len, CEIL - 0.13, CEIL, 0.05, 'white'); place(run, 0, run.len, CEIL - 0.07, CEIL, 0.1, 'white'); place(run, 0, run.len, CEIL - 0.025, CEIL, 0.14, 'white');
+    placeX(run, 0, run.len, CEIL - 0.13, CEIL, 0.05, 'white'); placeX(run, 0, run.len, CEIL - 0.07, CEIL, 0.1, 'white'); placeX(run, 0, run.len, CEIL - 0.025, CEIL, 0.14, 'white');
   }
   // framed art
   arts.forEach((A, i) => {
@@ -426,6 +435,13 @@ export function buildApartment(u, ctx) {
     doorsMade.push({ di, pos, a0, a1 });
       // head (fills the opening above 2.1 m) and architrave on both faces
       const hd = di ? box(pos - 0.07, y0 + 2.1, a0, pos + 0.07, yC, a1) : box(a0, y0 + 2.1, pos - 0.07, a1, yC, pos + 0.07); add('paint_hall', hd);
+      // jamb linings: the reveals were open to the void inside the wall and showed as a black slit beside the door
+      for (const [e, sg] of [[a0, 1], [a1, -1]]) { const e0 = Math.min(e, e + sg * 0.022), e1 = Math.max(e, e + sg * 0.022); add('white', di ? box(pos - 0.078, y0, e0, pos + 0.078, y0 + 2.1, e1) : box(e0, y0, pos - 0.078, e1, y0 + 2.1, pos + 0.078)); }
+      // the cornice runs on across the head, both faces
+      for (const s of [-1, 1]) for (const [h, d] of [[0.13, 0.05], [0.07, 0.1], [0.025, 0.14]]) {
+        const f0 = pos + s * 0.07, f1 = pos + s * (0.07 + d);
+        add('white', di ? box(Math.min(f0, f1), yC - h, a0 - 0.15, Math.max(f0, f1), yC, a1 + 0.15) : box(a0 - 0.15, yC - h, Math.min(f0, f1), a1 + 0.15, yC, Math.max(f0, f1)));
+      }
       for (const s of [-1, 1]) {
         const o = s * 0.085;
         if (di) { add('white', box(pos + o - 0.012, y0, a0 - 0.07, pos + o + 0.012, y0 + 2.17, a0)); add('white', box(pos + o - 0.012, y0, a1, pos + o + 0.012, y0 + 2.17, a1 + 0.07)); add('white', box(pos + o - 0.012, y0 + 2.1, a0 - 0.07, pos + o + 0.012, y0 + 2.17, a1 + 0.07)); }
@@ -505,6 +521,11 @@ export function buildApartment(u, ctx) {
       const pos = (g.di ? gx0 : gz0) + ((g.L0 + g.L1) / 2 + 0.5) * RES;
       const a0 = (g.di ? gz0 : gx0) + g.a0 * RES, a1 = (g.di ? gz0 : gx0) + (g.a1 + 1) * RES;
       if (doorsMade.some(d => d.di === g.di && Math.abs(d.pos - pos) < 0.3 && Math.min(d.a1, a1) - Math.max(d.a0, a0) > 0.2)) continue;
+      // a real doorway has a room on both sides: at least 0.8 m of floor straight out from the opening each way. A built-in
+      // wardrobe's alcove is only ~0.6 m deep (Plot 26's bedroom got a door across its wardrobe, 6 Nov)
+      const at2 = (L, a) => g.di ? [L, a] : [a, L], mid = Math.round((g.a0 + g.a1) / 2);
+      const reach = (L, step) => { let n = 0; while (n < 30 && isF(...at2(L + step * n, mid))) n++; return n; };
+      if (reach(g.L0 - 1, -1) < 16 || reach(g.L1 + 1, 1) < 16) continue;
       doorAt(g.di, pos, a0, a1); globalThis.__planDoors = (globalThis.__planDoors || 0) + 1;
     }
   }
