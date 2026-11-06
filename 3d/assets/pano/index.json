@@ -232,6 +232,25 @@
  },
  {
   "site": "ch",
+  "file": "ch27_1",
+  "plot": 27,
+  "type": "1B",
+  "name": "Apt 27 \u00b7 bedroom",
+  "pos": [
+   9.065,
+   10.136,
+   19.525
+  ],
+  "look": [
+   11.182,
+   9.786,
+   21.65
+  ],
+  "room": "Bedroom",
+  "note": "Apt 27, a 1-bed on the top floor: oak herringbone, panelled walls, brass and marble. Drag to look round."
+ },
+ {
+  "site": "ch",
   "file": "ch3_0",
   "plot": 3,
   "type": "1D",
