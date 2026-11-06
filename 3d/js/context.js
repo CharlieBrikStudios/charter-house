@@ -3,8 +3,8 @@
 // Positions are approximate, from Google Earth and the Ollier Smurthwaite site/context drawings.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxGeom, boxUV } from './building.js?v=1793905393';
-import { groundAt, letteringTexture } from './world.js?v=1793905393';
+import { boxGeom, boxUV } from './building.js?v=1793986579';
+import { groundAt, letteringTexture } from './world.js?v=1793986579';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -199,7 +199,7 @@ function block(B, M, o) {
   // roof
   if (roof === 'flat') { const r = boxGeom(x0 + 0.3, gy + H, z0 + 0.3, x1 - 0.3, gy + H + 0.15, z1 - 0.3); B.add('deckCtx', r); }
   else {
-    const o2 = 0.3, eh = gy + H, rise = (ridgeAlongX ? (z1 - z0) : (x1 - x0)) * 0.42;
+    const o2 = 0.3, eh = gy + H, rise = (ridgeAlongX ? (z1 - z0) : (x1 - x0)) * (o.riseK ?? 0.42);
     const g = new THREE.BufferGeometry();
     let v;
     if (ridgeAlongX) {
@@ -323,12 +323,52 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
   // ---------------- St Mary's Gate (completed, Hall & Co / Ollier Smurthwaite): L-shaped, 4 storeys, from the site plan
   // as built (and in the Charter House CGI): warm red brick, paired windows in cream frames, stone heads and a stone band at every floor
   const smg = { floors: 4, fh: 3.05, mat: 'cBrickSmg', bay: 3.35, winW: 2.3, winH: 1.85, sill: 0.65, parapet: 1.0, frame: 'cFrame', pair: true, surround: true, litChance: 0.38 };
-  block(B, M, { ...smg, x0: -63.4, z0: 1.45, x1: -12.9, z1: 14.4, seed: 11 });
-  block(B, M, { ...smg, x0: -22.6, z0: 14.4, x1: -12.9, z1: 18.6, seed: 12, skipFaces: ['N'] });
+  // on the 3% fall of Churchgate it steps down in three: each part's ground floor sits just above the pavement at its upper end
+  // (Charlie, 6 Nov: the ground-floor windows were half underground), with a blue-brick plinth showing where the street falls away
+  const SMGP = [[-29.7, -12.9], [-46.55, -29.7], [-63.4, -46.55]];
+  const smgBase = (xa) => groundY(xa, 1.0) + 0.05;
+  // the corner block (paired windows in stone surrounds, flat parapet) and, down Churchgate, the range in multi brick with white
+  // sashes under brick arches, stone sills, front doors to the street, the arched way into the courtyard and a slate roof with rooflights
+  const smgRange = { floors: 4, fh: 3.05, mat: 'cBrickSmgB', bay: 2.3, winW: 1.0, winH: 1.75, sill: 0.75, roof: 'pitched', riseK: 0.27, frame: 'cFrame', heads: 'smgArch', litChance: 0.3 };
+  SMGP.forEach(([xb, xa], k) => block(B, M, { ...(k === 0 ? smg : smgRange), x0: xb, z0: 1.45, x1: xa, z1: 14.4, base: smgBase(xa), seed: 11 + k, skipFaces: [k > 0 ? 'E' : null, k < 2 ? 'W' : null].filter(Boolean) }));
+  SMGP.slice(1).forEach(([xb, xa], k) => {
+    const gy = smgBase(xa), L = xa - xb, bay = smgRange.bay, nb = Math.floor((L - 0.8) / bay), pad = (L - nb * bay) / 2, cx = (b) => xb + pad + bay * (b + 0.5);
+    const doors = k === 0 ? [1, 4, nb - 2] : [1, 3, 6, nb - 2];
+    for (const b of doors) {   // white front doors in place of the ground-floor sash, with a stone step
+      const c = cx(b); B.add(M.smgDoor, boxGeom(c - 0.52, gy - 0.02, 1.38, c + 0.52, gy + 2.62, 1.47));
+      B.add('stone', boxGeom(c - 0.65, gy - 0.25, 1.1, c + 0.65, gy + 0.02, 1.45));
+    }
+    if (k === 0) {   // the way into the courtyard: a full-height passage under the first floor, black railings
+      const c = cx(nb - 4) - bay / 2, w = 2.6;
+      B.add('timberBlack', boxGeom(c - w / 2, gy - 0.05, 1.5, c + w / 2, gy + 3.0, 1.58));
+      { const ag = boxGeom(c - w / 2 - 0.12, gy + 3.0, 1.38, c + w / 2 + 0.12, gy + 3.3, 1.47); boxUV(ag); B.add('smgArch', ag); }
+      for (let i = 0; i <= 12; i++) { const x = c - w / 2 + 0.1 + i * (w - 0.2) / 12; B.add('timberBlack', boxGeom(x - 0.02, gy, 1.3, x + 0.02, gy + 2.4, 1.34)); }
+      B.add('timberBlack', boxGeom(c - w / 2, gy + 2.36, 1.28, c + w / 2, gy + 2.44, 1.36));
+    }
+    // rooflights on the Churchgate slope (the roof rises 0.42 of the depth to a ridge along the middle)
+    const eh = gy + 4 * 3.05, zm = (1.45 + 14.4) / 2, rise = (14.4 - 1.45) * smgRange.riseK, ang = Math.atan2(rise, zm - 1.15);
+    for (const f of [0.22, 0.5, 0.78]) {
+      const x = xb + L * f, t = 0.55, z = 1.15 + (zm - 1.15) * t, y = eh + rise * t + 0.05;
+      const g = new THREE.BoxGeometry(0.85, 0.06, 1.15); g.rotateX(-ang); g.translate(x, y, z); B.add('cGlass', g);
+      const fr = new THREE.BoxGeometry(0.97, 0.05, 1.27); fr.rotateX(-ang); fr.translate(x, y - 0.02, z); B.add('timberBlack', fr);
+    }
+  });
+  block(B, M, { ...smg, x0: -22.6, z0: 14.4, x1: -12.9, z1: 18.6, base: smgBase(-12.9), seed: 14, skipFaces: ['N'] });
+  for (const [xb, xa] of SMGP) {   // blue engineering-brick plinth from the pavement up to the ground floor, and the step in the parapet closed
+    const gyk = smgBase(xa), g0 = Math.min(groundY(xb, 1.0), groundY(xb, 14.4));
+    const pl = boxGeom(xb - 0.02, g0 - 0.6, 1.38, xa + 0.02, gyk + 0.32, 1.47); boxUV(pl); B.add(M.smgPlinth, pl);
+    const pl2 = boxGeom(xb - 0.02, g0 - 0.6, 14.38, xa + 0.02, gyk + 0.32, 14.47); boxUV(pl2); B.add(M.smgPlinth, pl2);
+    if (xb > -60) { const nb = smgBase(xb), tp = xb > -30 ? 13.2 : 12.2; const st = boxGeom(xb - 0.02, nb + 12.2 - 0.1, 1.45, xb + 0.33, gyk + tp + 0.05, 14.4); boxUV(st); B.add(xb > -30 ? 'cBrickSmg' : 'cBrickSmgB', st); }
+  }
+  B.add(M.smgPlinth, (() => { const g = boxGeom(-12.98, groundY(-12.9, 18.6) - 0.6, 1.4, -12.88, smgBase(-12.9) + 0.32, 18.6); boxUV(g); return g; })());
   {
-    // stone band at first floor + stone coping, as the photographs
-    const gy = groundY(-38, 1.4);
-    for (const [a, b, c, d] of [[-63.4, 1.33, -12.8, 1.45], [-12.9, 1.33, -12.78, 18.6]]) {
+    // stone band at every floor + stone coping, as the photographs (each part at its own level)
+    // the corner block has one stone string course, at first floor (the photographs); the range has none
+    for (const [xb, xa] of SMGP.slice(0, 1)) for (let fl = 1; fl < 2; fl++) {
+      const gy = smgBase(xa), bb = boxGeom(xb, gy + fl * 3.05 - 0.05, 1.33, xa + (xa > -13 ? 0.12 : 0), gy + fl * 3.05 + 0.15, 1.45); boxUV(bb, 1.2); B.add('stone', bb);
+    }
+    const gy = smgBase(-12.9);
+    for (const [a, b, c, d] of [[-12.9, 1.33, -12.78, 18.6]]) {
       const bb = boxGeom(a, gy + 3.0, b, c, gy + 3.22, d); boxUV(bb, 1.2); B.add('stone', bb);
     }
   }
@@ -358,7 +398,33 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
       g.rotateZ(Math.atan2(ap - y1, m - x1)); g.translate((x1 + m) / 2, (y1 + ap) / 2, -0.58); B.add(style === 'tudor' ? 'timberBlack' : 'cFrame', g);
     }
     const fs = boxGeom(a + 0.2, gy + 2.85, -0.42, b - 0.2, gy + 3.4, -0.15); B.add('timberBlack', fs);
+    // the backs (Charlie, 6 Nov: the rear of these buildings wasn't there), from the site plan (A839_P_200I): the second shop's
+    // long two-storey rear wing under a slate roof with a chimney stack and a back door, the first one's single-storey back
+    // extension, and paved yards behind brick walls with timber gates
+    const oldDoor = (x0d, z0d, x1d, z1d, y) => { const dr = boxGeom(x0d, y, z0d, x1d, y + 2.1, z1d); B.add(M.doorGreen || (M.doorGreen = new THREE.MeshStandardMaterial({ color: '#2f4a3c', roughness: 0.5 })), dr); };
+    if (i === 1) {
+      const wx0 = 27.45, wx1 = 31.25, wz1 = 15.5;
+      block(B, M, { x0: wx0, z0: 10.5, x1: wx1, z1: wz1, floors: 2, fh: 2.85, mat: 'cBrickOld', bay: 1.9, winW: 0.85, winH: 1.25, sill: 0.95, roof: 'pitched', ridgeAlongX: false, frame: 'cFrame', heads: 'stone', base: gy, seed: 47, litChance: 0.3, skipFaces: ['N'] });
+      const ch = boxGeom(wx1 - 0.95, gy + 5.4, wz1 - 0.8, wx1 - 0.25, gy + 8.4, wz1 - 0.25); boxUV(ch); B.add('cBrickOld', ch);
+      for (const dx of [-0.17, 0.17]) { const pot = new THREE.CylinderGeometry(0.1, 0.12, 0.42, 10); pot.translate(wx1 - 0.6 + dx, gy + 8.6, wz1 - 0.52); B.add('cFrameDark', pot); }
+      oldDoor(wx1 - 0.02, 12.2, wx1 + 0.06, 13.1, gy); const st = boxGeom(wx1, gy - 0.3, 12.1, wx1 + 0.4, gy + 0.08, 13.2); boxUV(st, 1.2); B.add('stone', st);
+    } else {
+      block(B, M, { x0: 22.95, z0: 10.5, x1: 25.3, z1: 11.75, floors: 1, fh: 2.9, mat: 'cBrickOld', bay: 2.2, winW: 0.9, winH: 1.1, sill: 0.95, roof: 'flat', parapet: 0.3, frame: 'cFrame', base: gy, seed: 46, litChance: 0.2, skipFaces: ['N', 'W', 'E'] });
+      oldDoor(25.28, 10.75, 25.36, 11.55, gy);
+      const e = boxGeom(25.15, gy - 0.5, 10.5, 25.3, gy + 3.2, 11.75); boxUV(e); B.add('cBrickOld', e);
+    }
   });
+  { // the yards behind 50-56 Churchgate: paving, a brick wall along the back with a gate to each, the wall between them behind the wing
+    const yz1 = 16.6, yg = Math.min(groundY(24, 13), groundY(36, 13));
+    const pv = new THREE.PlaneGeometry(36.4 - 22.95, yz1 - 10.5, 10, 5); pv.rotateX(-Math.PI / 2); pv.translate((22.95 + 36.4) / 2, 0, (10.5 + yz1) / 2);
+    { const pp = pv.attributes.position; for (let k = 0; k < pp.count; k++) pp.setY(k, groundY(pp.getX(k), pp.getZ(k)) + 0.06); } boxUV(pv, 2.4); B.add('paving', pv);
+    const wall = (x0w, z0w, x1w, z1w) => { const w = boxGeom(x0w, yg - 0.5, z0w, x1w, yg + 1.8, z1w); boxUV(w); B.add('cBrickOld', w); const c = boxGeom(x0w - 0.03, yg + 1.8, z0w - 0.03, x1w + 0.03, yg + 1.88, z1w + 0.03); B.add('stone', c); };
+    const gate = (gx) => B.add('timber', (() => { const g = boxGeom(gx - 0.5, yg + 0.05, yz1 - 0.04, gx + 0.5, yg + 1.7, yz1 + 0.04); boxUV(g, 1); return g; })());
+    wall(22.95, yz1 - 0.12, 24.1, yz1 + 0.12); gate(24.6); wall(25.1, yz1 - 0.12, 32.6, yz1 + 0.12); gate(33.1); wall(33.6, yz1 - 0.12, 36.52, yz1 + 0.12);
+    wall(29.78, 15.5, 30.02, yz1); wall(36.4, 13.25, 36.52, yz1);
+    // a few pots by the back doors
+    for (const [x, z] of [[31.75, 13.5], [31.75, 11.9], [25.75, 12.1]]) { const gy2 = groundY(x, z); B.add(M.potClay2 || (M.potClay2 = new THREE.MeshStandardMaterial({ color: '#b46a45', roughness: 0.85 })), new THREE.CylinderGeometry(0.22, 0.16, 0.42, 14).translate(x, gy2 + 0.27, z)); forest.add(x, z, { kind: 'shrub', h: 0.7, r: 0.3, y: gy2 + 0.44, seed: Math.floor(x * 31 + z * 7) }); }
+  }
 
   // ---------------- behind the site: open, low-rise. The yard behind the building (no marked bays: block paving on the near
   // half, a planted grass verge along the back wall on the far half) and a lawn, looking across to the brewery
@@ -573,12 +639,64 @@ export function buildCourtyard(M, forest, festoon) {
     return [x0 + t, z0 + t, x1 - t, z1 - t, y0 + h];
   };
   const beds = [planter(19.3, 16.4, 21.45, 17.3), planter(19.5, 17.3, 20.45, 21.3)];
-  // bike store (as the ground-floor plan): two rows of Sheffield stands under a light steel-and-glass canopy, open-sided
-  { const bx0 = 16.55, bx1 = 18.85, bz0 = 16.3, bz1 = 21.15, ch = 2.35;
-    for (let z = bz0 + 0.35; z < bz1 - 0.2; z += 0.55) for (const cx of [17.15, 18.25]) { const st = new THREE.TorusGeometry(0.36, 0.022, 6, 18, Math.PI); st.translate(cx, y0 + 0.44, z); B.add('steel', st); for (const dx of [-0.36, 0.36]) B.add('steel', boxGeom(cx + dx - 0.02, y0, z - 0.02, cx + dx + 0.02, y0 + 0.44, z + 0.02)); }
-    for (const [x, z] of [[bx0, bz0], [bx1, bz0], [bx0, bz1], [bx1, bz1], [bx0, (bz0 + bz1) / 2], [bx1, (bz0 + bz1) / 2]]) B.add('timberBlack', boxGeom(x - 0.05, y0, z - 0.05, x + 0.05, y0 + ch, z + 0.05));
-    B.add('timberBlack', boxGeom(bx0 - 0.1, y0 + ch, bz0 - 0.1, bx1 + 0.1, y0 + ch + 0.1, bz1 + 0.1));
-    B.add('balGlass', boxGeom(bx0 - 0.05, y0 + ch + 0.1, bz0 - 0.05, bx1 + 0.05, y0 + ch + 0.13, bz1 + 0.05)); }
+  // covered seating where the bike store stood (Charlie, 6 Nov): an oak-framed shelter with a boarded timber roof, a built-in
+  // L-shaped bench with cushions, two lounge chairs round a low table on an outdoor rug, lanterns, and flowers and planters round it
+  const SOFT = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.95 });
+  const cushOat = SOFT('#d9cdb8'), cushSage = SOFT('#9aa98c'), cushMustard = SOFT('#c99a3b'), cushRust = SOFT('#b0573a'), cushCream = SOFT('#efe8da');
+  const rugM = SOFT('#cbbca2'), rugEdge = SOFT('#6f5c48');
+  const potClay = new THREE.MeshStandardMaterial({ color: '#b46a45', roughness: 0.85 }), potStone = new THREE.MeshStandardMaterial({ color: '#cfc8bb', roughness: 0.9 });
+  const glowM = new THREE.MeshStandardMaterial({ color: '#4a4237', emissive: '#ffcf86', emissiveIntensity: 0.9, roughness: 0.3 });
+  const rbox = (x0, y_0, z0, x1, y_1, z1, r = 0.03) => {   // a soft (bevelled) box for cushions
+    const w = x1 - x0, h = y_1 - y_0, d = z1 - z0, sh = new THREE.Shape(), rr = Math.min(r, w / 2, d / 2);
+    sh.moveTo(-w / 2 + rr, -d / 2); sh.lineTo(w / 2 - rr, -d / 2); sh.quadraticCurveTo(w / 2, -d / 2, w / 2, -d / 2 + rr); sh.lineTo(w / 2, d / 2 - rr); sh.quadraticCurveTo(w / 2, d / 2, w / 2 - rr, d / 2);
+    sh.lineTo(-w / 2 + rr, d / 2); sh.quadraticCurveTo(-w / 2, d / 2, -w / 2, d / 2 - rr); sh.lineTo(-w / 2, -d / 2 + rr); sh.quadraticCurveTo(-w / 2, -d / 2, -w / 2 + rr, -d / 2);
+    const g = new THREE.ExtrudeGeometry(sh, { depth: Math.max(0.01, h - 2 * Math.min(rr, h / 3)), bevelEnabled: true, bevelThickness: Math.min(rr, h / 3), bevelSize: Math.min(rr, h / 3) * 0.9, bevelSegments: 2, curveSegments: 3 });
+    g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, y_0 + Math.min(rr, h / 3), (z0 + z1) / 2); return g;
+  };
+  const tb = (x0, y_0, z0, x1, y_1, z1, k = 'timber') => { const b = boxGeom(x0, y_0, z0, x1, y_1, z1); boxUV(b, 1); B.add(k, b); };
+  { const bx0 = 16.45, bx1 = 18.95, bz0 = 16.25, bz1 = 21.2, ph = 2.45;
+    // oak frame: six posts, two beams, rafters, a boarded roof with a slight fall to the garden and a fascia
+    for (const [x, z] of [[bx0, bz0], [bx1, bz0], [bx0, bz1], [bx1, bz1], [bx0, (bz0 + bz1) / 2], [bx1, (bz0 + bz1) / 2]]) tb(x - 0.07, y0, z - 0.07, x + 0.07, y0 + ph, z + 0.07);
+    for (const x of [bx0, bx1]) tb(x - 0.08, y0 + ph, bz0 - 0.25, x + 0.08, y0 + ph + 0.2, bz1 + 0.25);
+    for (let z = bz0 - 0.2; z <= bz1 + 0.21; z += 0.45) tb(bx0 - 0.3, y0 + ph + 0.2, z - 0.035, bx1 + 0.3, y0 + ph + 0.34, z + 0.035);
+    { const roof = new THREE.BoxGeometry(bx1 - bx0 + 0.75, 0.05, bz1 - bz0 + 0.65); roof.rotateZ(0.05); roof.translate((bx0 + bx1) / 2, y0 + ph + 0.4, (bz0 + bz1) / 2); boxUV(roof, 1); B.add('timber', roof); }
+    for (let x = bx0 - 0.3; x < bx1 + 0.3; x += 0.16) tb(x, y0 + ph + 0.43 - (x - (bx0 + bx1) / 2) * 0.05, bz0 - 0.32, x + 0.12, y0 + ph + 0.45 - (x - (bx0 + bx1) / 2) * 0.05, bz1 + 0.32);   // roof boards
+    for (const z of [bz0 - 0.33, bz1 + 0.33]) tb(bx0 - 0.38, y0 + ph + 0.3, z - 0.02, bx1 + 0.38, y0 + ph + 0.5, z + 0.02);
+    for (const x of [bx0 - 0.38, bx1 + 0.38]) tb(x - 0.02, y0 + ph + 0.3, bz0 - 0.35, x + 0.02, y0 + ph + 0.5, bz1 + 0.35);
+    // outdoor rug
+    B.add(rugEdge, boxGeom(16.75, y0 + 0.002, 17.45, 18.15, y0 + 0.012, 20.05)); B.add(rugM, boxGeom(16.82, y0 + 0.004, 17.52, 18.08, y0 + 0.014, 19.98));
+    // built-in L bench along the back (east) and the far end, with seat and back cushions
+    tb(18.3, y0, 16.55, 18.85, y0 + 0.4, 21.05); tb(16.75, y0, 20.55, 18.3, y0 + 0.4, 21.05);
+    tb(18.82, y0 + 0.4, 16.55, 18.88, y0 + 0.95, 21.08); tb(16.75, y0 + 0.4, 21.02, 18.88, y0 + 0.95, 21.08);
+    B.add(cushOat, rbox(18.32, y0 + 0.4, 16.6, 18.83, y0 + 0.5, 20.5)); B.add(cushOat, rbox(16.8, y0 + 0.4, 20.57, 18.83, y0 + 0.5, 21.03));
+    for (let z = 16.7; z < 20.4; z += 0.68) { const g = rbox(18.66, y0 + 0.5, z, 18.8, y0 + 0.92, z + 0.62, 0.05); B.add(cushCream, g); }
+    for (let x = 16.9; x < 18.3; x += 0.68) B.add(cushCream, rbox(x, y0 + 0.5, 20.86, x + 0.62, y0 + 0.92, 21.0, 0.05));
+    [[18.58, 17.05, cushMustard], [18.6, 18.45, cushSage], [18.58, 19.9, cushRust], [17.25, 20.78, cushSage], [18.45, 20.75, cushMustard]].forEach(([x, z, m]) => { const g = rbox(-0.2, 0, -0.06, 0.2, 0.38, 0.06, 0.06); g.rotateZ(0.0); g.rotateY(x > 18 ? Math.PI / 2 : 0); g.rotateX(-0.25); g.translate(x, y0 + 0.5, z); B.add(m, g); });
+    // two lounge chairs facing the bench (oak frames, deep cushions)
+    for (const z of [17.7, 19.4]) {
+      tb(16.7, y0, z - 0.36, 17.32, y0 + 0.36, z + 0.36); tb(16.62, y0 + 0.36, z - 0.38, 16.72, y0 + 0.82, z + 0.38);
+      tb(16.7, y0 + 0.36, z - 0.38, 17.32, y0 + 0.56, z - 0.32); tb(16.7, y0 + 0.36, z + 0.32, 17.32, y0 + 0.56, z + 0.38);
+      B.add(cushOat, rbox(16.74, y0 + 0.36, z - 0.31, 17.3, y0 + 0.47, z + 0.31)); B.add(cushCream, rbox(16.72, y0 + 0.47, z - 0.3, 16.86, y0 + 0.8, z + 0.3, 0.05));
+    }
+    // low oak table with a lantern and a bowl of flowers on it
+    tb(17.55, y0 + 0.36, 17.95, 18.15, y0 + 0.4, 19.15); for (const [x, z] of [[17.6, 18.0], [18.1, 18.0], [17.6, 19.1], [18.1, 19.1]]) tb(x - 0.03, y0, z - 0.03, x + 0.03, y0 + 0.36, z + 0.03);
+    B.add('timberBlack', boxGeom(17.72, y0 + 0.4, 18.22, 17.9, y0 + 0.66, 18.4)); B.add(glowM, boxGeom(17.74, y0 + 0.43, 18.24, 17.88, y0 + 0.62, 18.38));
+    B.add(potStone, new THREE.CylinderGeometry(0.11, 0.08, 0.12, 14).translate(17.85, y0 + 0.46, 18.85));
+    // pendant lanterns under the roof
+    for (const z of [17.5, 19.6]) { B.add('timberBlack', boxGeom(17.68, y0 + 1.95, z - 0.1, 17.88, y0 + 2.25, z + 0.1)); B.add(glowM, boxGeom(17.7, y0 + 1.98, z - 0.08, 17.86, y0 + 2.22, z + 0.08)); B.add('timberBlack', boxGeom(17.77, y0 + 2.25, z - 0.01, 17.79, y0 + ph + 0.2, z + 0.01)); }
+    // planters round it: a long oak trough along the open (north) side either side of the way in, big pots at the corners
+    const trough = (x0, z0, x1, z1) => { tb(x0, y0, z0, x1, y0 + 0.5, z1); B.add('stone', boxGeom(x0 + 0.05, y0 + 0.5, z0 + 0.05, x1 - 0.05, y0 + 0.47, z1 - 0.05));
+      for (let x = x0 + 0.25; x < x1 - 0.1; x += 0.45) for (let z = z0 + 0.2; z < z1 - 0.1; z += 0.4) forest.add(x, z, { kind: (Math.round(x * 7 + z * 3) % 3) ? 'shrub' : 'grass', h: 0.5, r: 0.36, y: y0 + 0.48, seed: Math.floor(x * 211 + z * 37) });
+      return [x0 + 0.05, z0 + 0.05, x1 - 0.05, z1 - 0.05, y0 + 0.5]; };
+    beds.push(trough(16.3, 15.7, 17.25, 16.05), trough(18.15, 15.7, 19.1, 16.05));
+    for (const [x, z, big] of [[16.15, 16.05, 1], [19.2, 21.35, 1], [16.15, 21.35, 1], [16.2, 18.55, 0]]) {
+      const r = big ? 0.27 : 0.2, h = big ? 0.62 : 0.42; B.add(big ? potStone : potClay, new THREE.CylinderGeometry(r, r * 0.75, h, 18).translate(x, y0 + h / 2, z));
+      forest.add(x, z, { kind: 'shrub', h: big ? 0.8 : 0.55, r: r + 0.12, y: y0 + h - 0.04, seed: Math.floor(x * 97 + z * 13) });
+      beds.push([x - r * 0.8, z - r * 0.8, x + r * 0.8, z + r * 0.8, y0 + h]);
+    }
+    // climbers up the two front posts
+    for (const [x, z] of [[bx0, bz0], [bx1, bz0]]) for (let yy = 0.2; yy < ph; yy += 0.45) forest.add(x + 0.05, z - 0.08, { kind: 'shrub', h: 0.45, r: 0.2, y: y0 + yy, seed: Math.floor(yy * 50 + x * 9) });
+  }
   // picnic table (timber, A-frame legs) with two benches, on the open paving by the east planters
   { const tx0 = 19.6, tx1 = 21.4, tz0 = 14.75, tz1 = 15.55;
     B.add('timber', boxGeom(tx0, y0 + 0.72, tz0, tx1, y0 + 0.77, tz1));
@@ -588,7 +706,7 @@ export function buildCourtyard(M, forest, festoon) {
   const FL = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a', '#f6c1a0'].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
   let fs = 911; const fr = () => ((fs = (fs * 16807) % 2147483647) / 2147483647);
   const bloom = (x, z, y) => { const g = new THREE.IcosahedronGeometry(0.045 + fr() * 0.03, 0); g.translate(x, y, z); B.add(FL[Math.floor(fr() * FL.length)], g); };
-  for (const [x0, z0, x1, z1, yy] of beds) for (let i = 0; i < 70; i++) bloom(x0 + fr() * (x1 - x0), z0 + fr() * (z1 - z0), yy + 0.15 + fr() * 0.4);
+  for (const [x0, z0, x1, z1, yy] of beds) { const n = Math.min(70, Math.round((x1 - x0) * (z1 - z0) * 45) + 8); for (let i = 0; i < n; i++) bloom(x0 + fr() * (x1 - x0), z0 + fr() * (z1 - z0), yy + 0.15 + fr() * 0.4); }
   for (let i = 0; i < 90; i++) bloom(12.0 + fr() * 4.2, 16.5 + fr() * 5.0, y0 + 0.2 + fr() * 0.45);
   for (let i = 0; i < 50; i++) bloom(13.3 + fr() * 5.8, 12.7 + fr() * 1.4, y0 + 0.75 + fr() * 0.35);
   // boundary walls (existing, retained) and railings

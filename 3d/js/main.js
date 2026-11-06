@@ -9,30 +9,30 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1793905393';
-import { buildUBL } from './ublbuild.js?v=1793905393';
-import { buildUBLFitout } from './ublfit.js?v=1793905393';
-import { UBL_LEVELS } from './ubl_data.js?v=1793905393';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793905393';
-import { buildOSL } from './oslbuild.js?v=1793905393';
-import { buildOSLFitout } from './oslfit.js?v=1793905393';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793905393';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793905393';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront } from './context.js?v=1793905393';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1793905393';
-import { buildFar, hazeUniforms } from './far.js?v=1793905393';
-import { buildRailway } from './railway.js?v=1793905393';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1793905393';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1793986579';
+import { buildUBL } from './ublbuild.js?v=1793986579';
+import { buildUBLFitout } from './ublfit.js?v=1793986579';
+import { UBL_LEVELS } from './ubl_data.js?v=1793986579';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1793986579';
+import { buildOSL } from './oslbuild.js?v=1793986579';
+import { buildOSLFitout } from './oslfit.js?v=1793986579';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1793986579';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1793986579';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront } from './context.js?v=1793986579';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1793986579';
+import { buildFar, hazeUniforms } from './far.js?v=1793986579';
+import { buildRailway } from './railway.js?v=1793986579';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1793986579';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1793905393';
-import { Interior } from './interior.js?v=1793905393';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793905393';
-import { buildPHFitout } from './phfit.js?v=1793905393';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793905393';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1793905393';
-import { createTour } from './tour.js?v=1793905393';
-import { buildCrowd } from './crowd.js?v=1793905393';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1793905393';
+import { Forest, windUniforms } from './trees.js?v=1793986579';
+import { Interior } from './interior.js?v=1793986579';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1793986579';
+import { buildPHFitout } from './phfit.js?v=1793986579';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1793986579';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1793986579';
+import { createTour } from './tour.js?v=1793986579';
+import { buildCrowd } from './crowd.js?v=1793986579';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1793986579';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -325,10 +325,9 @@ async function build() {
   // long rear wing of the second shop and the first one's back extension are added; both face the residents' courtyard
   if (!IS_OSL) {
     const c = W.bld.find(b => b.id === 179634);
-    if (c) { c.p = [[44, 6.8], [43.3, 7.8], [41.3, 10.8], [36.9, 13.5], [35.4, 12.5], [34, 14.8], [31.4, 13.5], [32.8, 10.6], [32.85, 10.5], [36.4, 10.5], [36.4, 3.65], [37.1, 2.3]]; c.h = 6.4; c.lv = 2; }
-    if (!W.bld.some(b => b.id === 9001001)) W.bld.push(
-      { id: 9001001, p: [[28.36, 10.5], [31.38, 10.5], [30.09, 15.66], [27.35, 15.03]], h: 5.8, lv: 2, r: 'gable', s: 'house', n: '' },
-      { id: 9001002, p: [[22.65, 10.5], [25.27, 10.5], [25.27, 11.74], [22.65, 11.7]], h: 3.3, lv: 1, r: 'flat', s: 'house', n: '' });
+    // (6 Nov, Charlie: the backs weren't rendered in) the shop keeps its own plot east of 36.4; the rear wings are built by
+    // context.js as proper brick outriggers with their own roofs, windows, doors and walled yards
+    if (c) { c.p = [[44, 6.8], [43.3, 7.8], [41.3, 10.8], [36.9, 13.5], [36.4, 13.2], [36.4, 3.65], [37.1, 2.3]]; c.h = 6.4; c.lv = 2; }
   }
   contextGroup = buildContext(M, forest, { lampHeads, festoon });
   scene.add(contextGroup);
@@ -725,6 +724,7 @@ function dropOverlays() {
   }
 }
 function toExplore(fly = true) {
+  VIEW_RET.spot = -1;
   dropOverlays();
   S.mode = 'explore'; S.floor = null; S.plot = null;
   setCut(999); showPlates(null); clearUnitTags();
@@ -732,6 +732,7 @@ function toExplore(fly = true) {
   renderPanel(); setHash('');
 }
 function toFloor(f, fly = true) {
+  VIEW_RET.spot = -1;
   dropOverlays();
   S.mode = 'floor'; S.floor = f; S.plot = null; gtaoTried = false;
   setCut(cutY(f)); showPlates(f); buildUnitTags(f);
@@ -744,12 +745,14 @@ function ownPano(plot) {
   const i = SPOTS.findIndex(x => x.pano && x.plot === plot && /living|kitchen/i.test(x.room || x.name));
   return i >= 0 ? i : SPOTS.findIndex(x => x.pano && x.plot === plot);
 }
+const backLevel = (plot) => { const f = unitByPlot.get(plot)?.floor; return f === 0 ? 'Back to the ground floor' : f != null ? `Back to level ${f}` : 'Back'; };
 function openOwnPano(plot) {
   const i = ownPano(plot); if (i < 0) return false;
   if (S.plot !== plot || S.mode !== 'unit') toUnit(plot, false);
-  T.door = plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${plot}`; return true;
+  T.door = plot; goSpot(i); $('#t-backlbl').textContent = backLevel(plot); return true;
 }
 function toUnit(plot, fly = true) {
+  VIEW_RET.spot = -1;
   const u = unitByPlot.get(plot); if (!u) return;
   dropOverlays();
   if (S.floor !== u.floor) { S.floor = u.floor; setCut(cutY(u.floor)); showPlates(u.floor); buildUnitTags(u.floor); }
@@ -968,11 +971,14 @@ function seeView(plot, idx = 0, wo = null) {
   $('#vw-kicker').textContent = `Plot ${u.plot} · ${FLOORS[u.floor].name} · facing ${facing}`;
   $('#vw-title').textContent = 'The view from your window';
   $('#vw-text').textContent = dirs[idx] ? (dirs[idx].target ? `From the end window, looking ${dirs[idx].hint}.` : `Looking ${compassWord(w.normal)}, ${dirs[idx].hint}.`) : u.view + '.';
+  $('#vw-360').hidden = VIEW_RET.spot < 0; $('#vw-back').hidden = VIEW_RET.spot >= 0;
   $('#viewui').classList.add('on'); $('#viewui').setAttribute('aria-hidden', 'false');
   $('#panel').classList.add('hide'); $('#ui').style.visibility = 'hidden';
   S.view = true; setHash('view-' + plot);
 }
-function closeView() {
+function closeView(quiet = false) {
+  if (quiet === 'leave') VIEW_RET.spot = -1;
+  if (quiet !== true && VIEW_RET.spot >= 0) return backTo360();   // opened from a photoreal 360: every way out goes back to it
   $('#viewui').classList.remove('on'); $('#viewui').setAttribute('aria-hidden', 'true');
   $('#ui').style.visibility = ''; $('#labels').style.visibility = ''; $('#panel').classList.remove('hide');
   CH.meshes.glass.visible = true; if (CH.meshes.slate) CH.meshes.slate.visible = true;
@@ -982,6 +988,7 @@ function closeView() {
   renderer.toneMappingExposure = PRESETS[tod].exp;
   S.view = false; const u = unitByPlot.get(S.plot); S.floor = null;
   if (clayForView) { clayForView = false; setClay(true); }
+  if (quiet === true) return;
   toUnit(u.plot, false);
   const v = unitView(u); camera.position.copy(v.pos); controls.target.copy(v.tgt); controls.enabled = true;
 }
@@ -1174,8 +1181,8 @@ $('#panel').addEventListener('click', (e) => {
   if (b.dataset.act === 'door') return walkToDoor(S.plot);
   if (b.dataset.act === 'walk3d') return stepInside(S.plot);
   if ((b.dataset.act === 'p360' || (b.dataset.act === 'inside' && !PLANF)) && openOwnPano(S.plot)) return;
-  if (b.dataset.act === 'p360') { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; } return; }
-  if (b.dataset.act === 'inside' && !PLANF) { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${S.plot}`; return; } }
+  if (b.dataset.act === 'p360') { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = backLevel(S.plot); } return; }
+  if (b.dataset.act === 'inside' && !PLANF) { const u = unitByPlot.get(S.plot); let i = SPOTS.findIndex(x => x.pano && x.plot === u.plot); if (i < 0) i = SPOTS.findIndex(x => x.pano && x.type === u.type); if (i >= 0) { T.door = S.plot; goSpot(i); $('#t-backlbl').textContent = backLevel(S.plot); return; } }
   if (b.dataset.act === 'inside') return PLANF ? openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === (IS_UBL ? (S.plot === 13 ? 'ubl_loft' : 'ubl_living') : phCGI(S.plot))))) : stepInside(S.plot);
   if (b.dataset.act === 'view') return seeView(S.plot);
   if (b.dataset.act === 'plan') { showPlan('card'); $('#zoomplan').classList.add('on'); return; }
@@ -1279,14 +1286,14 @@ function clearBaths() { if (bathGroup) { scene.remove(bathGroup); bathGroup = nu
 function buildBaths(f) {
   clearBaths(); if (PLANF) return;
   const g = new THREE.Group(); g.name = 'baths' + f; bathGroup = g; scene.add(g);
-  const list = floorUnits(f).slice(), KEEP = new Set(['apt_ceramic', 'apt_chrome', 'apt_showerGlass', 'apt_marble', 'apt_oak', 'apt_brass', 'apt_mirror']);
+  const list = floorUnits(f).slice(), KEEP = new Set(['apt_ceramic', 'apt_chrome', 'apt_showerGlass', 'apt_marble', 'apt_oak', 'apt_brass', 'apt_mirror', 'apt_towel', 'apt_towelW', 'apt_bathmat', 'apt_sprig']);
   const step = () => {
     if (bathGroup !== g || !list.length) return;
     if (flight && !list.every(x => aptCache.has(x.plot))) { setTimeout(step, 250); return; }   // never stall a camera move
     const u = list.shift();
     try {
       const a = getApartment(u); a.group.updateMatrixWorld(true);
-      a.group.children.forEach(mm => { if (!mm.isMesh || !KEEP.has(mm.name)) return; const mat = mm.material.clone(); mat.clippingPlanes = [CUT]; if (mm.name === 'apt_marble') { mat.color.set('#6c7377'); mat.map = null; mat.roughness = 0.35; } if (mm.name === 'apt_ceramic') mat.color.set('#ffffff'); const c = new THREE.Mesh(mm.geometry, mat); c.matrixAutoUpdate = false; c.matrix.copy(mm.matrixWorld); c.castShadow = false; c.receiveShadow = true; g.add(c); });
+      a.group.children.forEach(mm => { if (!mm.isMesh || !KEEP.has(mm.name)) return; const mat = mm.material.clone(); mat.clippingPlanes = [CUT]; if (mm.name === 'apt_marble') { mat.color.set('#b3ada3'); mat.roughness = 0.3; }   /* veined marble a shade darker than the white fittings */ if (mm.name === 'apt_ceramic') mat.color.set('#ffffff'); const c = new THREE.Mesh(mm.geometry, mat); c.matrixAutoUpdate = false; c.matrix.copy(mm.matrixWorld); c.castShadow = false; c.receiveShadow = true; g.add(c); });
     } catch (e) { console.warn('baths', e); }
     stillFrames = Math.max(stillFrames, 4);
     setTimeout(step, 80);
@@ -1515,7 +1522,7 @@ addEventListener('deviceorientation', (e) => { if (S.mode === 'inside' && e.gamm
 $('#in-back').onclick = closeInterior;
 $('#views').onclick = (e) => { const b = e.target.closest('[data-view]'); if (b) goView(b.dataset.view); };
 $('#backbtn').onclick = () => { if (S.area) return toggleArea(false); if (S.mode === 'unit') toFloor(unitByPlot.get(S.plot).floor); else toExplore(); };
-$('#vw-back').onclick = closeView;
+$('#vw-back').onclick = () => closeView();
 // look left / right from a window (the same turn as dragging)
 $('#vw-left').onclick = () => { look.ty = THREE.MathUtils.clamp(look.ty + 0.38, -1.05, 1.05); stillFrames = Math.max(stillFrames, 30); };
 $('#vw-right').onclick = () => { look.ty = THREE.MathUtils.clamp(look.ty - 0.38, -1.05, 1.05); stillFrames = Math.max(stillFrames, 30); };
@@ -1528,7 +1535,7 @@ function navStep(kind) {
   if (kind === 'home') {
     try {
       if (S.mode === 'tour') exitTour();
-      else if (S.mode === 'view') closeView();
+      else if (S.mode === 'view') closeView('leave');
       else if (S.mode === 'walk' || S.mode === 'entering' || S.inside) restoreFromInterior();
       if (S.area) toggleArea(false);
     } catch (e) { console.error(e); }
@@ -1590,7 +1597,7 @@ function filmCap(k, t) {
 }
 function playFilm() {
   if (filmOn) return; filmOn = true;
-  if (S.mode === 'inside') closeInterior(); if (S.mode === 'view') closeView();
+  if (S.mode === 'inside') closeInterior(); if (S.mode === 'view') closeView('leave');
   toExplore(false); controls.autoRotate = false;
   $('#film').classList.add('on'); $('#film').setAttribute('aria-hidden', 'false');
   $('#panel').classList.add('hide'); $('#ui').style.visibility = 'hidden'; $('#labels').style.visibility = 'hidden'; $('#hint').style.opacity = 0;
@@ -1693,7 +1700,7 @@ function renderList() {
   $('#l-body').innerHTML = rows.map(u => `<tr class="r" data-plot="${u.plot}"><td><b style="font-family:var(--f-display);font-size:17px">${u.plot}</b> <span style="color:var(--ink-3)">${u.apt}</span>${PICKS[u.plot] ? ' <span class="pick">Pick</span>' : ''}</td><td>${FLOORS[u.floor].name}</td><td>${u.beds} bed · ${u.type}</td><td>${u.sqft} sq ft</td><td style="color:var(--ink-2)">${u.note}</td><td>${fmtGBP(u.price)}</td><td>${fmtGBP(rentFor(u, RK).pcm)} pcm</td><td><span class="status ${st(u).key}">${st(u).label}</span></td></tr>`).join('');
 }
 $('#l-filters').onclick = (e) => { const b = e.target.closest('[data-f]'); if (b) { lf = b.dataset.f; renderList(); } };
-$('#l-body').onclick = (e) => { const r = e.target.closest('[data-plot]'); if (!r) return; $('#list').classList.remove('on'); if (S.mode === 'inside') closeInterior(); if (S.mode === 'view') closeView(); toUnit(+r.dataset.plot); };
+$('#l-body').onclick = (e) => { const r = e.target.closest('[data-plot]'); if (!r) return; $('#list').classList.remove('on'); if (S.mode === 'inside') closeInterior(); if (S.mode === 'view') closeView('leave'); toUnit(+r.dataset.plot); };
 $('#btn-list').onclick = () => { renderList(); $('#list').classList.add('on'); };
 
 // ------------------------------------------------------------------ hash routes (#floor-3, #plot-24, #inside-24, #view-24)
@@ -2026,12 +2033,12 @@ function buildSpots() {
       { id: 'courtyard', name: 'Residents’ courtyard', at: V3(18.6, 1.6, 15.4), look: V3(12, 4.8, 11.4), note: 'The private courtyard, with the walkways to every front door.', glide: false },
       { id: 'walkway', name: 'Top-floor walkway', at: V3(20.2, 3 * F + 1.65, 11.8), look: V3(12.5, 3 * F + 1.3, 11.9), note: 'Townhouse-style front doors off an open walkway, not a hotel corridor.', glide: false },
       { id: 'church', name: 'Down Churchgate from St Mary’s', at: eyeAt(-95, -7.4), look: V3(8, 7, 2), note: 'Stockport’s oldest church behind you, Charter House at the end of the street.', glide: false },
-      { id: 'market', name: 'Market Place', at: eyeAt(-178, -13), look: V3(-205, 10, -10), note: 'The 1861 Market Hall, two minutes’ walk from your front door.', glide: false },
+      { id: 'market', name: 'Market Place', at: eyeAt(-127, -13), look: V3(-152, 5.5, -9), note: 'The 1861 Market Hall, two minutes’ walk from your front door.', glide: false },
       { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
     ];
   }
   // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
-  for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793905393`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+  for (const p of PANO_INDEX) SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1793986579`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
   spotPins = SPOTS.map((sp, i) => { const el = document.createElement('button'); el.className = 'spin'; el.style.opacity = 0; el.style.pointerEvents = 'none'; el.innerHTML = `<span>${sp.name}</span><i></i>`; el.onclick = () => goSpot(i); $('#labels').appendChild(el); return el; });
@@ -2046,6 +2053,7 @@ function enterTour() {
   if (filmOn) endFilm(true);
   dropOverlays();
   T.prev = { pos: (flight ? flight.pos : camera.position).clone(), tgt: (flight ? flight.target : controls.target).clone() };
+  T.prevFloor = (S.mode === 'floor' || S.mode === 'unit') && S.floor != null ? S.floor : null;   // to put the cut-away back on the way out
   flight = null; pathFlight = null; controls.enabled = false; controls.autoRotate = false;
   setHoverFloor(null); S.hoverPlot = null; setCut(999); CUT.constant = 999; showPlates(null); clearUnitTags();
   CH.unitRooms.forEach(r => r.visible = true);
@@ -2058,23 +2066,29 @@ function enterTour() {
   tour.place(camera.position.clone(), controls.target.clone());
   return true;
 }
-function exitTour(toPlot) {
+function exitTour(toPlot, toFloorView = false, quiet = false) {
   if (S.mode !== 'tour') return;
   showPano(null);
   tour.stop(); T.door = null; T.spot = -1;
   $('#tourui').classList.remove('on'); $('#tourui').setAttribute('aria-hidden', 'true');
-  spotPins.forEach(p => { p.style.opacity = 0; p.style.pointerEvents = 'none'; });
+  [...spotPins, ...panoPins].forEach(p => { p.style.opacity = 0; p.style.pointerEvents = 'none'; });
   $('#ui').style.visibility = '';
   camera.near = 0.25; camera.fov = baseFov(); camera.updateProjectionMatrix(); windUniforms.uNear.value = 9;
   if (clayForTour) { clayForTour = false; setClay(true); }
   S.mode = 'explore'; controls.enabled = true;
   const P = T.prev || HERO;
   camera.position.copy(tour.st.pos); controls.target.copy(tour.st.pos.clone().add(new THREE.Vector3(Math.sin(tour.st.yaw), 0, Math.cos(tour.st.yaw)).multiplyScalar(4)));
-  if (toPlot != null) { toUnit(toPlot); $('#panel').classList.remove('hide'); }
+  // the tour lifted the floor cut-away; S.floor still names the floor, so clear it or toUnit/toFloor would skip putting the cut back
+  // and leave the camera staring at the roof (Charlie, 6 Nov: back from a top-floor 360 landed on a close-up of the slates)
+  if (quiet) return;   // straight on to a window view (viewFromPano)
+  const u0 = toPlot != null ? unitByPlot.get(toPlot) : null, f0 = u0 ? u0.floor : T.prevFloor; S.floor = null;
+  if (u0 && toFloorView) { toFloor(u0.floor); $('#panel').classList.remove('hide'); }
+  else if (u0) { toUnit(toPlot); $('#panel').classList.remove('hide'); }
+  else if (f0 != null) { toFloor(f0); $('#panel').classList.remove('hide'); }
   else { flyTo(P.pos, P.tgt, 1.6, () => { $('#panel').classList.remove('hide'); }); renderPanel(); }
   renderBack();
 }
-function goSpot(i) {
+function goSpot(i, faceAt = null) {
   if (!enterTour()) return;
   const sp = SPOTS[i]; if (!sp) return;
   const from = SPOTS[T.spot];
@@ -2086,7 +2100,7 @@ function goSpot(i) {
   const sib = sp.pano ? SPOTS.map((x, j) => [x, j]).filter(([x]) => x.pano && x.plot === sp.plot) : [];
   const roomActs = sib.length > 1 ? sib.map(([x, j]) => `<button class="btn ${j === i ? 'brass' : 'ghost'}" data-tact="room" data-spot="${j}">${(x.room || x.name).replace(/^./, ch => ch.toUpperCase())}</button>`).join('') : '';
   tourCaption(sp.pano ? `Apartment ${sp.plot} · photoreal 360°` : `360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note, roomActs);
-  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: sp.look }], {}); setTimeout(() => { showPano(sp.pano, sp.hd ? sp.pano.replace('.jpg', '_8k.jpg') : null); tour.setFov(innerWidth < innerHeight ? 100 : 92); }, 400); }
+  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: faceAt || sp.look }], {}); setTimeout(() => { showPano(sp.pano, sp.hd ? sp.pano.replace('.jpg', '_8k.jpg') : null); tour.setFov(innerWidth < innerHeight ? 100 : 92); }, 400); }
   else { showPano(null); tour.walk([near ? { to: sp.at, speed: 6, look: sp.look } : { to: sp.at, cut: true, look: sp.look }]); }
   stillFrames = Math.max(stillFrames, 4);
 }
@@ -2168,14 +2182,15 @@ $('#t-acts').addEventListener('click', (e) => {
   if (b.dataset.tact === 'room') return goSpot(+b.dataset.spot);
   if (b.dataset.tact === 'unit') exitTour(plot);
   else if (b.dataset.tact === 'interiors') { exitTour(plot); openGallery(Math.max(0, GALLERY.findIndex(g => g[0] === phCGI(plot)))); }
-  else if (b.dataset.tact === 'inside' && ownPano(plot) >= 0) { const i = ownPano(plot); T.door = plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${plot}`; }
-  else if (b.dataset.tact === 'inside' && SPOTS.some(x => x.pano && x.type === unitByPlot.get(plot).type)) { const i = SPOTS.findIndex(x => x.pano && x.type === unitByPlot.get(plot).type); T.door = plot; goSpot(i); $('#t-backlbl').textContent = `Back to Plot ${plot}`; }
+  else if (b.dataset.tact === 'inside' && ownPano(plot) >= 0) { const i = ownPano(plot); T.door = plot; goSpot(i); $('#t-backlbl').textContent = backLevel(plot); }
+  else if (b.dataset.tact === 'inside' && SPOTS.some(x => x.pano && x.type === unitByPlot.get(plot).type)) { const i = SPOTS.findIndex(x => x.pano && x.type === unitByPlot.get(plot).type); T.door = plot; goSpot(i); $('#t-backlbl').textContent = backLevel(plot); }
   else if (b.dataset.tact === 'inside') {
     const f = $('#tfade'); f.style.transitionDuration = '.35s'; f.style.opacity = 1;
     setTimeout(() => { exitTour(plot); const was = window.__fastFlights; window.__fastFlights = true; stepInside(plot); window.__fastFlights = was; setTimeout(() => { f.style.opacity = 0; }, 450); }, 380);
   }
 });
-$('#t-back').onclick = () => exitTour(T.door);
+const backFromPano = () => !!(SPOTS[T.spot] && SPOTS[T.spot].pano);   // back from a flat's 360: the floor it is on, cut away
+$('#t-back').onclick = () => exitTour(T.door, backFromPano());
 $('#t-left').onclick = () => tour.turn(0.55);
 $('#t-right').onclick = () => tour.turn(-0.55);
 $('#btn-360').onclick = () => goSpot(0);
@@ -2183,7 +2198,7 @@ canvas.addEventListener('wheel', (e) => { if (S.mode === 'tour') { e.preventDefa
 addEventListener('keydown', (e) => {
   if (S.mode !== 'tour') return;
   if (e.key === 'ArrowLeft') tour.turn(0.3); else if (e.key === 'ArrowRight') tour.turn(-0.3);
-  else if (e.key === 'Escape') exitTour(T.door);
+  else if (e.key === 'Escape') exitTour(T.door, backFromPano());
 });
 function updateTourPins() {
   const w = innerWidth, h = innerHeight, busy = tour.busy();
@@ -2196,7 +2211,57 @@ function updateTourPins() {
     el.style.opacity = vis ? 1 : 0; el.style.pointerEvents = vis ? 'auto' : 'none';
     if (vis) { el.style.transform = `translate(${(tmpV.x + 1) / 2 * w}px, ${(1 - tmpV.y) / 2 * h}px) translate(-50%, -100%) scale(${THREE.MathUtils.clamp(14 / d, 0.62, 1.15)})`; }
   }
+  // the windows of a photoreal 360: a pin on each, which opens the real view out of that window
+  const sp = SPOTS[T.spot], wins = panoOn && !busy && sp && sp.pano && sp.plot != null ? panoWindows(sp) : [];
+  while (panoPins.length < wins.length) { const el = document.createElement('button'); el.className = 'wpin'; el.style.opacity = 0; el.style.pointerEvents = 'none'; el.innerHTML = `<b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3.5" width="14" height="17" rx="1"/><path d="M12 3.5v17M5 12h14"/></svg></b><span>See the view</span>`; el.setAttribute('aria-label', 'See the view from this window'); el.onclick = () => viewFromPano(+el.dataset.k); $('#labels').appendChild(el); panoPins.push(el); }
+  for (let k = 0; k < panoPins.length; k++) {
+    const el = panoPins[k], q = wins[k];
+    let vis = !!q;
+    if (vis) { tmpV.copy(q.at).project(camera); vis = tmpV.z < 1 && Math.abs(tmpV.x) < 0.94 && tmpV.y > -0.8 && tmpV.y < 0.9; }
+    el.style.opacity = vis ? 1 : 0; el.style.pointerEvents = vis ? 'auto' : 'none';
+    if (vis) { el.dataset.k = k; el.style.transform = `translate(${(tmpV.x + 1) / 2 * w}px, ${(1 - tmpV.y) / 2 * h}px) translate(-50%, -50%)`; }
+  }
 }
+// which windows a 360 can see: the flat's windows with a clear line across the plan from the camera (a doorway counts), each with
+// the point to pin it on. The render stretches the room 1.2x (bedrooms 1.25x) on plan about the flat's centre but not in height,
+// so a window's bearing is the same as in the model and its height angle is flatter by that factor.
+let panoPins = [];
+const VIEW_RET = { spot: -1 };
+function panoWindows(sp) {
+  if (sp._wins) return sp._wins;
+  const u = unitByPlot.get(sp.plot); sp._wins = [];
+  if (!u || !CH.windows || IS_PH || IS_UBL || IS_OSL) return sp._wins;   // the other sites' 360s are rendered without the stretch (render_room.py)
+  let a = null; try { a = getApartment(u); } catch (e) { return sp._wins; }
+  const g = a.grid, RS = /bed/i.test(sp.room || '') ? 1.25 : 1.2, c = sp.at;
+  const freeAt = (x, z) => { const [i, j] = g.toCell(x, z); return i >= 0 && j >= 0 && i < g.nx && j < g.nz && !!g.free[g.idx(i, j)]; };
+  for (const w of CH.windows) {
+    if (w.plot !== sp.plot) continue;
+    const n = w.normal, p = w.pos.clone().addScaledVector(new THREE.Vector3(n.x, 0, n.z).normalize(), -0.7);   // just inside the glass (walk.js puts a window's room the same way)
+    const L = Math.hypot(p.x - c.x, p.z - c.z); if (L < 0.8 || L > 14) continue;
+    let blocked = 0; for (let s = 0.25; s < L - 0.05; s += 0.05) { const t = s / L; if (!freeAt(c.x + (p.x - c.x) * t, c.z + (p.z - c.z) * t)) blocked++; }
+    if (blocked > 1) continue;
+    const y = w.pos.y - (w.h || 1.6) * 0.12;
+    sp._wins.push({ w, at: new THREE.Vector3(w.pos.x, c.y + (y - c.y) / RS, w.pos.z) });
+  }
+  return sp._wins;
+}
+function viewFromPano(k) {
+  const sp = SPOTS[T.spot], q = sp && sp._wins && sp._wins[k]; if (!q) return;
+  Object.assign(VIEW_RET, { spot: T.spot, door: T.door, prev: T.prev, prevFloor: T.prevFloor, lbl: $('#t-backlbl').textContent, at: q.at.clone() });
+  exitTour(null, false, true);
+  seeView(sp.plot, 0, q.w);
+}
+// from the window back into the 360, facing the window you looked out of
+function backTo360() {
+  const R = { ...VIEW_RET }; VIEW_RET.spot = -1;
+  closeView(true);
+  S.mode = 'explore';
+  if (!enterTour()) return toUnit(SPOTS[R.spot].plot, false);
+  T.prev = R.prev; T.prevFloor = R.prevFloor;
+  goSpot(R.spot, R.at); T.door = R.door; $('#t-backlbl').textContent = R.lbl;
+  setHash('plot-' + SPOTS[R.spot].plot);
+}
+$('#vw-360').onclick = () => { if (S.mode === 'view') closeView(); };
 
 
 // ------------------------------------------------------------------ full screen (for presenting on a call: no address bar, no tabs)
@@ -2291,7 +2356,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1793905393').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1793986579').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');

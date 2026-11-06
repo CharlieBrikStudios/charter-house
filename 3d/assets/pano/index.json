@@ -82,14 +82,14 @@
   "type": "2A",
   "name": "Apt 24 \u00b7 living and dining",
   "pos": [
-   3.725,
+   3.0,
    10.136,
-   2.725
+   2.65
   ],
   "look": [
-   5.592,
+   4.867,
    9.786,
-   0.377
+   0.302
   ],
   "hd": 1,
   "room": "Living and dining",
@@ -185,9 +185,9 @@
    14.525
   ],
   "look": [
-   0.072,
+   0.076,
    9.786,
-   14.318
+   14.271
   ],
   "room": "Kitchen and living",
   "note": "Apt 26, a 1-bed on the top floor: oak herringbone, panelled walls, brass and marble. Drag to look round."

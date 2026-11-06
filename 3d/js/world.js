@@ -16,6 +16,13 @@ export function setTerrain(t, raw = false) {
     const w = sm((10 - x) / 40) * (1 - sm((-260 - x) / 100)) * (1 - sm((Math.abs(z + 10) - 110) / 90));
     if (w > 0) TH[j * t.nx + i] -= w * 0.08 * Math.min(110, Math.max(0, 10 - x));
   }
+  // St Mary's Gate stretch (Charlie, 6 Nov): Churchgate falls at an even, gentle 3% from Charter House towards St Mary's and
+  // the Market Place instead of rolling up and down, and St Mary's Gate stands on that even slope
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const w3 = sm((6 - x) / 8) * (1 - sm((-150 - x) / 40)) * (1 - sm((Math.abs(z - 3) - 18) / 12));
+    if (w3 > 0) { const T = -0.03 - 0.03 * Math.max(0, 4 - x); TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w3) + T * w3; }
+  }
   // the play park sits level with Churchgate (no grass bank between the pavement and its railings)
   const jr = Math.round((-6.6 - t.z0) / t.cell);
   for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {

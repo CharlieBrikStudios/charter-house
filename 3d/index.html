@@ -374,6 +374,16 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
 /* the painted timber window reveal, just in front of the eye */
 #viewui::after { content: ""; position: absolute; inset: 0; pointer-events: none; border: clamp(10px, 1.6vw, 22px) solid #e9e2d6; border-bottom-width: clamp(18px, 3vw, 40px); box-shadow: inset 0 0 0 1px rgba(0,0,0,.25), inset 0 0 22px 6px rgba(40,30,20,.35); opacity: .96; }
 #viewui > * { z-index: 1; }
+/* opened from a photoreal 360: the way back sits mid-height on the left, big enough to find at a glance */
+#vw-360 { position: absolute; left: calc(var(--gx) + clamp(22px, 2.6vw, 42px)); top: 50%; transform: translateY(-50%); height: 58px; padding: 0 26px 0 16px; font-size: 16px; box-shadow: 0 16px 40px -12px rgba(0,0,0,.7), 0 0 0 1px rgba(255,240,210,.4) inset, 0 0 0 6px rgba(216,180,118,.22); }
+#vw-360:hover { transform: translateY(calc(-50% - 1px)); }
+/* a window in a photoreal 360 */
+.wpin { position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border-radius: 999px; background: rgba(20,16,14,.62); border: 1px solid rgba(255,248,236,.42); color: #fff; font: 600 10.5px/1 var(--f-label); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; cursor: pointer; pointer-events: auto; transition: opacity .25s, background .2s, border-color .2s; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.wpin b { width: 30px; height: 30px; border-radius: 50%; background: var(--brass); color: #1a140f; display: grid; place-items: center; animation: wpin 2.6s ease-out infinite; }
+.wpin b svg { width: 16px; height: 16px; }
+.wpin:hover { background: rgba(20,16,14,.86); border-color: var(--brass); color: var(--brass); }
+@keyframes wpin { 0% { box-shadow: 0 0 0 0 rgba(216,180,118,.55); } 70%, 100% { box-shadow: 0 0 0 11px rgba(216,180,118,0); } }
+@media (prefers-reduced-motion: reduce) { .wpin b { animation: none; } }
 #viewui.on .cap { left: calc(var(--gx) + clamp(14px, 2vw, 30px)); bottom: calc(var(--gb) + clamp(34px, 4.5vw, 60px)); }
 #viewui.on .rooms { right: calc(var(--gr) + clamp(14px, 2vw, 30px)); bottom: calc(var(--gb) + clamp(34px, 4.5vw, 60px)); }
 #viewui.on .top { top: calc(var(--gt) + clamp(22px, 2.4vw, 34px)); left: calc(var(--gx) + clamp(10px, 1.4vw, 22px)); right: calc(var(--gr) + clamp(10px, 1.4vw, 22px)); }
@@ -594,6 +604,7 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
     <button class="bigback" id="vw-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg>Back to the apartment</button>
     <div class="vturn"><button class="chip" id="vw-left" aria-label="Look left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg>Look left</button><button class="chip" id="vw-right" aria-label="Look right">Look right<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 5 7 7-7 7"/></svg></button></div>
   </div>
+  <button class="bigback" id="vw-360" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg>Back to the 360° view</button>
   <div class="cap"><span class="label" id="vw-kicker"></span><h3 id="vw-title"></h3><p id="vw-text"></p></div>
   <div class="rooms" id="vw-dirs"></div>
 </div>
@@ -648,6 +659,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1793905393"></script>
+<script type="module" src="js/main.js?v=1793986579"></script>
 
 </body></html>

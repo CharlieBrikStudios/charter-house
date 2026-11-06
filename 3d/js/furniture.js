@@ -5,9 +5,9 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT, tex } from './materials.js?v=1793905393';
-import { FLOOR_H } from './data.js?v=1793905393';
-import { Forest } from './trees.js?v=1793905393';
+import { CUT, tex } from './materials.js?v=1793986579';
+import { FLOOR_H } from './data.js?v=1793986579';
+import { Forest } from './trees.js?v=1793986579';
 
 const FH = FLOOR_H;
 const DIR = { '+x': [1, 0], '-x': [-1, 0], '+z': [0, 1], '-z': [0, -1] };
@@ -58,6 +58,7 @@ export function furnitureMaterials(base) {
     rug2: new THREE.MeshStandardMaterial({ map: T('rug2.jpg'), roughness: 1 }),
     shade: new THREE.MeshStandardMaterial({ color: '#f4e8d2', roughness: 0.9, emissive: new THREE.Color('#ffc983'), emissiveIntensity: 0.55 }),
     ceramic: new THREE.MeshPhysicalMaterial({ color: '#f1eee8', roughness: 0.25, clearcoat: 0.6 }),
+    hood: new THREE.MeshStandardMaterial({ color: '#c3c6c9', metalness: 0.85, roughness: 0.32 }),
     stone: new THREE.MeshStandardMaterial({ color: '#d8d1c6', roughness: 0.85 }),
     terracotta: new THREE.MeshStandardMaterial({ color: '#b46d4c', roughness: 0.8 }),
     soil: new THREE.MeshStandardMaterial({ color: '#3a2e25', roughness: 1 }),
@@ -161,25 +162,55 @@ function bedside(K) {
   K.put('bookB', rb(0.2, 0.04, 0.15, 0.005), -0.1, 0.54, 0.05, 0.3);
 }
 
+// a shaker door or drawer front, as the Charter House kitchens and joinery (the architect's CGIs): 70 mm stiles and rails standing
+// proud of a recessed centre panel. x, yc: centre; w, h: size; zf: the carcass front it hangs on
+function shaker(K, col, x, yc, w, h, zf, frame = 0.07) {
+  const s = Math.min(frame, w * 0.16, h * 0.24);
+  K.put(col, rb(w - 0.01, h - 0.01, 0.012, 0.002), x, yc, zf + 0.006);
+  for (const sx of [-1, 1]) K.put(col, rb(s, h, 0.022, 0.003), x + sx * (w / 2 - s / 2), yc, zf + 0.011);
+  for (const sy of [-1, 1]) K.put(col, rb(w - 2 * s + 0.002, s, 0.022, 0.003), x, yc + sy * (h / 2 - s / 2), zf + 0.011);
+}
 function wardrobe(K, { len = 1.4 }) {
-  K.put('paint', rb(len, 2.2, 0.6, 0.01), 0, 1.1, 0);
+  // built-in wardrobe: painted carcass to 2.2 m, tall shaker doors with a top rail at 1.9 m, brass bar pulls, recessed plinth
+  K.put('paint', rb(len, 2.2, 0.58, 0.004), 0, 1.1, -0.01);
+  K.put('plinth', rb(len - 0.02, 0.1, 0.02, 0.002), 0, 0.05, 0.27);
   const n = Math.max(2, Math.round(len / 0.5)), dw = len / n;
-  for (let i = 1; i < n; i++) K.put('plinth', rb(0.006, 2.1, 0.01, 0.002), -len / 2 + dw * i, 1.1, 0.3);
-  for (let i = 0; i < n; i++) K.put('brass', cyl(0.009, 0.009, 0.32, 8), -len / 2 + dw * (i + 0.5) + (i % 2 ? -1 : 1) * (dw / 2 - 0.06), 1.05, 0.33);
+  for (let i = 0; i < n; i++) {
+    const x = -len / 2 + dw * (i + 0.5);
+    shaker(K, 'paint', x, 0.1 + 1.78 / 2 + 0.005, dw - 0.006, 1.78, 0.28);
+    shaker(K, 'paint', x, 1.89 + 0.3 / 2 + 0.005, dw - 0.006, 0.3, 0.28, 0.06);
+    K.put('brass', cyl(0.008, 0.008, 0.3, 8), x + (i % 2 ? -1 : 1) * (dw / 2 - 0.06), 1.05, 0.325);
+    for (const y of [0.9, 1.2]) K.put('brass', rb(0.016, 0.016, 0.03, 0.004), x + (i % 2 ? -1 : 1) * (dw / 2 - 0.06), y, 0.31);
+  }
 }
 
 function kitchen(K, { len = 3, col = 'green', sink = null, hob = null, tap = true, bowl = true }) {
+  // 6 Nov: shaker kitchens as the architect's CGIs (Charlie: proper models, not blocks): a drawer over a door in every 600 mm unit,
+  // the oven built in under the hob, brass cup handles and knobs, a 30 mm marble worktop and a vertical metro-tile splashback
   K.put('plinth', rb(len, 0.1, 0.5, 0.005), 0, 0.05, -0.05);
   K.put(col, rb(len, 0.76, 0.56, 0.006), 0, 0.1 + 0.38, -0.02);
-  const n = Math.max(1, Math.round(len / 0.6)), dw = len / n;
+  const n = Math.max(1, Math.round(len / 0.6)), dw = len / n, zf = 0.26;
   for (let i = 0; i < n; i++) {
-    const x = -len / 2 + dw * (i + 0.5);
-    K.put(col, rb(dw - 0.006, 0.72, 0.025, 0.006), x, 0.48, 0.27);
-    K.put(col, rb(dw - 0.14, 0.56, 0.012, 0.004), x, 0.46, 0.29);
-    K.put('brass', cyl(0.008, 0.008, 0.16, 8), x, 0.78, 0.3, 0, 0, Math.PI / 2);
+    const x = -len / 2 + dw * (i + 0.5), oven = hob != null && Math.abs(x - hob) < dw / 2 + 0.01;
+    if (oven) {   // built-in single oven: black glass door with a steel bar, the control panel where the drawer would be
+      K.put('tv', rb(dw - 0.03, 0.54, 0.02, 0.004), x, 0.43, zf + 0.012);
+      K.put('black', rb(dw - 0.03, 0.13, 0.02, 0.004), x, 0.785, zf + 0.012);
+      K.put('hood', cyl(0.009, 0.009, dw - 0.14, 10), x, 0.65, zf + 0.06, 0, 0, Math.PI / 2);
+      for (const sx of [-1, 1]) K.put('hood', cyl(0.007, 0.007, 0.04, 8), x + sx * (dw / 2 - 0.08), 0.65, zf + 0.04, 0, Math.PI / 2, 0);
+      for (const sx of [-0.18, 0.18]) K.put('hood', cyl(0.016, 0.016, 0.02, 14), x + sx, 0.785, zf + 0.03, 0, Math.PI / 2, 0);
+    } else {
+      shaker(K, col, x, 0.79, dw - 0.006, 0.13, zf, 0.045);
+      K.put('brass', new THREE.CylinderGeometry(0.035, 0.035, 0.012, 16, 1, false, 0, Math.PI), x, 0.79, zf + 0.034, 0, Math.PI / 2, 0);   // cup pull
+      shaker(K, col, x, 0.1 + 0.6 / 2 + 0.015, dw - 0.006, 0.6, zf);
+      K.put('brass', new THREE.SphereGeometry(0.014, 12, 8), x + (i % 2 ? -1 : 1) * (dw / 2 - 0.07), 0.62, zf + 0.04);
+      K.put('brass', cyl(0.005, 0.005, 0.016, 6), x + (i % 2 ? -1 : 1) * (dw / 2 - 0.07), 0.62, zf + 0.026, 0, Math.PI / 2, 0);
+    }
   }
   K.put('marble', rb(len + 0.02, 0.03, 0.62, 0.006), 0, 0.875, 0.01);
-  K.put('marble', rb(len, 0.12, 0.02, 0.004), 0, 0.95, -0.3);
+  // splashback: white vertical metro tiles (75 x 300 mm) two courses high, laid stack-bond as the CGIs
+  { const tw = 0.075, th = 0.3, nt = Math.floor(len / tw);
+    for (let r = 0; r < 2; r++) for (let i = 0; i < nt; i++) K.put('ceramic', new THREE.BoxGeometry(tw - 0.003, th - 0.003, 0.008), -len / 2 + tw * (i + 0.5) + (len - nt * tw) / 2, 0.892 + th * (r + 0.5), -0.304);
+    K.put('marble', rb(len, 0.02, 0.03, 0.004), 0, 0.892 + 2 * th + 0.01, -0.3); }
   if (sink != null) {
     K.put('sinkM', rb(0.55, 0.006, 0.4, 0.003), sink, 0.892, 0.02);
     if (tap) {
@@ -189,7 +220,14 @@ function kitchen(K, { len = 3, col = 'green', sink = null, hob = null, tap = tru
       K.put('brass', arc, sink, 1.19, -0.11);
     }
   }
-  if (hob != null) K.put('tv', rb(0.6, 0.006, 0.5, 0.003), hob, 0.892, 0.02);
+  if (hob != null) {
+    K.put('tv', rb(0.6, 0.006, 0.5, 0.003), hob, 0.892, 0.02);
+    // a chimney extractor over every hob (Charlie, 6 Nov): brushed steel canopy, tapered hood and flue up to the ceiling
+    K.put('hood', rb(0.6, 0.06, 0.48, 0.006), hob, 1.6, -0.07);
+    const fr = new THREE.CylinderGeometry(0.17, 0.4, 0.24, 4, 1); fr.rotateY(Math.PI / 4); fr.scale(1, 1, 0.82); K.put('hood', fr, hob, 1.75, -0.12);
+    K.put('hood', rb(0.27, FH - 0.15 - 1.86, 0.22, 0.004), hob, (1.86 + FH - 0.15) / 2, -0.2);
+    K.put('black', rb(0.5, 0.004, 0.36, 0.002), hob, 1.568, -0.05);   // the filter grille underneath
+  }
   if (bowl) {
     const bx = (sink != null ? sink : 0) + (hob != null && hob > (sink ?? 0) ? -0.75 : 0.75);
     if (Math.abs(bx) < len / 2 - 0.2) {
