@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1794000245';
+import { boxUV } from './building.js?v=1794002623';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -104,19 +104,38 @@ export function landmarkMaterials(tex, base) {
 }
 
 // ---------------------------------------------------------------- St Mary's Church
-export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Math.PI / 4, clip = null } = {}) {
+export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Math.PI / 4, clip = null, front = null } = {}) {
   const K = new Kit();
   const H0 = 0;  // church floor level in its frame
   // raised churchyard: grass plinth with a low sandstone retaining wall and coping. On the Churchgate side the wall follows the back
   // of the pavement (clip: world x, z -> clear of the road), as Street View shows it; it used to run straight out into the road
   // (Charlie, 6 Nov)
   const cs = Math.cos(rot), sn = Math.sin(rot), W = (a, b) => [x + a * cs + b * sn, z - a * sn + b * cs];
-  const bMax = (a) => { let b = 12; if (clip) while (b > -10 && !clip(...W(a, b + 0.7))) b -= 0.25; return b; };
-  const STEP = 1.0, A0 = -36, A1 = 30;
+  // With `front` (world polyline of the boundary wall's outer face: the back of the pavement, then the east end by the car park)
+  // the yard runs right out to it and one straight wall follows it; without, the old rectangle with its own south wall.
+  const bMax = (a) => { let b = front ? 60 : 12; if (clip) while (b > -10 && !clip(...W(a, b + 0.7))) b -= 0.25; return b; };
+  const STEP = front ? 0.5 : 1.0, A0 = -36, A1 = 30;
   for (let a = A0; a < A1 - 1e-6; a += STEP) {
     const a1 = Math.min(A1, a + STEP), bm = Math.min(bMax(a), bMax(a1));
+    if (front) { K.add('wall', box(a, -7, -22, a1, H0 - 0.05, bm + 0.7)); continue; }
     K.add('wall', box(a, -7, -22, a1, H0 - 0.05, bm));
     K.add('sand', box(a, -7, bm, a1, H0 + 0.9, bm + 0.7)); K.add('stone', box(a - 0.02, H0 + 0.9, bm - 0.05, a1 + 0.02, H0 + 1.05, bm + 0.78));
+  }
+  if (front) {
+    const toL = (wx, wz) => { const dx = wx - x, dz = wz - z; return [dx * cs - dz * sn, dx * sn + dz * cs]; };
+    for (let i = 0; i + 1 < front.length; i++) {
+      const [x0, z0] = front[i], [x1, z1] = front[i + 1], len = Math.hypot(x1 - x0, z1 - z0); if (len < 0.05) continue;
+      const dxw = (x1 - x0) / len, dzw = (z1 - z0) / len, nx = dzw, nz = -dxw;     // inward: away from the street
+      const [ac, bc] = toL((x0 + x1) / 2 + nx * 0.35, (z0 + z1) / 2 + nz * 0.35);
+      const da = dxw * cs - dzw * sn, db = dxw * sn + dzw * cs, phi = Math.atan2(-db, da), east = Math.abs(dxw) < 0.3;
+      const seg = (h0, h1, d, k, extra = 0) => { const g = new THREE.BoxGeometry(len + extra, h1 - h0, d); g.rotateY(phi); g.translate(ac, (h0 + h1) / 2, bc); K.add(k, g); };
+      seg(-7, H0 + 0.9, 0.7, 'sand', 0.7); seg(H0 + 0.9, H0 + 1.05, 0.8, 'stone', 0.8);
+      if (east) {   // black railings on the wall along the car park end
+        const n = Math.round(len / 0.13);
+        for (let k = 0; k <= n; k++) { const f = k / n, [pa, pb] = toL(x0 + (x1 - x0) * f + nx * 0.35, z0 + (z1 - z0) * f + nz * 0.35); K.add('clockBlack', box(pa - 0.012, H0 + 1.05, pb - 0.012, pa + 0.012, H0 + 2.15, pb + 0.012)); }
+        for (const hh of [H0 + 1.12, H0 + 2.08]) seg(hh, hh + 0.04, 0.05, 'clockBlack');
+      }
+    }
   }
   const bEast = bMax(A1), bWest = bMax(A0);
   for (const [x0, z0, x1, z1] of [[-36, -22.7, 30, -22], [-36.7, -22.7, -36, bWest + 0.7], [30, -22.7, 30.7, bEast + 0.7]]) K.add('sand', box(x0, -7, z0, x1, H0 + 0.9, z1));
