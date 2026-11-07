@@ -288,6 +288,13 @@
   "note": "Apt 3, a 1-bed on the ground floor: oak herringbone, panelled walls, brass and marble. Drag to look round."
  },
  {
+  "site": "ch",
+  "file": "ext_market",
+  "spot": "market",
+  "type": "ext",
+  "hd": 1
+ },
+ {
   "site": "ph",
   "file": "ph33_living",
   "plot": 33,
