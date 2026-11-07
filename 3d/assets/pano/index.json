@@ -317,6 +317,13 @@
  },
  {
   "site": "ch",
+  "file": "ext_harvey",
+  "spot": "harvey",
+  "type": "ext",
+  "hd": 1
+ },
+ {
+  "site": "ch",
   "file": "ext_market",
   "spot": "market",
   "type": "ext",
