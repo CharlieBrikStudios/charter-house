@@ -303,6 +303,13 @@
  },
  {
   "site": "ch",
+  "file": "ext_corner",
+  "spot": "corner",
+  "type": "ext",
+  "hd": 1
+ },
+ {
+  "site": "ch",
   "file": "ext_market",
   "spot": "market",
   "type": "ext",
