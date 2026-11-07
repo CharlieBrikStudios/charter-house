@@ -289,6 +289,13 @@
  },
  {
   "site": "ch",
+  "file": "ext_brewery",
+  "spot": "brewery",
+  "type": "ext",
+  "hd": 1
+ },
+ {
+  "site": "ch",
   "file": "ext_church",
   "spot": "church",
   "type": "ext",
