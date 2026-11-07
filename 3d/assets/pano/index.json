@@ -309,6 +309,13 @@
   "hd": 1
  },
  {
+  "site": "ch",
+  "file": "ext_park",
+  "spot": "park",
+  "type": "ext",
+  "hd": 1
+ },
+ {
   "site": "ph",
   "file": "ph33_living",
   "plot": 33,
