@@ -5,9 +5,9 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT, tex } from './materials.js?v=1794014526';
-import { FLOOR_H } from './data.js?v=1794014526';
-import { Forest } from './trees.js?v=1794014526';
+import { CUT, tex } from './materials.js?v=1794015863';
+import { FLOOR_H } from './data.js?v=1794015863';
+import { Forest } from './trees.js?v=1794015863';
 
 const FH = FLOOR_H;
 const DIR = { '+x': [1, 0], '-x': [-1, 0], '+z': [0, 1], '-z': [0, -1] };
@@ -57,6 +57,7 @@ export function furnitureMaterials(base) {
     rug1: new THREE.MeshStandardMaterial({ map: T('rug1.jpg'), roughness: 1 }),
     rug2: new THREE.MeshStandardMaterial({ map: T('rug2.jpg'), roughness: 1 }),
     shade: new THREE.MeshStandardMaterial({ color: '#f4e8d2', roughness: 0.9, emissive: new THREE.Color('#ffc983'), emissiveIntensity: 0.55 }),
+    glassM: new THREE.MeshPhysicalMaterial({ color: '#eef3f4', roughness: 0.04, metalness: 0, transmission: 1, thickness: 0.003, ior: 1.5 }),
     ceramic: new THREE.MeshPhysicalMaterial({ color: '#f1eee8', roughness: 0.25, clearcoat: 0.6 }),
     hood: new THREE.MeshStandardMaterial({ color: '#c3c6c9', metalness: 0.85, roughness: 0.32 }),
     stone: new THREE.MeshStandardMaterial({ color: '#d8d1c6', roughness: 0.85 }),
@@ -153,13 +154,26 @@ function bed(K, { w = 1.5, len = 2.05, fab = 'navy', throwM = 'rust', pillow2 = 
 }
 
 function bedside(K) {
-  K.put('walnut', rb(0.46, 0.46, 0.38, 0.02), 0, 0.06 + 0.23, 0);
-  for (const sx of [-1, 1]) K.put('brass', cyl(0.012, 0.012, 0.06, 6), sx * 0.19, 0.03, 0.15);
-  K.put('brass', rb(0.12, 0.012, 0.012, 0.004), 0, 0.42, 0.195);
-  K.put('brass', cyl(0.07, 0.08, 0.02, 20), 0.06, 0.53, -0.04);
-  K.put('brass', cyl(0.012, 0.012, 0.28, 8), 0.06, 0.66, -0.04);
-  K.put('shade', cyl(0.11, 0.15, 0.2, 24, true), 0.06, 0.88, -0.04);
-  K.put('bookB', rb(0.2, 0.04, 0.15, 0.005), -0.1, 0.54, 0.05, 0.3);
+  // walnut two-drawer bedside on tapered legs: rounded top, drawer fronts with shadow gaps, brass knobs; a turned ceramic lamp
+  // with a linen drum shade, books and a glass of water
+  const w = 0.46, d = 0.38, legH = 0.16, body = 0.36;
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const g = cyl(0.016, 0.01, legH, 10); g.translate(0, -legH / 2, 0); K.put('walnut', g, sx * (w / 2 - 0.05), legH, sz * (d / 2 - 0.05), 0, sz * -0.06, sx * 0.06); }
+  K.put('walnut', rb(w, body, d, 0.012), 0, legH + body / 2, 0);
+  K.put('walnut', rb(w + 0.02, 0.025, d + 0.02, 0.01), 0, legH + body + 0.012, 0);
+  for (const [yc, h] of [[legH + 0.265, 0.15], [legH + 0.095, 0.15]]) {
+    K.put('walnut', rb(w - 0.03, h, 0.012, 0.004), 0, yc, d / 2 + 0.004);
+    K.put('black', rb(w - 0.03, 0.004, 0.004, 0.001), 0, yc + h / 2 + 0.006, d / 2 + 0.002);
+    K.put('brass', new THREE.SphereGeometry(0.015, 12, 8), 0, yc, d / 2 + 0.022);
+    K.put('brass', cyl(0.005, 0.005, 0.014, 6), 0, yc, d / 2 + 0.011, 0, Math.PI / 2, 0);
+  }
+  const top = legH + body + 0.025;
+  const base = new THREE.LatheGeometry([[0.001, 0], [0.055, 0], [0.075, 0.03], [0.085, 0.09], [0.07, 0.15], [0.03, 0.19], [0.016, 0.21], [0.016, 0.24]].map(([a, b]) => new THREE.Vector2(a, b)), 24);
+  K.put('ceramic', base, 0.08, top, -0.05);
+  K.put('brass', cyl(0.007, 0.007, 0.18, 8), 0.08, top + 0.33, -0.05);
+  K.put('shade', cyl(0.12, 0.13, 0.2, 28, true), 0.08, top + 0.43, -0.05);
+  K.put('bookB', rb(0.21, 0.035, 0.15, 0.004), -0.1, top + 0.018, 0.06, 0.3);
+  K.put('bookA', rb(0.18, 0.028, 0.13, 0.004), -0.1, top + 0.05, 0.06, 0.18);
+  const glass = new THREE.CylinderGeometry(0.033, 0.028, 0.1, 18, 1, true); K.put('glassM', glass, -0.13, top + 0.05, -0.1);
 }
 
 // a shaker door or drawer front, as the Charter House kitchens and joinery (the architect's CGIs): 70 mm stiles and rails standing
@@ -239,9 +253,22 @@ function kitchen(K, { len = 3, col = 'green', sink = null, hob = null, tap = tru
 }
 
 function chair(K, { fab = 'boucle' }) {
-  K.put(fab, rb(0.46, 0.07, 0.46, 0.03), 0, 0.47, 0);
-  K.put(fab, rb(0.46, 0.4, 0.06, 0.03), 0, 0.74, -0.2, 0, -0.1);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) K.put('oak', cyl(0.016, 0.013, 0.44, 8), sx * 0.19, 0.22, sz * 0.19);
+  // 6 Nov (Charlie: proper models, not blocks): an upholstered dining chair on a solid oak frame: tapered, slightly splayed legs,
+  // a seat rail, a padded seat with a soft crown, back posts rising from the rear legs and a curved oak back rail
+  const legH = 0.44;
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const g = cyl(0.017, 0.012, legH, 10); g.translate(0, -legH / 2, 0);
+    K.put('oak', g, sx * 0.19, legH, sz * 0.18, 0, sz * -0.045, sx * 0.045);
+  }
+  for (const sz of [-1, 1]) K.put('oak', rb(0.42, 0.05, 0.022, 0.006), 0, legH - 0.03, sz * 0.19);
+  for (const sx of [-1, 1]) K.put('oak', rb(0.022, 0.05, 0.38, 0.006), sx * 0.2, legH - 0.03, 0);
+  K.put(fab, rb(0.46, 0.06, 0.45, 0.028, 3), 0, legH + 0.03, 0.005);
+  K.put(fab, rb(0.42, 0.03, 0.41, 0.02, 3), 0, legH + 0.065, 0.01);
+  for (const sx of [-1, 1]) { const g = cyl(0.014, 0.016, 0.42, 10); K.put('oak', g, sx * 0.19, legH + 0.2, -0.205, 0, -0.08, 0); }
+  // the back: an arc of short pieces round a centre in front of the chair, so it curves towards the sitter
+  const arc = (key, R, y, h, t, half, n) => { for (let i = 0; i < n; i++) { const a = -half + (2 * half) * (i + 0.5) / n, len = 2 * R * Math.sin(half / n) + 0.004; K.put(key, rb(len, h, t, Math.min(0.01, t / 2 - 0.001)), Math.sin(a) * R, y, 0.2 - Math.cos(a) * R, -a); } };
+  arc('oak', 0.42, legH + 0.37, 0.075, 0.024, 0.52, 7);
+  arc(fab, 0.395, legH + 0.25, 0.17, 0.03, 0.48, 7);
 }
 
 function diningTable(K, { w = 0.9, d = 1.4, top = 'walnut', round = false }) {
@@ -264,11 +291,15 @@ function diningTable(K, { w = 0.9, d = 1.4, top = 'walnut', round = false }) {
 }
 
 function coffeeTable(K, { r = 0.38 }) {
-  K.put('marble', cyl(r, r, 0.035, 40), 0, 0.4, 0);
-  K.put('walnut', cyl(r * 0.62, r * 0.62, 0.38, 28), 0, 0.19, 0);
-  K.put('bookC', rb(0.28, 0.035, 0.21, 0.004), -0.08, 0.435, 0.04, 0.2);
-  K.put('bookB', rb(0.25, 0.03, 0.19, 0.004), -0.08, 0.468, 0.04, 0.05);
-  K.put('brass', new THREE.SphereGeometry(0.1, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), 0.14, 0.52, -0.05);
+  // a round travertine-topped coffee table: a bullnosed top on a fluted walnut drum, with a tray, books and a bowl
+  const top = new THREE.LatheGeometry([[0.001, 0], [r - 0.015, 0], [r, 0.012], [r, 0.026], [r - 0.012, 0.038], [0.001, 0.038]].map(([a, b]) => new THREE.Vector2(a, b)), 48);
+  K.put('marble', top, 0, 0.385, 0);
+  K.put('walnut', cyl(r * 0.62, r * 0.66, 0.375, 32), 0, 0.1875, 0);
+  const nf = 28; for (let i = 0; i < nf; i++) { const a = i / nf * Math.PI * 2; K.put('walnut', cyl(0.018, 0.018, 0.36, 6), Math.cos(a) * r * 0.64, 0.19, Math.sin(a) * r * 0.64); }
+  K.put('brass', rb(0.34, 0.012, 0.22, 0.006), 0.04, 0.43, -0.04, 0.35);
+  K.put('bookC', rb(0.28, 0.035, 0.21, 0.004), -0.12, 0.441, 0.1, 0.2);
+  K.put('bookB', rb(0.25, 0.03, 0.19, 0.004), -0.12, 0.474, 0.1, 0.05);
+  K.put('ceramic', new THREE.SphereGeometry(0.08, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), 0.1, 0.517, -0.08);
 }
 
 function media(K, { len = 1.5, tv = true }) {
