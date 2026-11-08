@@ -348,7 +348,23 @@ export function letteringTexture(text, { w = 4096, h = 256, font = '700 170px "A
 function buildBrewery(M, poly, Wl, roofsFlat, chim, group, bulkPolys = null) {
   // the brewery ranges behind and beside the detailed street front, from a footprint worked out offline (the OSM outline
   // less the front's blocks and its yard), flat felt roofs
-  if (bulkPolys && bulkPolys.length) { bulkPolys.forEach((p, i) => addBuilding(Wl, roofsFlat, [], chim, { p, h: 10.6, r: 'flat', s: 'works', id: 4242 + i * 7 }, 0)); return; }
+  if (bulkPolys && bulkPolys.length) {
+    bulkPolys.forEach((p, i) => addBuilding(Wl, roofsFlat, [], chim, { p, h: 10.6, r: 'flat', s: 'works', id: 4242 + i * 7 }, 0));
+    // slate ridge roofs in rows over the ranges (8 Nov: the flat grey roofs read as more open paving from above)
+    const d = [0.879, 0.477], n = [-0.477, 0.879], ang = Math.atan2(-d[1], d[0]), ridgeG = [];
+    const inP = (pp, x, z) => { let c = false; for (let i = 0, j = pp.length - 1; i < pp.length; j = i++) { const [xi, zi] = pp[i], [xj, zj] = pp[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+    for (const pp of bulkPolys) {
+      let slo = 1e9, shi = -1e9, tlo = 1e9, thi = -1e9;
+      for (const [x, z] of pp) { const s2 = x * d[0] + z * d[1], t2 = x * n[0] + z * n[1]; slo = Math.min(slo, s2); shi = Math.max(shi, s2); tlo = Math.min(tlo, t2); thi = Math.max(thi, t2); }
+      for (let t = tlo + 4.8; t < thi - 3; t += 9.6) for (let s2 = slo + 3; s2 < shi - 2.5; s2 += 5.9) {
+        const x = d[0] * s2 + n[0] * t, z = d[1] * s2 + n[1] * t, ok = (a, b) => inP(pp, d[0] * a + n[0] * b, d[1] * a + n[1] * b);
+        if (!ok(s2, t) || !ok(s2 + 3, t) || !ok(s2 - 3, t) || !ok(s2, t + 4.6) || !ok(s2, t - 4.6)) continue;
+        const g = new THREE.BoxGeometry(6.05, 6.6, 6.6); g.rotateX(Math.PI / 4); g.rotateY(ang); g.translate(x, groundAt(x, z) + 10.6, z); ridgeG.push(g);
+      }
+    }
+    if (ridgeG.length) { const rm = new THREE.Mesh(mergeGeometries(ridgeG, false), M.cSlate); rm.castShadow = rm.receiveShadow = true; rm.name = 'brewery_roofs'; group.add(rm); }
+    return;
+  }
   // The Apsley Street front (Frederic Robinson Ltd offices, the Unicorn Brewery range, the striped turret and the
   // brewhouse tower) is modelled in detail by context.js buildBreweryFront(); here: the brewery yards and ranges
   // behind it on the OSM footprint, cut back so they don't fight the detailed front.

@@ -9,30 +9,30 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794137037';
-import { buildUBL } from './ublbuild.js?v=1794137037';
-import { buildUBLFitout } from './ublfit.js?v=1794137037';
-import { UBL_LEVELS } from './ubl_data.js?v=1794137037';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794137037';
-import { buildOSL } from './oslbuild.js?v=1794137037';
-import { buildOSLFitout } from './oslfit.js?v=1794137037';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794137037';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794137037';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars } from './context.js?v=1794137037';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794137037';
-import { buildFar, hazeUniforms } from './far.js?v=1794137037';
-import { buildRailway } from './railway.js?v=1794137037';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794137037';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794139417';
+import { buildUBL } from './ublbuild.js?v=1794139417';
+import { buildUBLFitout } from './ublfit.js?v=1794139417';
+import { UBL_LEVELS } from './ubl_data.js?v=1794139417';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794139417';
+import { buildOSL } from './oslbuild.js?v=1794139417';
+import { buildOSLFitout } from './oslfit.js?v=1794139417';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794139417';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794139417';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1794139417';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794139417';
+import { buildFar, hazeUniforms } from './far.js?v=1794139417';
+import { buildRailway } from './railway.js?v=1794139417';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794139417';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1794137037';
-import { Interior } from './interior.js?v=1794137037';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794137037';
-import { buildPHFitout } from './phfit.js?v=1794137037';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794137037';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794137037';
-import { createTour } from './tour.js?v=1794137037';
-import { buildCrowd } from './crowd.js?v=1794137037';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794137037';
+import { Forest, windUniforms } from './trees.js?v=1794139417';
+import { Interior } from './interior.js?v=1794139417';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794139417';
+import { buildPHFitout } from './phfit.js?v=1794139417';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794139417';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794139417';
+import { createTour } from './tour.js?v=1794139417';
+import { buildCrowd } from './crowd.js?v=1794139417';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794139417';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -354,7 +354,10 @@ async function build() {
     }], far: true,
   });
   scene.add(worldGroup);
-  if (W.special.brewery) scene.add(buildBreweryFront(M, W.special.brewery_front_offset || [0, 0]));   // Robinsons' street front in detail
+  if (W.special.brewery) scene.add(buildBreweryFront(M, W.special.brewery_front_offset || [0, 0], W.special.brewery_front || null));   // Robinsons' street front in detail
+  // the old red-brick walls round the rest of the brewery site, gates on Apsley Street; the car parks round it, with cars (Charlie, 8 Nov)
+  if (W.special.brewery_walls && W.special.brewery_walls.length) scene.add(buildBrickWalls(M, W.special.brewery_walls, { gate: { line: 1, seg: 0, at: 22 } }));
+  if (W.special.parking && W.special.parking.length) { const lots = buildParkingLots(M, W.special.parking); scene.add(lots); if (lots.userData.cars.length) scene.add(buildCars(M, lots.userData.cars)); }
   farGroup = buildFar(F, M, { forest, blds: W.bld, hole: TOUR_WORLD ? W.box : null }); scene.add(farGroup);
   if (TOUR_WORLD) { scene.add(buildRailway(W, M, groundAt)); scene.add(buildExchange(exchangeBld, M, groundAt)); }
   if (farGroup.userData.interchange) PLACES.interchange = farGroup.userData.interchange;
@@ -2055,8 +2058,8 @@ function buildSpots() {
   }
   // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
   for (const p of PANO_INDEX) {
-    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794137037`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
-    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794137037`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794139417`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
+    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794139417`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner", "brewery"], "brewery": ["harvey"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2376,7 +2379,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1794137037').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1794139417').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');

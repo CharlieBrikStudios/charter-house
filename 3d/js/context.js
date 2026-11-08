@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1794137037';
-import { groundAt, letteringTexture } from './world.js?v=1794137037';
+import { boxGeom, boxUV } from './building.js?v=1794139417';
+import { groundAt, letteringTexture } from './world.js?v=1794139417';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -869,8 +869,84 @@ export function buildCourtyard(M, forest, festoon) {
 // red brick with pilasters and big small-paned windows, white painted lettering in the parapets; a white rendered stair
 // tower in front; the red-and-cream striped turret with its flagpole; the brewhouse tower rising behind.
 // Built in street coordinates: s along the frontage from its west corner A, t back into the site.
-export function buildBreweryFront(M, off = [0, 0]) {
-  const A = [-1.42 + off[0], 44.82 + off[1]], E = [47.5 + off[0], 71.36 + off[1]];   // off: shifted along Harvey Street towards Underbank (Charlie, 31 Oct)
+// Victorian red-brick boundary walls round the brewery site wherever no building fronts the street (Charlie, 8 Nov): 3.2 m of
+// old brick with stone coping, brick piers every 4-5 m, and a pair of gates with taller piers on the Apsley Street side
+export function buildBrickWalls(M, lines, { h = 3.2, gate = null } = {}) {
+  const group = new THREE.Group(); group.name = 'brewery_walls'; const B = new Buckets();
+  for (const ln of lines) for (let i = 0; i + 1 < ln.length; i++) {
+    const [x0, z0] = ln[i], [x1, z1] = ln[i + 1], L = Math.hypot(x1 - x0, z1 - z0); if (L < 0.3) continue;
+    const ang = Math.atan2(-(z1 - z0), x1 - x0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+    const piece = (a0, a1, y0, y1, th, key) => {   // a box along the segment from a0 to a1 (metres along it)
+      const g = new THREE.BoxGeometry(a1 - a0, y1 - y0, th); boxUV(g); g.rotateY(ang);
+      const m = (a0 + a1) / 2 - L / 2; g.translate(cx + (x1 - x0) / L * m, (y0 + y1) / 2, cz + (z1 - z0) / L * m); B.add(key, g);
+    };
+    const gA = gate && gate.seg === i && gate.line === lines.indexOf(ln) ? gate : null;
+    const spans = gA ? [[0, gA.at - 2.6], [gA.at + 2.6, L]] : [[0, L]];
+    for (const [a0, a1] of spans) {
+      if (a1 - a0 < 0.2) continue;
+      const g0 = Math.min(groundY(x0 + (x1 - x0) * a0 / L, z0 + (z1 - z0) * a0 / L), groundY(x0 + (x1 - x0) * a1 / L, z0 + (z1 - z0) * a1 / L)) - 0.4;
+      piece(a0, a1, g0, g0 + 0.4 + h, 0.45, 'cBrickOld');
+      piece(a0 - 0.02, a1 + 0.02, g0 + 0.4 + h, g0 + 0.4 + h + 0.14, 0.6, 'stone');
+      const np = Math.max(1, Math.round((a1 - a0) / 4.6));
+      for (let k = 0; k <= np; k++) { const a = a0 + (a1 - a0) * k / np; piece(a - 0.33, a + 0.33, g0, g0 + 0.4 + h + 0.32, 0.72, 'cBrickOld'); piece(a - 0.38, a + 0.38, g0 + 0.4 + h + 0.32, g0 + 0.4 + h + 0.46, 0.8, 'stone'); }
+    }
+    if (gA) {   // the gates: tall brick piers with stone caps and black iron gates between them
+      const gy = groundY(x0 + (x1 - x0) * gA.at / L, z0 + (z1 - z0) * gA.at / L);
+      for (const a of [gA.at - 2.9, gA.at + 2.9]) { piece(a - 0.4, a + 0.4, gy - 0.4, gy + h + 1.2, 0.85, 'cBrickOld'); piece(a - 0.48, a + 0.48, gy + h + 1.2, gy + h + 1.4, 0.95, 'stone'); }
+      for (let a = gA.at - 2.45; a <= gA.at + 2.46; a += 0.14) piece(a - 0.016, a + 0.016, gy + 0.08, gy + h - 0.1, 0.04, 'timberBlack');
+      for (const y of [gy + 0.25, gy + 1.4, gy + h - 0.25]) piece(gA.at - 2.5, gA.at + 2.5, y, y + 0.06, 0.06, 'timberBlack');
+    }
+  }
+  B.build(M, group); group.traverse(o => { if (o.isMesh) o.name = 'brew_wall_' + o.name; });
+  return group;
+}
+
+// the car parks round the brewery and Apsley Street (OpenStreetMap parking areas): a dark tarmac skin following the ground, white
+// bay lines in rows across the lot's long side, and about two thirds of the bays taken (Charlie, 8 Nov: the far left was empty paving)
+export function buildParkingLots(M, polys) {
+  const group = new THREE.Group(); group.name = 'parking_lots'; const cars = [];
+  const tar = new THREE.MeshStandardMaterial({ color: '#2c2d30', roughness: 0.92, polygonOffset: true, polygonOffsetFactor: -1 });
+  const paint = new THREE.MeshStandardMaterial({ color: '#e6e3da', roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -2 });
+  const inside = (p, x, z) => { let c = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) { const [xi, zi] = p[i], [xj, zj] = p[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+  const tg = [], lg = []; let seed = 911;
+  for (const p of polys) {
+    // the tarmac: a grid over the lot's box, cells kept where their centre is inside, draped on the ground
+    let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const [x, z] of p) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+    const cs = 1.0;
+    for (let x = x0; x < x1; x += cs) for (let z = z0; z < z1; z += cs) {
+      if (!inside(p, x + cs / 2, z + cs / 2)) continue;
+      const g = new THREE.PlaneGeometry(cs, cs); g.rotateX(-Math.PI / 2); const a = g.attributes.position;
+      for (let i = 0; i < a.count; i++) { const vx = a.getX(i) + x + cs / 2, vz = a.getZ(i) + z + cs / 2; a.setXYZ(i, vx, groundY(vx, vz) + 0.03, vz); }
+      tg.push(g);
+    }
+    // bays: the lot's longest edge sets the direction; rows of 2.5 x 5 m bays either side of 6 m aisles
+    let bi = 0, bl = 0; for (let i = 0; i < p.length; i++) { const q = p[(i + 1) % p.length], l = Math.hypot(q[0] - p[i][0], q[1] - p[i][1]); if (l > bl) { bl = l; bi = i; } }
+    const q0 = p[bi], q1 = p[(bi + 1) % p.length], ux = (q1[0] - q0[0]) / bl, uz = (q1[1] - q0[1]) / bl, vx = -uz, vz = ux;
+    const R = (() => { let s2 = seed++ * 7919; return () => (s2 = (s2 * 16807) % 2147483647) / 2147483647; })();
+    const fits = (cx, cz) => [[-1.25, -2.5], [1.25, -2.5], [1.25, 2.5], [-1.25, 2.5]].every(([a, b]) => inside(p, cx + ux * a + vx * b, cz + uz * a + vz * b));
+    for (const sgn of [1, -1]) for (let row = 0; row < 12; row++) {
+      const off = row * 16 + 3.2, rows = [off, off + 5.6 + 5.0];   // bay centre lines (5 m bays, 6 m aisle between facing rows)
+      for (const rc of rows) for (let a = -bl; a < 2 * bl; a += 2.5) {
+        const cx = q0[0] + ux * a + vx * rc * sgn, cz = q0[1] + uz * a + vz * rc * sgn;
+        if (!fits(cx, cz)) continue;
+        for (const e of [-1.25, 1.25]) {   // the white side lines of the bay
+          const l = new THREE.BoxGeometry(0.1, 0.02, 4.8); l.rotateY(Math.atan2(vx, vz)); const lx = cx + ux * e, lz = cz + uz * e; l.translate(lx, groundY(lx, lz) + 0.05, lz); lg.push(l);
+        }
+        if (R() < 0.66) { const col = R(); cars.push([cx, cz, Math.atan2(-vz, vx) + (R() < 0.5 ? 0 : Math.PI) + (R() - 0.5) * 0.06, col < 0.22 ? 4 : col < 0.4 ? 3 : col < 0.56 ? 1 : col < 0.68 ? 0 : col < 0.76 ? 2 : col < 0.86 ? 7 : col < 0.93 ? 5 : 6]); }
+      }
+    }
+  }
+  if (tg.length) { const m = new THREE.Mesh(mergeGeometries(tg.map(g => g.toNonIndexed()), false), tar); m.receiveShadow = true; m.name = 'parking_tarmac'; group.add(m); }
+  if (lg.length) { const m = new THREE.Mesh(mergeGeometries(lg.map(g => g.toNonIndexed()), false), paint); m.name = 'parking_lines'; group.add(m); }
+  group.userData.cars = cars;
+  return group;
+}
+
+export function buildBreweryFront(M, off = [0, 0], line = null) {
+  // 8 Nov (Charlie): the front stands flush with the pavement along the street at the head of Harvey Street, on the line of the
+  // site's own street edge (line = [A, corner with Apsley Street]); before, it ran at an angle back into the site, leaving a
+  // wedge of open paving between the street and the offices
+  const A = line ? line[0] : [-1.42 + off[0], 44.82 + off[1]], E = line ? line[1] : [47.5 + off[0], 71.36 + off[1]];   // off: shifted along Harvey Street towards Underbank (Charlie, 31 Oct)
   const L = Math.hypot(E[0] - A[0], E[1] - A[1]), d = [(E[0] - A[0]) / L, (E[1] - A[1]) / L], n = [-d[1], d[0]];
   const gAt = (s, t) => groundY(A[0] + d[0] * s + n[0] * t, A[1] + d[1] * s + n[1] * t);
   const group = new THREE.Group(); group.name = 'brewery_front';
@@ -881,13 +957,14 @@ export function buildBreweryFront(M, off = [0, 0]) {
   const felt = new THREE.MeshStandardMaterial({ color: '#a9a7a3', roughness: 0.93 });
   const lead = new THREE.MeshStandardMaterial({ color: '#5d6264', roughness: 0.6, metalness: 0.2 });
   const g0 = Math.min(gAt(0, 0), gAt(24, 0)), g1 = Math.min(gAt(24, 0), gAt(42.6, 0)), g2 = Math.min(gAt(42.6, 0), gAt(55.6, 0));
-  // Frederic Robinson Ltd: 4 storeys, 7 bays to the street
-  const fr = block(B, M, { x0: 0, z0: 0, x1: 24, z1: 15, floors: 4, fh: 3.6, mat: 'cBrickOld', bay: 3.4, winW: 2.15, winH: 2.3, sill: 0.8, parapet: 1.8, frame: 'cFrame', base: g0, seed: 501, litChance: 0.18, panes: [3, 4], piers: true, bands: [14.32], bandMat: 'stone' });
+  // Frederic Robinson Ltd: 5 storeys (one more, Charlie 8 Nov), 7 bays to the street
+  const FL = 5, TOP = FL * 3.6, FLEN = line ? Math.hypot(E[0] - A[0], E[1] - A[1]) : 55.6;
+  const fr = block(B, M, { x0: 0, z0: 0, x1: 24, z1: 15, floors: FL, fh: 3.6, mat: 'cBrickOld', bay: 3.4, winW: 2.15, winH: 2.3, sill: 0.8, parapet: 1.8, frame: 'cFrame', base: g0, seed: 501, litChance: 0.18, panes: [3, 4], piers: true, bands: [TOP - 0.08], bandMat: 'stone' });
   // East of it (Street View, Harvey Street, 6 Nov): no second brick range but a tall brick yard wall with a door and railings,
   // the silver profiled-metal tower just past the offices' end wall, and a long shed of grey cladding on a brick base
   const gW = Math.min(gAt(24, 0), gAt(31, 0)), gS = Math.min(gAt(31, 0), gAt(42.6, 0));
-  // two-storey range to the east end under a slate roof
-  block(B, M, { x0: 42.6, z0: 0, x1: 55.6, z1: 6.2, floors: 2, fh: 3.3, mat: 'cBrickOld', bay: 3.0, winW: 1.25, winH: 1.65, roof: 'pitched', frame: 'cFrame', heads: 'stone', base: g2, seed: 503, litChance: 0.1, skipFaces: ['W'] });
+  // two-storey range to the east end under a slate roof (no room for it on the street-edge line: the corner with Apsley Street)
+  if (FLEN > 50) block(B, M, { x0: 42.6, z0: 0, x1: 55.6, z1: 6.2, floors: 2, fh: 3.3, mat: 'cBrickOld', bay: 3.0, winW: 1.25, winH: 1.65, roof: 'pitched', frame: 'cFrame', heads: 'stone', base: g2, seed: 503, litChance: 0.1, skipFaces: ['W'] });
   const ribTex = (() => {   // profiled (trapezoidal) sheet: light bands and shadowed troughs every 0.25 m
     const c = document.createElement('canvas'); c.width = 256; c.height = 64; const x = c.getContext('2d');
     for (let i = 0; i < 8; i++) { const x0 = i * 32; const g = x.createLinearGradient(x0, 0, x0 + 32, 0); g.addColorStop(0, '#8d9295'); g.addColorStop(0.18, '#c9cdcf'); g.addColorStop(0.55, '#d5d8d9'); g.addColorStop(0.72, '#9ea2a4'); g.addColorStop(1, '#7b8083'); x.fillStyle = g; x.fillRect(x0, 0, 32, 64); }
@@ -921,7 +998,7 @@ export function buildBreweryFront(M, off = [0, 0]) {
   }
   // the long shed: brick to 4.6 m, a louvre band, grey profiled cladding to 9.3 m, a shallow roof; a roller shutter to the street
   {
-    const x0 = 31.0, x1 = 42.6, z0 = 0, z1 = 14, yb = gS - 0.6, yc = gS + 4.6, yt = gS + 9.3;
+    const x0 = 31.0, x1 = Math.min(42.6, FLEN), z0 = 0, z1 = 14, yb = gS - 0.6, yc = gS + 4.6, yt = gS + 9.3;
     const br = boxGeom(x0, yb, z0, x1, yc, z1); boxUV(br); B.add('cBrickOld', br);
     B.add('timberBlack', boxGeom(x0 - 0.04, yc, z0 - 0.06, x1 + 0.04, yc + 0.12, z1 + 0.06));
     B.add(clad, cladUV(boxGeom(x0 + 0.05, yc + 0.12, z0 + 0.04, x1 - 0.05, yt, z1 - 0.04), 1.0));
@@ -936,18 +1013,18 @@ export function buildBreweryFront(M, off = [0, 0]) {
   }
   // the tall flue: a dark rusty pipe up the offices' end wall at the front corner, standing well clear of the parapet
   {
-    const px = 24.25, pz = 0.55, y0 = g0, y1 = fr.gy + 14.4 + 1.8 + 3.2;
+    const px = 24.25, pz = 0.55, y0 = g0, y1 = fr.gy + TOP + 1.8 + 3.2;
     const pg = new THREE.CylinderGeometry(0.16, 0.16, y1 - y0, 14); pg.translate(px, (y0 + y1) / 2, pz);
     B.add(new THREE.MeshStandardMaterial({ color: '#6a3b2e', roughness: 0.7, metalness: 0.35 }), pg);
     for (let y = y0 + 2.5; y < y1 - 1; y += 2.6) B.add('timberBlack', boxGeom(24.0, y, pz - 0.2, px + 0.2, y + 0.08, pz + 0.2));
   }
   // light felt roof with plant on the offices
-  B.add(felt, boxGeom(0.35, fr.gy + 14.4 + 0.16, 0.35, 23.65, fr.gy + 14.4 + 0.2, 14.65));
-  for (const [x, z, w, dd, h] of [[5, 10.5, 3.2, 2.4, 1.6], [11, 11.5, 1.6, 1.6, 1.1], [16, 9.8, 4.4, 2.2, 2.4], [3, 6.5, 1.0, 1.0, 0.9]]) B.add(lead, boxGeom(x, fr.gy + 14.6, z, x + w, fr.gy + 14.6 + h, z + dd));
+  B.add(felt, boxGeom(0.35, fr.gy + TOP + 0.16, 0.35, 23.65, fr.gy + TOP + 0.2, 14.65));
+  for (const [x, z, w, dd, h] of [[5, 10.5, 3.2, 2.4, 1.6], [11, 11.5, 1.6, 1.6, 1.1], [16, 9.8, 4.4, 2.2, 2.4], [3, 6.5, 1.0, 1.0, 0.9]]) B.add(lead, boxGeom(x, fr.gy + TOP + 0.2, z, x + w, fr.gy + TOP + 0.2 + h, z + dd));
   // the painted sign band round the top: cream letters on brick red under the coping (F.ROBINSON Ltd UNICORN BREWERY)
   const signTex = (parts, w, h) => {
     const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
-    x.fillStyle = '#8a2c23'; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#5f2c27'; x.fillRect(0, 0, w, h);   // a deep weathered oxblood: the bright brick red was too red (Charlie, 8 Nov)
     const R = rng(w + h); for (let i = 0; i < 2200; i++) { x.fillStyle = `rgba(${R() < 0.5 ? '40,10,6' : '190,110,90'},${R() * 0.08})`; x.fillRect(R() * w, R() * h, 6 + R() * 18, 3); }
     x.fillStyle = '#efe4cc'; x.textBaseline = 'alphabetic';
     const big = `700 ${Math.round(h * 0.7)}px "Roboto Condensed", "Arial Narrow", Arial, sans-serif`, small = `700 ${Math.round(h * 0.34)}px "Roboto Condensed", "Arial Narrow", Arial, sans-serif`;
@@ -958,7 +1035,7 @@ export function buildBreweryFront(M, off = [0, 0]) {
     const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 8; return tx;
   };
   const band = (parts, w, a0, a1, face) => {   // face 'S' = street front (z = 0), 'E' = end wall (x = 24)
-    const y0 = fr.gy + 14.45, y1 = fr.gy + 15.95, tex = signTex(parts, w, 128);
+    const y0 = fr.gy + TOP + 0.05, y1 = fr.gy + TOP + 1.55, tex = signTex(parts, w, 128);
     const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -2 });
     const pl = new THREE.Mesh(new THREE.PlaneGeometry(a1 - a0, y1 - y0), mat); pl.renderOrder = 3;
     if (face === 'S') { pl.rotation.y = Math.PI; pl.position.set((a0 + a1) / 2, (y0 + y1) / 2, -0.025); }
@@ -969,7 +1046,7 @@ export function buildBreweryFront(M, off = [0, 0]) {
   band([['F.ROBINSON L', 0], ['TD', 1]], 1408, 0.3, 14.7, 'E');
   // the roof railing along the parapet, street front and both ends
   {
-    const yr = fr.gy + 14.4 + 1.8 + 0.06;
+    const yr = fr.gy + TOP + 1.8 + 0.06;
     const run = (xa, za, xb, zb) => {
       const L = Math.hypot(xb - xa, zb - za), n = Math.round(L / 1.5);
       for (let i = 0; i <= n; i++) { const f = i / n, x = xa + (xb - xa) * f, z = za + (zb - za) * f; B.add('timberBlack', boxGeom(x - 0.03, yr, z - 0.03, x + 0.03, yr + 1.1, z + 0.03)); }
@@ -980,7 +1057,9 @@ export function buildBreweryFront(M, off = [0, 0]) {
   // (the striped turret with the flag, from the drone footage, is not over the offices in Charlie's Street View of Harvey Street, 6 Nov: left out)
   // the brewhouse: a tall tower brewery behind the front, hipped slate roof and a louvred ventilator lantern
   {
-    const gy = gAt(52.5, 27.7), x0 = 47, z0 = 22.2, x1 = 58, z1 = 33.2;   // moved east and back (6 Nov): not behind the yard or the shed from Harvey Street
+    // moved east and back (6 Nov): not behind the yard or the shed from Harvey Street; on the street-edge line (8 Nov) it stands
+    // in the yard behind the silver tower and the shed, inside the site
+    const [x0, z0, x1, z1] = line ? [27, 19, 38, 30] : [47, 22.2, 58, 33.2], gy = gAt((x0 + x1) / 2, (z0 + z1) / 2);
     const t = block(B, M, { x0, z0, x1, z1, floors: 6, fh: 3.9, mat: 'cBrickOld', bay: 2.7, winW: 1.25, winH: 2.5, sill: 0.9, parapet: 0, frame: 'cFrame', heads: 'stone', base: gy, seed: 504, litChance: 0.08, panes: [2, 4], piers: true, bands: [3.9, 23.2], bandMat: 'stone', roof: 'flat' });
     const eh = gy + 23.4, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
     B.add('stone', boxGeom(x0 - 0.35, eh - 0.1, z0 - 0.35, x1 + 0.35, eh + 0.25, z1 + 0.35));
