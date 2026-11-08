@@ -694,3 +694,100 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 .clip .sticker em{color:#FFE3D2!important}
 .chh .no{color:#A44C28!important}
 #t-units .chh .no{color:#CFE3D6!important}
+
+/* ================= pass 11: Charlie's review ================= */
+:root{--hall_done:url("{{P}}hall_done.webp");--arch_done:url("{{P}}arch_done.webp")}
+/* step banners: one headline, the number, facts as figures not boxes */
+.case7 .c7top,.case7 .c7dots,.case7 .c7l>.cap{display:none!important}
+.case7 .c7body{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)!important;align-items:start}
+.case7 .c7n,.bigstat .c7tag .c7n{display:flex;align-items:baseline;gap:8px;margin:0 0 16px}
+#view .case7 .c7n b,#view .bigstat .c7n b{font-family:"Besley",Georgia,serif!important;font-weight:600!important;font-size:clamp(44px,5vw,72px)!important;line-height:.9!important;color:#fff!important;margin:0}
+#view .case7 .c7n i,#view .bigstat .c7n i{font:500 13px/1 var(--sans);font-style:normal;letter-spacing:.08em;color:#E8E2D8!important}
+.case7 .c7f{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:18px 24px;margin:26px 0 0!important;padding:0;list-style:none}
+.case7 .c7f>div{border-top:1px solid rgba(255,255,255,.38);padding-top:12px}
+#view .case7 .c7f dt{font-family:"Besley",Georgia,serif!important;font-weight:600;font-size:clamp(22px,2vw,28px);line-height:1.05;color:#fff!important}
+#view .case7 .c7f dd{margin:6px 0 0;font:500 13.5px/1.4 var(--sans);color:#EDE6DC!important}
+.bigstat .c7tag{display:block!important;border:0!important;padding:0!important;margin:0 0 6px!important}
+@media (max-width:760px){.case7 .c7body{grid-template-columns:1fr!important}.case7 .c7f{grid-template-columns:1fr 1fr}}
+
+/* how this report runs: a clear numbered list, two columns */
+.cmlist{grid-template-columns:1fr 1fr!important;grid-auto-flow:column;grid-template-rows:repeat(4,auto);gap:0 44px!important;border-top:1px solid var(--ink)}
+.cmlist li{border-bottom:1px solid var(--hair)}
+.cmlist button{flex-direction:row!important;align-items:center!important;gap:18px!important;padding:16px 8px!important;border-top:0!important;background:none!important;height:auto!important;width:100%}
+.cmlist button:hover,.cmlist button:focus-visible{background:#F3ECE4!important;transform:none!important}
+.cmlist .cmn{font:600 30px/1 "Besley",Georgia,serif!important;min-width:46px;color:var(--accent)}
+.cmlist li:nth-child(even) .cmn{color:#A44C28!important}
+#view .cmlist b{flex:1;font:600 17px/1.3 "Besley",Georgia,serif!important;color:var(--ink)}
+.cmlist .cmk{display:flex!important;align-items:center;gap:6px;white-space:nowrap;font:600 10.5px/1.2 var(--wide)!important;letter-spacing:.14em;text-transform:uppercase;color:#5E554F!important}
+.cmlist li:nth-child(even) .cmk{color:#5E554F!important}
+.cmlist .cmk svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .25s}
+.cmlist button:hover .cmk svg{transform:translateX(4px)}
+@media (max-width:860px){.cmlist{grid-template-columns:1fr!important;grid-auto-flow:row;grid-template-rows:none}.cmlist button{flex-wrap:wrap;gap:4px 14px!important}.cmlist .cmk{flex-basis:100%;padding-left:60px}}
+
+/* data cards: figures line up across the row */
+.dgrid{align-items:stretch!important}
+.dcard{display:flex!important;flex-direction:column}
+.dcard .stat{margin-top:auto!important;padding-top:14px}
+
+/* growth banner: room between the two figures */
+.growband .growth{display:flex!important;flex-wrap:wrap;gap:24px 0!important}
+.growband .gstat{flex:0 0 auto}
+.growband .gstat+.gstat{border-left:1px solid rgba(255,226,208,.4)!important;margin-left:clamp(36px,6vw,90px)!important;padding-left:clamp(36px,6vw,90px)!important}
+@media (max-width:640px){.growband .gstat+.gstat{border-left:0!important;margin-left:0!important;padding-left:0!important}.growband .growth{flex-direction:column}}
+
+/* long-term view: the regional forecast up top, charts that react */
+.lvsec .fcast{margin:14px 0 44px}
+#view .lvsec .fcast .big-h{font-size:clamp(28px,3vw,42px)!important;margin:6px 0 12px!important}
+.lvsec .fcast .cap{color:var(--accent-t)!important}
+.lvsec .chart rect{transition:fill .25s,opacity .25s;cursor:pointer}
+.lvsec .chart:hover rect{opacity:.5}
+.lvsec .chart rect:hover{opacity:1;fill:#A44C28}
+.lvsec .chart polyline,.lvsec .chart circle,.lvsec .chart polygon{transition:stroke .3s,fill .3s}
+.lvsec .chart:hover polyline{stroke:#A44C28}
+.lvsec .chart:hover circle{fill:#A44C28}
+.lvsec .chart:hover polygon{fill:#A44C28}
+
+/* Choose your apartment: deep navy so it stands apart */
+#t-units{--band:#1E2A38}
+#t-units .chh .no,#t-units .chh .chof{color:#C9D6E6!important}
+#t-units .earlynote{background:#16202B!important;border-color:rgba(201,214,230,.35)!important}
+#t-units .b.solid,#t-units .tourcta .b.solid{background:#F6F0E6!important;border-color:#F6F0E6!important;color:#1E2A38!important}
+#t-units .tbadge{background:rgba(10,14,20,.8)}
+.gtabs [data-tab=units]{background:#1E2A38!important}
+
+/* the rental market: a poster stuck on the page */
+.rentmkt{background:#FCF8F1!important;background-image:radial-gradient(rgba(34,28,25,.035) 1px,transparent 1.2px)!important;background-size:5px 5px!important;border:1px solid rgba(34,28,25,.1)!important;
+ box-shadow:0 2px 0 rgba(34,28,25,.05),0 50px 90px -50px rgba(34,28,25,.6),0 18px 34px -22px rgba(34,28,25,.35)!important}
+.rentmkt::before,.rentmkt::after{content:"";position:absolute;top:-14px;width:120px;height:30px;background:rgba(236,225,203,.86);box-shadow:0 2px 6px rgba(34,28,25,.12);z-index:3}
+.rentmkt::before{left:-18px;transform:rotate(-8deg)}
+.rentmkt::after{right:-18px;transform:rotate(7deg)}
+.rentmkt .rmhead{border-bottom:3px double var(--ink)!important}
+@media (max-width:640px){.rentmkt::before,.rentmkt::after{width:76px;height:22px;top:-10px}}
+
+/* tenant profile bullets: the scout in a soft green disc */
+.tprof li{position:relative;padding-left:42px!important;gap:0!important}
+.tprof li::before{position:absolute!important;left:0;top:50%;transform:translateY(-50%)!important;width:28px!important;height:28px!important;border-radius:50%!important;background:#E2ECE5!important;-webkit-mask:none!important;mask:none!important}
+.tprof li::after{content:"";position:absolute;left:9px;top:50%;width:10px;height:14px;transform:translateY(-50%);background:var(--accent);-webkit-mask:var(--patent) center/contain no-repeat;mask:var(--patent) center/contain no-repeat}
+
+/* BRIK banner: second half heading */
+.brikband .bbhalf{margin:8px 0 22px;padding-top:28px;border-top:1px solid rgba(233,226,212,.3)}
+#view .brikband .bbhalf .cap{color:#E4D3B2!important;margin:0 0 6px!important;border:0!important;padding:0!important}
+
+/* awards under the developer and architect */
+.awards{margin-top:22px;padding-top:16px;border-top:1px solid var(--hair)}
+.awards ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:12px}
+.awards li{position:relative;padding-left:26px;font-size:14px;line-height:1.45;color:var(--text)}
+.awards li::before{content:"";position:absolute;left:2px;top:6px;width:9px;height:9px;border:2px solid #A44C28;transform:rotate(45deg)}
+.awards li b{display:block;font:600 15px/1.3 "Besley",Georgia,serif;color:var(--ink)}
+.awards li span{color:#5E554F}
+
+/* keep in touch, now after the heritage chapter */
+.contactend{padding-top:clamp(30px,4vw,60px)}
+/* spec CGIs: reveal when a third of the picture is on screen, so each wipe is seen */
+.rb .pic.v2rv{clip-path:inset(0 0 100% 0)!important;transform:translateY(50px) scale(1.05)!important;transition:clip-path 1.5s cubic-bezier(.7,0,.2,1),transform 1.7s cubic-bezier(.2,.8,.2,1)!important}
+.rb .pic.v2rv.go{clip-path:inset(0 0 0 0)!important;transform:none!important}
+.rb:has(.pic.v2rv) .rbt{opacity:0!important;transform:translateX(34px)!important}
+.rb.rev:has(.pic.v2rv) .rbt{transform:translateX(-34px)!important}
+.rb:has(.pic.v2rv.go) .rbt{opacity:1!important;transform:none!important}
+@media (prefers-reduced-motion:reduce){.rb .pic.v2rv{clip-path:none!important;transform:none!important}.rb:has(.pic.v2rv) .rbt{opacity:1!important;transform:none!important}}
+.case7 .c7f:has(>div:nth-child(4)){grid-template-columns:1fr 1fr}

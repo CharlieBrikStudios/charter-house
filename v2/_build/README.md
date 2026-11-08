@@ -23,3 +23,9 @@ python3 v2/_build/build.py
 - `skin.js` adds the italic emphasis on headlines.
 
 Copy and number changes go in the live pages as before. Re-run the build to pull them into V2.
+
+
+## Live since 8 Nov 2026
+V2 now replaces the live client report. The original single-file pages the build reads from are kept in `_build/src/` (index.html and andy/index.html), so the build never reads its own output.
+
+To change the live report: edit the build (build.py, pass9.py, pass10.py, skin.css, skin.js), run `python3 v2/_build/build.py`, check `v2/`, then run `sh v2/_build/deploy_live.sh` from the repo root and commit.

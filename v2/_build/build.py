@@ -189,6 +189,8 @@ def build(src, dst, prefix):
     # 9. the sales story and the rest of pass 9
     import pass9
     s = pass9.apply(s, rep)
+    import pass10
+    s = pass10.apply(s, rep)
     # 6. skin
     css = open(f"{HERE}/skin.css", encoding="utf-8").read().replace("{{F}}", F).replace("{{P}}", P)
     js = open(f"{HERE}/skin.js", encoding="utf-8").read()
@@ -200,5 +202,5 @@ def build(src, dst, prefix):
     open(dst, "w", encoding="utf-8").write(s)
     print(dst, round(os.path.getsize(dst) / 1024), "KB")
 
-build(f"{REPO}/index.html", f"{V2}/index.html", "")
-build(f"{REPO}/andy/index.html", f"{V2}/andy/index.html", "../")
+build(f"{HERE}/src/index.html", f"{V2}/index.html", "")
+build(f"{HERE}/src/andy/index.html", f"{V2}/andy/index.html", "../")

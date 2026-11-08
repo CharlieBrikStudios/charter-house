@@ -75,3 +75,7 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
 (function(){var io='IntersectionObserver' in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.2}):null;
  function scan(){document.querySelectorAll('.montage:not([data-io])').forEach(function(m){m.dataset.io=1;if(io)io.observe(m);else m.classList.add('in')})}
  new MutationObserver(function(){clearTimeout(scan.t);scan.t=setTimeout(scan,40)}).observe(document.body,{childList:true,subtree:true});scan()})();
+(function(){if(matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;
+ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('go');io.unobserve(e.target)}})},{threshold:.33});
+ function scan(){document.querySelectorAll('.rb .pic:not(.v2rv)').forEach(function(p){var r=p.getBoundingClientRect();if(r.top<innerHeight*.6&&r.bottom>0){p.classList.add('v2rv','go');return}p.classList.add('v2rv');io.observe(p)})}
+ new MutationObserver(function(){clearTimeout(scan.t);scan.t=setTimeout(scan,60)}).observe(document.body,{childList:true,subtree:true});scan()})();
