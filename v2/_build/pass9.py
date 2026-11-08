@@ -16,19 +16,10 @@ def apply(s, rep):
     s = rep(s, '["intel","Location and intel",["location","stockport","data"]]', '["intel","Location and intel",["stockport","location","data"]]', label="intel order")
 
     # ---------- the case for Charter House: seven steps, shown as banners down the page
-    case_js = r'''const CASE=[
- ["Stockport has it all.","A historic market town with real character, eight minutes from Manchester. Heritage streets full of independents, parks and green space, well-regarded schools, and a town centre you can walk end to end.",[["8 min","to Manchester by train"],["Under 2 hrs","to London Euston"],["Metrolink","extension on the way"],["Airport","a short drive away"]],"Why Stockport"],
- ["Greater Manchester's commuter hub, and why the money is going in.","Stockport sits on the West Coast Main Line: Manchester Piccadilly in 8 minutes, eleven trains an hour, and London Euston in under two hours. That's why it was chosen to grow, and why it got the UK's first town-centre Mayoral Development Corporation. Andy Burnham calls it “a blueprint for towns across the UK”.",[["1st","town-centre Mayoral Development Corporation in the UK"],["410 acres","now covering the whole town centre"],["Blueprint","model rolling out across Greater Manchester"]],"Why Stockport"],
- ["The UK's largest town-centre regeneration.","",[],"Why Stockport"],
- ["The Underbanks is where Stockport comes alive.","Cobbled lanes of independents, bars, restaurants and events, and the youngest average age in Stockport. It's where young professionals want to live, and where we've built our own businesses.",[["36.8","youngest average age in Stockport"],["1974","conservation area since"]],"Location"],
- ["Supply is capped, for good.","The Underbanks is a conservation area full of listed buildings, and nothing over four storeys can be built. That's the main reason so few homes ever come up here, and it isn't going to change.",[["4 storeys","height limit"],["Listed","buildings all round"],["Near zero","new builds"]],"The data"],
- ["Scarcity keeps rents and values ahead.","When supply can't grow, demand holds rents and values up. Manchester keeps adding towers, yet Ancoats' red-brick mills still command a premium, and we expect the Underbanks' red brick to do the same. Next door, St Marys Gate already lets for 22 to 39% above its forecast.",[["+22–39%","above forecast rents next door"]],"Returns"],
- ["The last site in the Underbanks. Secure yours.","Charter House is the last site to be developed in the Underbanks. When these apartments are gone, there's nothing like them coming.",[],"Next steps"]];
-const CASEN=CASE.length,c2=n=>String(n).padStart(2,"0");
-function caseBand(i){const c=CASE[i];return `<div class="case7 rise" id="case-${i+1}"><div class="c7body"><div class="c7l"><span class="c7n"><b>${c2(i+1)}</b><i>${i+1} of ${CASEN}</i></span><h3 class="c7h">${c[0]}</h3></div><div class="c7r"><p>${c[1]}</p>${c[2].length?`<dl class="c7f">${c[2].map(([f,l])=>`<div><dt>${f}</dt><dd>${l}</dd></div>`).join("")}</dl>`:""}${i===CASEN-1?`<div class="row"><button class="b solid" data-call>Book a 3D virtual tour</button></div>`:""}</div></div></div>`}
-function caseTag(i){return `<div class="c7tag" id="case-${i+1}"><span class="c7n"><b>${c2(i+1)}</b><i>${i+1} of ${CASEN}</i></span></div>`}
-const CASEMAP=`<section class="casemap"><div class="cmhead"><div class="cap">How this report runs</div><h3 class="cmh">Seven reasons, in the order you'll read them.</h3><p>Tap any line to jump straight to it.</p></div><ol class="cmlist">${CASE.map((c,i)=>`<li><button data-case="${i+1}"><span class="cmn">${c2(i+1)}</span><b>${c[0]}</b><span class="cmk">${c[3]}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button></li>`).join("")}</ol></section>`;
-'''
+    import os, json
+    HERE = os.path.dirname(os.path.abspath(__file__))
+    site = json.load(open(f"{HERE}/site.json", encoding="utf-8"))
+    case_js = open(f"{HERE}/case.js", encoding="utf-8").read()
     s = rep(s, "const CH={};", case_js + "const CH={};", label="case defs")
     s = s.replace('${id==="overview"?JUMP:""}', '${id==="overview"?CASEMAP+JUMP:""}')
     s = s.replace('(id==="overview"?JUMP:"")', '(id==="overview"?CASEMAP+JUMP:"")')
@@ -154,7 +145,7 @@ const CASEMAP=`<section class="casemap"><div class="cmhead"><div class="cap">How
   <p class="lead">Jump on a short video call and I'll take you round our 3D model of the finished building: every floor, the apartments still available, and the views from each.</p>
   <div class="ctaline"><button class="b solid" data-call>Book a 3D virtual tour</button><a class="b line" href="${WA_}${encodeURIComponent("Hi Charlie, I've been looking at Charter House. Could we set up a 3D video tour?")}" target="_blank" rel="noopener">WhatsApp me</a></div>
   <p class="fine">30 minutes on Microsoft Teams, at a time that suits you. No obligation.</p></div></section></div>`}
-const EARLY=`<div class="earlynote"><span class="pl"><i></i>Private pre-launch</span><p><b>You're early.</b> Charter House isn't on the open market yet.</p></div>`;'''
+const EARLY=`''' + site["early_html"] + "`;"
     s = s[:a] + choose + s[ze:]
     s = rep(s, '<span class="plt">Early access to the top-floor apartments, before Charter House goes public.</span>',
             '<span class="plt">You\'re early: Charter House isn\'t on the open market yet.</span>', label="prelaunch strip")
