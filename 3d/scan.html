@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Underbank 3D Scans</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500&family=Besley:ital,wght@1,400&family=Familjen+Grotesk:wght@400;500&display=swap">
+<style>
+/* A photo-real 3D scan of one spot on the Underbank (a Gaussian splat trained from Charlie's phone footage), opened from the
+   Charter House app (and the Print House and Underbank Lofts editions). The view rides along the path the phone took, so it
+   only ever shows the street from where it was filmed: drag to move along it; left alone it glides slowly to and fro. */
+:root {
+  color-scheme: dark;
+  --night: #0e0c0b; --glass: rgba(20, 16, 14, 0.62); --line: rgba(243, 230, 210, 0.15); --line-hi: rgba(243, 230, 210, 0.32);
+  --ink: #f5eee4; --ink-2: rgba(245, 238, 228, 0.72); --ink-3: rgba(245, 238, 228, 0.48); --brass: #d8b476;
+  --f-display: "Besley", "Iowan Old Style", Georgia, serif;
+  --f-body: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-label: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --gx: max(16px, env(safe-area-inset-left, 0px)); --gr: max(16px, env(safe-area-inset-right, 0px));
+  --gt: env(safe-area-inset-top, 0px); --gb: env(safe-area-inset-bottom, 0px);
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--night); color: var(--ink); font: 15px/1.45 var(--f-body); overflow: hidden; -webkit-font-smoothing: antialiased; touch-action: none; }
+canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; cursor: grab; }
+canvas.drag { cursor: grabbing; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 999px; }
+.top { position: fixed; left: var(--gx); right: var(--gr); top: calc(var(--gt) + 16px); display: flex; flex-direction: column; align-items: flex-start; gap: 14px; pointer-events: none; }
+.chip { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 10px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); font: 500 12.5px/1 var(--f-body); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.chip:hover { border-color: var(--line-hi); }
+.head { text-shadow: 0 1px 14px rgba(0,0,0,.65); }
+.label { font: 500 10.5px/1.2 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font: italic 400 30px/1.04 var(--f-display); margin: 6px 0 6px; letter-spacing: -.01em; text-wrap: balance; }
+.head p { margin: 0; color: var(--ink-2); font-size: 13.5px; max-width: 36ch; }
+.foot { position: fixed; left: var(--gx); right: var(--gr); bottom: calc(var(--gb) + 18px); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+.seg { pointer-events: auto; display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); max-width: 100%; overflow-x: auto; }
+.seg button { height: 30px; padding: 0 13px; border-radius: 999px; font: 500 12px/1 var(--f-body); color: var(--ink-2); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: rgba(216,180,118,.18); color: var(--brass); }
+.hint { font: 500 10.5px/1.2 var(--f-label); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 1px 10px rgba(0,0,0,.7); transition: opacity .6s; }
+.load { position: fixed; inset: 0; display: grid; place-items: center; background: var(--night); transition: opacity .7s; }
+.load.done { opacity: 0; pointer-events: none; }
+.load .box { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 0 var(--gr) 0 var(--gx); }
+.bar { width: min(240px, 60vw); height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .25s; }
+.err { color: var(--ink-2); font-size: 13.5px; max-width: 34ch; }
+@media (max-width: 520px) { h1 { font-size: 25px; } .head p { font-size: 12.5px; } }
+</style>
+</head>
+<body>
+<div class="load" id="load"><div class="box"><div class="label" id="loadName">3D scan</div><div class="bar"><i id="bar"></i></div><div class="label num" id="pct">Loading</div><div class="err" id="err" hidden></div></div></div>
+<div class="top">
+  <button class="chip" id="back" type="button" aria-label="Back"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="backTxt">Back</span></button>
+  <div class="head"><div class="label">3D scan · the Underbank, Stockport</div><h1 id="title"></h1><p id="sub"></p></div>
+</div>
+<div class="foot"><div class="seg" id="views" hidden></div><div class="hint" id="hint">Drag to move along the street</div></div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+  "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.4.0/dist/spark.module.min.js"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
+
+const q = new URLSearchParams(location.search);
+const id = (q.get('s') || 'underbank').replace(/[^a-z0-9_-]/gi, '');
+const from = q.get('from') || '';   // which app opened it: its name goes on the back button
+const inFrame = window.parent !== window;
+const $ = (i) => document.getElementById(i);
+$('backTxt').textContent = from ? 'Back to ' + from : 'Back';
+$('back').onclick = () => { if (inFrame) parent.postMessage({ type: 'brik-scan-close' }, location.origin); else history.length > 1 ? history.back() : (location.href = './'); };
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && inFrame) parent.postMessage({ type: 'brik-scan-close' }, location.origin); });
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const base = 'assets/scans/' + id + '/';
+let meta;
+try { meta = await (await fetch(base + 'scan.json')).json(); }
+catch (e) { $('err').hidden = false; $('err').textContent = 'This scan isn’t ready yet.'; $('pct').hidden = true; throw e; }
+document.title = meta.title + ' · 3D Scan';
+$('title').textContent = meta.title; $('sub').textContent = meta.sub || ''; $('loadName').textContent = meta.title;
+
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+const phone = Math.min(innerWidth, innerHeight) < 600;
+renderer.setPixelRatio(Math.min(devicePixelRatio, phone ? 1.5 : 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x0e0c0b, 1);
+document.body.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(meta.fov || 58, innerWidth / innerHeight, meta.near || 0.02, meta.far || 400);
+scene.add(new SparkRenderer({ renderer }));
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+
+// the scan, turned so the cameras' mean up is +y (scan.json quat, from scan_meta.py); the paths in scan.json are already turned
+const files = meta.parts ? meta.parts.map((p) => base + p) : null;
+let mesh;
+const onProgress = (e) => { if (e.lengthComputable) { const k = e.loaded / e.total; $('bar').style.width = (k * 100).toFixed(0) + '%'; $('pct').textContent = 'Loading ' + (k * 100).toFixed(0) + '%'; } };
+if (files) {   // a big scan comes in 90 MB parts (GitHub's file limit): join them
+  const bufs = []; let got = 0; const total = meta.bytes || 1;
+  for (const f of files) { const r = await fetch(f); const rd = r.body.getReader(); for (;;) { const { done, value } = await rd.read(); if (done) break; bufs.push(value); got += value.length; onProgress({ lengthComputable: true, loaded: got, total }); } }
+  const all = new Uint8Array(got); let o = 0; for (const b of bufs) { all.set(b, o); o += b.length; }
+  mesh = new SplatMesh({ fileBytes: all.buffer, fileName: meta.file });
+} else mesh = new SplatMesh({ url: base + meta.file, onProgress });
+if (meta.quat) mesh.quaternion.set(...meta.quat);
+scene.add(mesh);
+
+// ---- riding the filmed path
+const paths = meta.paths.map((p) => {
+  const P = p.p.map((v) => new THREE.Vector3(...v)), F = p.f.map((v) => new THREE.Vector3(...v).normalize());
+  const s = [0]; for (let i = 1; i < P.length; i++) s.push(s[i - 1] + P[i].distanceTo(P[i - 1]));
+  return { name: p.name, P, F, s, len: s[s.length - 1] || 1 };
+});
+let cur = 0, t = paths[0].start ?? 0.5, tt = t, dir = 1, idle = 0, glide = 0;
+const at = (path, u, outP, outF) => {
+  const d = THREE.MathUtils.clamp(u, 0, 1) * path.len; let i = 1; while (i < path.s.length - 1 && path.s[i] < d) i++;
+  const a = path.s[i - 1], b = path.s[i], k = b > a ? (d - a) / (b - a) : 0;
+  outP.lerpVectors(path.P[i - 1], path.P[i], k); outF.lerpVectors(path.F[i - 1], path.F[i], k).normalize();
+};
+const cp = new THREE.Vector3(), cf = new THREE.Vector3(), look = new THREE.Vector3();
+let yawOff = 0, yawT = 0;
+function choose(i) {
+  cur = i; t = tt = paths[i].start ?? 0.5; idle = 0;
+  for (const b of $('views').children) b.setAttribute('aria-pressed', String(+b.dataset.i === i));
+}
+if (paths.length > 1) {
+  $('views').hidden = false;
+  paths.forEach((p, i) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.i = i; b.textContent = p.name; b.onclick = () => choose(i); $('views').append(b); });
+  choose(0);
+}
+// drag: sideways moves along the path (about half of it per screen width), with a little turn of the head as you go
+const cv = renderer.domElement; let drag = null;
+cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); cv.classList.add('drag'); idle = 0; glide = 0; });
+cv.addEventListener('pointermove', (e) => {
+  if (!drag) return; const dx = e.clientX - drag.x; drag.x = e.clientX;
+  tt = THREE.MathUtils.clamp(tt - dx / innerWidth * 0.55 * (meta.dragScale || 1), 0, 1); yawT = THREE.MathUtils.clamp(yawT + dx * 0.0016, -0.32, 0.32); idle = 0;
+});
+const end = () => { drag = null; cv.classList.remove('drag'); };
+cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+cv.addEventListener('wheel', (e) => { e.preventDefault(); tt = THREE.MathUtils.clamp(tt + (e.deltaY + e.deltaX) * 0.0006, 0, 1); idle = 0; glide = 0; }, { passive: false });
+addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { tt = Math.min(1, tt + 0.06); idle = 0; glide = 0; }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { tt = Math.max(0, tt - 0.06); idle = 0; glide = 0; }
+});
+
+await mesh.initialized;
+$('load').classList.add('done'); setTimeout(() => $('load').remove(), 900);
+setTimeout(() => { $('hint').style.opacity = 0; }, 6000);
+const clock = new THREE.Clock();
+// for the headless check (scancheck.mjs): jump to a point on a path and hold still
+let free = null;
+window.__scan = { ready: true, go(i, u) { free = null; cur = i; t = tt = u; idle = -1e9; yawT = yawOff = 0; }, cam(p, l) { free = [p, l]; }, paths: paths.length, path: (i) => ({ p: paths[i].P[0].toArray(), f: paths[i].F[0].toArray() }) };
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.1), path = paths[cur];
+  idle += dt;
+  // left alone, glide slowly along the filmed path and back (about 40 s end to end, eased in, slowing at the ends)
+  if (!drag && idle > 4 && !reduce) {
+    glide = Math.min(1, glide + dt * 0.4);
+    const v = glide * dt / Math.max(20, (meta.glideSecs || 40));
+    const edge = Math.min(tt, 1 - tt); const slow = THREE.MathUtils.clamp(edge / 0.08, 0.25, 1);
+    tt += dir * v * slow; if (tt > 0.98) dir = -1; if (tt < 0.02) dir = 1;
+  }
+  if (!drag) yawT *= Math.pow(0.08, dt);
+  const k = 1 - Math.pow(0.004, dt); t += (tt - t) * k; yawOff += (yawT - yawOff) * k;
+  at(path, t, cp, cf);
+  cf.applyAxisAngle(THREE.Object3D.DEFAULT_UP, yawOff);
+  if (free) { camera.position.set(...free[0]); camera.lookAt(...free[1]); } else { camera.position.copy(cp); camera.lookAt(look.copy(cp).add(cf)); }
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
