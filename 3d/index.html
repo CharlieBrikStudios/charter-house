@@ -297,6 +297,12 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
 .tag.sold .pin { opacity: .5; }
 .tag.dim { opacity: .45; }
 .tag.on .b { border-color: var(--brass); }
+/* homes with photoreal rooms: a 360° badge floating over the label (Charlie, 8 Nov) */
+.tag .p360 { display: none; align-items: center; gap: 4px; margin-bottom: 6px; padding: 4px 9px 4px 6px; border-radius: 999px; background: var(--brass); color: #1b1611; font: 600 11px/1 var(--f-body, inherit); letter-spacing: .04em; box-shadow: 0 6px 18px -6px rgba(0,0,0,.55), 0 0 0 3px rgba(216,180,118,.25); animation: p360bob 2.4s ease-in-out infinite; }
+.tag .p360 svg { width: 16px; height: 16px; }
+.tag.has360 .p360 { display: inline-flex; }
+@keyframes p360bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .tag .p360 { animation: none; } }
 .ltag { position: absolute; left: 0; top: 0; opacity: 0; transform: translate(-50%, -50%); font: 500 10px/1 var(--f-label); letter-spacing: .18em; text-transform: uppercase; color: rgba(255,250,240,.9); text-shadow: 0 1px 8px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.8); white-space: nowrap; transition: opacity .3s; }
 .ltag::before { content: ""; display: block; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,250,240,.85); margin: 0 auto 6px; box-shadow: 0 0 0 3px rgba(0,0,0,.25); }
 .ftag { position: absolute; transform: translate(12px, -50%); padding: 6px 10px; border-radius: 9px; background: rgba(18,14,12,.8); border: 1px solid var(--line-hi); font-size: 12.5px; white-space: nowrap; pointer-events: none; }
@@ -659,6 +665,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1794122823"></script>
+<script type="module" src="js/main.js?v=1794137037"></script>
 
 </body></html>

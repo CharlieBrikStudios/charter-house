@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1794122823';
+import { FLOOR_H as FH } from './data.js?v=1794137037';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -21,6 +21,7 @@ function pip(x, z, poly) {
   }
   return inside;
 }
+const KDIRS = { '+x': [1, 0], '-x': [-1, 0], '+z': [0, 1], '-z': [0, -1] };
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(Math.max(1e-3, x1 - x0), Math.max(1e-3, y1 - y0), Math.max(1e-3, z1 - z0)); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
 // ------------------------------------------------------------------ procedural finishes
@@ -367,7 +368,21 @@ export function buildApartment(u, ctx) {
     }
     // skirting, dado rail, picture-frame panels above and below, cornice
     placeX(run, 0, run.len, 0, 0.19, 0.022, PK); placeX(run, 0, run.len, 0.17, 0.2, 0.032, PK);
-    for (const [a, b] of solid) {
+    // no dado rail or panel mouldings behind a kitchen: they stood proud of the splashback tiles and cut through them halfway
+    // up (Charlie, 8 Nov). The wall above the tiles is left plain, as a real panelled kitchen wall stops at the units.
+    const ks = [];
+    { const dirV = run.p1.clone().sub(run.p0).normalize();
+      for (const o of layout) {
+        if (o.t !== 'kitchen') continue;
+        const fd = Array.isArray(o.f) ? o.f : KDIRS[o.f || '+z'] || [0, 1];
+        if (run.n.x * fd[0] + run.n.z * fd[1] < 0.9) continue;                       // the units face out from this wall
+        const bx = o.x - fd[0] * 0.3, bz = o.z - fd[1] * 0.3;                         // the back of the units
+        if (Math.abs((bx - run.p0.x) * run.n.x + (bz - run.p0.z) * run.n.z) > 0.35) continue;
+        const t = (o.x - run.p0.x) * dirV.x + (o.z - run.p0.z) * dirV.z, h = (o.len || 1.8) / 2 + 0.06;
+        if (t + h > 0 && t - h < run.len) ks.push([Math.max(0, t - h), Math.min(run.len, t + h)]);
+      } }
+    const cutK = (iv) => { let out = [iv]; for (const [ka, kb] of ks) out = out.flatMap(([a, b]) => kb <= a || ka >= b ? [[a, b]] : [[a, ka], [kb, b]].filter(([p, q]) => q - p > 0.01)); return out; };
+    for (const [a, b] of solid.flatMap(cutK)) {
       const L = b - a; if (L < 0.18) continue;
       placeX(run, a, b, 0.92, 0.98, 0.034, PK);
       const nP = Math.max(1, Math.round(L / 0.72)), pw = L / nP;

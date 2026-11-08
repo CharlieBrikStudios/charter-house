@@ -9,30 +9,30 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794122823';
-import { buildUBL } from './ublbuild.js?v=1794122823';
-import { buildUBLFitout } from './ublfit.js?v=1794122823';
-import { UBL_LEVELS } from './ubl_data.js?v=1794122823';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794122823';
-import { buildOSL } from './oslbuild.js?v=1794122823';
-import { buildOSLFitout } from './oslfit.js?v=1794122823';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794122823';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794122823';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars } from './context.js?v=1794122823';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794122823';
-import { buildFar, hazeUniforms } from './far.js?v=1794122823';
-import { buildRailway } from './railway.js?v=1794122823';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794122823';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794137037';
+import { buildUBL } from './ublbuild.js?v=1794137037';
+import { buildUBLFitout } from './ublfit.js?v=1794137037';
+import { UBL_LEVELS } from './ubl_data.js?v=1794137037';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794137037';
+import { buildOSL } from './oslbuild.js?v=1794137037';
+import { buildOSLFitout } from './oslfit.js?v=1794137037';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794137037';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794137037';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars } from './context.js?v=1794137037';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794137037';
+import { buildFar, hazeUniforms } from './far.js?v=1794137037';
+import { buildRailway } from './railway.js?v=1794137037';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794137037';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1794122823';
-import { Interior } from './interior.js?v=1794122823';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794122823';
-import { buildPHFitout } from './phfit.js?v=1794122823';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794122823';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794122823';
-import { createTour } from './tour.js?v=1794122823';
-import { buildCrowd } from './crowd.js?v=1794122823';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794122823';
+import { Forest, windUniforms } from './trees.js?v=1794137037';
+import { Interior } from './interior.js?v=1794137037';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794137037';
+import { buildPHFitout } from './phfit.js?v=1794137037';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794137037';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794137037';
+import { createTour } from './tour.js?v=1794137037';
+import { buildCrowd } from './crowd.js?v=1794137037';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794137037';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -308,8 +308,10 @@ async function build() {
     const front = [[xw, back(xw)]]; for (let x = Math.ceil(xw / 3) * 3; x < XE - 0.5; x += 3) front.push([x, back(x)]); front.push([XE, back(XE)], [XE, zne]);
     scene.add(buildStMarys(LMM, M.grass, { x: px, z: pz, y: gy + 0.35, rot, front, clip: (x, z) => z <= back(x) - 0.2 && x <= XE - 0.2 }));
     const [tx, tz] = L2W(-26.4, 0); PLACES.tower = [tx, gy + 34, tz];
-    // churchyard trees between the church and Churchgate (kept clear of the tower)
-    [[-12, 17, 15], [-2, 19, 17], [8, 17, 16], [17, 19, 15], [26, 15, 14], [-20, 22, 13], [4, 25, 16], [14, 26, 14], [24, 24, 15], [-34, -18, 13], [-12, -18, 15], [6, -19, 16], [24, -17, 14], [33, 4, 13]].forEach(([a, b, h], i) => {
+    // churchyard trees: only on the far (north) side now, and lower, so St Mary's reads clearly from Charter House and down
+    // Churchgate (Charlie, 8 Nov: "remove some trees for a clearer view of St Mary's"); the nine between the church and
+    // Churchgate and the one off the east end are gone
+    [[-34, -18, 11], [-12, -18, 12], [6, -19, 12.5], [24, -17, 11]].forEach(([a, b, h], i) => {
       const [x, z] = L2W(a, b); const rz = roadZ(x); if (rz != null && z > rz - 8.5) return;
       forest.add(x, z, { h, r: h * 0.38, kind: i % 3 ? 'oak' : 'sycamore', seed: 700 + i, density: 0.9 });
     });
@@ -1321,6 +1323,11 @@ function buildWinPins(u) {
     winPins.push({ el, p });
   });
 }
+// a floating 360° badge over the homes that have photoreal rooms, so you can see from the floor cut-away which ones to step into
+// (Charlie, 8 Nov); refreshed once the photoreal index has loaded, in case the floor was opened first
+const has360 = (plot) => SPOTS.some((x) => x.pano && x.plot === plot);
+const P360_BADGE = '<div class="p360" title="Photoreal 360° rooms" aria-label="Photoreal 360° rooms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12.5c0 2.4-3.8 4.3-8.5 4.3s-8.5-1.9-8.5-4.3c0-1.5 1.5-2.8 3.8-3.6"/><path d="m10.6 14.9 1.6 1.9-1.9 1.6"/><path d="M17.2 8.9c-1.2-.4-2.6-.7-4.1-.8"/></svg><span>360°</span></div>';
+function mark360() { for (const t of unitTags) t.el.classList.toggle('has360', has360(t.plot)); }
 function clearUnitTags() {
   clearWinPins(); clearBaths(); coreRoutes.length = 0;
   if (unitTagGroup) { scene.remove(unitTagGroup); unitTagGroup.traverse(o => o.geometry && o.geometry.dispose()); unitTagGroup = null; }
@@ -1368,8 +1375,8 @@ function buildUnitTags(f) {
       }
       ring.material.color.copy(xm.color); edge.material.color.set('#e3242b');
     }
-    const el = document.createElement('div'); el.className = 'tag ' + st(u).key;
-    el.innerHTML = `<div class="b"><strong class="num">${u.plot}</strong><em>${u.beds} bed · ${u.status === 'Available' ? fmtGBP(u.price) : st(u).label}</em></div><div class="stem"></div><div class="pin"></div>`;
+    const el = document.createElement('div'); el.className = 'tag ' + st(u).key + (has360(u.plot) ? ' has360' : '');
+    el.innerHTML = `${P360_BADGE}<div class="b"><strong class="num">${u.plot}</strong><em>${u.beds} bed · ${u.status === 'Available' ? fmtGBP(u.price) : st(u).label}</em></div><div class="stem"></div><div class="pin"></div>`;
     el.onclick = () => { if (!openOwnPano(u.plot)) toUnit(u.plot); };   /* plots with photoreal rooms open straight into the kitchen/living */
     el.onpointerenter = () => { S.hoverPlot = u.plot; }; el.onpointerleave = () => { S.hoverPlot = null; };
     $('#labels').appendChild(el);
@@ -1550,7 +1557,7 @@ function navStep(kind) {
     $('#panel').classList.remove('hide'); controls.enabled = true;
     toExplore(true); return;
   }
-  if (S.mode === 'tour') { if (kind === 'left') tour.turn(0.4); else if (kind === 'right') tour.turn(-0.4); else if (kind === 'in') tour.zoom(-6); else if (kind === 'out') tour.zoom(6); return; }
+  if (S.mode === 'tour') { if (kind === 'left') tour.turn(0.4); else if (kind === 'right') tour.turn(-0.4); return; }   // (no zoom in the 360s, Charlie 8 Nov)
   if (S.mode === 'view') { if (kind === 'left') $('#vw-left').click(); if (kind === 'right') $('#vw-right').click(); return; }
   if (S.mode === 'intro' || S.mode === 'walk' || S.mode === 'entering' || filmOn) return;
   if (kind === 'home') {
@@ -2048,11 +2055,12 @@ function buildSpots() {
   }
   // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
   for (const p of PANO_INDEX) {
-    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794122823`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
-    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794122823`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794137037`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
+    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794137037`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner", "brewery"], "brewery": ["harvey"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
+  mark360();
   spotPins = SPOTS.map((sp, i) => { const el = document.createElement('button'); el.className = 'spin'; el.style.opacity = 0; el.style.pointerEvents = 'none'; el.innerHTML = `<span>${sp.name}</span><i></i>`; el.onclick = () => goSpot(i); $('#labels').appendChild(el); return el; });
   $('#t-spots').innerHTML = SPOTS.map((sp, i) => `<button data-spot="${i}" aria-pressed="false"><i></i>${sp.name}</button>`).join('');
 }
@@ -2206,7 +2214,7 @@ $('#t-back').onclick = () => exitTour(T.door, backFromPano());
 $('#t-left').onclick = () => tour.turn(0.55);
 $('#t-right').onclick = () => tour.turn(-0.55);
 $('#btn-360').onclick = () => goSpot(0);
-canvas.addEventListener('wheel', (e) => { if (S.mode === 'tour') { e.preventDefault(); tour.zoom(e.deltaY > 0 ? 4 : -4); } }, { passive: false });
+canvas.addEventListener('wheel', (e) => { if (S.mode === 'tour') { e.preventDefault(); tour.poke(); } }, { passive: false });   // no zoom in the 360s (Charlie, 8 Nov)
 addEventListener('keydown', (e) => {
   if (S.mode !== 'tour') return;
   if (e.key === 'ArrowLeft') tour.turn(0.3); else if (e.key === 'ArrowRight') tour.turn(-0.3);
@@ -2368,7 +2376,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1794122823').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1794137037').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');

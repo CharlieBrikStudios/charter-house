@@ -9,16 +9,17 @@ const pitchTo = (from, to) => Math.atan2(to.y - from.y, Math.hypot(to.x - from.x
 
 export function createTour({ camera, fader }) {
   const st = {
-    pos: new THREE.Vector3(), yaw: 0, pitch: -0.04, ty: 0, tp: -0.04, fov: 62, tfov: 62,
+    pos: new THREE.Vector3(), yaw: 0, pitch: -0.04, ty: 0, tp: -0.04, fov: 62, tfov: 62, idle: 0, spin: 0,
     path: null, fade: null, onStep: null,
   };
   const dir = new THREE.Vector3(), tmp = new THREE.Vector3();
 
   function place(pos, look) {
-    st.pos.copy(pos);
+    st.pos.copy(pos); st.idle = 0;
     if (look) { st.yaw = st.ty = yawTo(pos, look); st.pitch = st.tp = THREE.MathUtils.clamp(pitchTo(pos, look), -0.6, 0.6); }
   }
   function face(look, immediate = false) {
+    st.idle = 0;
     st.ty = st.yaw + angDiff(yawTo(st.pos, look), st.yaw);
     st.tp = THREE.MathUtils.clamp(pitchTo(st.pos, look), -0.6, 0.6);
     if (immediate) { st.yaw = st.ty; st.pitch = st.tp; }
@@ -78,6 +79,10 @@ export function createTour({ camera, fader }) {
         }
       }
     }
+    // left alone, the view turns slowly round the full circle (Charlie, 8 Nov): starts a few seconds after the last touch,
+    // about two minutes a turn, eased in so it never jolts; any drag, turn or move stops it
+    st.idle += dt;
+    if (!st.path && st.idle > 4) { st.spin = Math.min(1, st.spin + dt * 0.5); st.ty -= dt * 0.05 * st.spin; } else st.spin = 0;
     const k = 1 - Math.pow(0.0025, dt);
     st.yaw += angDiff(st.ty, st.yaw) * k; st.pitch += (st.tp - st.pitch) * k;
     if (Math.abs(st.tfov - st.fov) > 0.05) { st.fov += (st.tfov - st.fov) * k; camera.fov = st.fov; camera.updateProjectionMatrix(); }
@@ -88,10 +93,12 @@ export function createTour({ camera, fader }) {
 
   return {
     st, place, face, walk, stop, skip, update,
-    drag(dx, dy) { st.ty += dx * 0.0045;   // grab the scene, as in Street View: drag left and the view turns right (Charlie, 6 Nov)
- st.tp = THREE.MathUtils.clamp(st.tp - dy * 0.0045, -1.25, 1.25); },
-    turn(a) { st.ty += a; },
-    zoom(d) { st.tfov = THREE.MathUtils.clamp(st.tfov + d, 24, 100); },
+    // grab the scene, as in Street View: drag left and the view turns right (Charlie, 6 Nov). Left and right only: dragging
+    // up and down used to tilt the view too and it was easy to get lost (Charlie, 8 Nov), so the pitch stays where the spot set it
+    drag(dx, dy) { st.ty += dx * 0.0045; st.idle = 0; },
+    turn(a) { st.ty += a; st.idle = 0; },
+    poke() { st.idle = 0; },
+    // (no zoom inside the 360s: taken out, Charlie 8 Nov)
     setFov(f) { st.fov = st.tfov = f; camera.fov = f; camera.updateProjectionMatrix(); },
     busy: () => !!st.path,
   };
