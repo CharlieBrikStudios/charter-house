@@ -26,6 +26,10 @@ git config --global user.email "charlie@brik-studios.com"; git config --global u
 push() { (cd io && git add -A splat && git commit -qm "$1" && git pull -q --rebase origin splat-job && git push -q origin splat-job) >/dev/null 2>&1 || echo "push failed"; }
 say() { local J=$1; shift; mkdir -p io/splat/$J; echo "$(date -u +%FT%TZ) $*" | tee -a io/splat/$J/progress.log; push "splat $J: $*"; }
 python3 -m pip install -q gdown pillow-heif >/tmp/pip.log 2>&1 || python3 -m pip install -q --user gdown pillow-heif >>/tmp/pip.log 2>&1 || { echo "pip failed:"; tail -5 /tmp/pip.log; }
+# pycolmap 4 (COLMAP with GLOMAP's global mapper) for the camera solve: --no-deps so it can't move the image's numpy under torch
+python3 -m pip install -q --no-deps pycolmap==4.2.1 >>/tmp/pip.log 2>&1
+SFMPY=$(python3 -c "import pycolmap;print(int(pycolmap.__version__.split('.')[0]) >= 4)" 2>/dev/null)
+echo "pycolmap 4: ${SFMPY:-no}"
 # node for the web compression (a plain binary download: no root needed)
 # (the image has no curl: python downloads it)
 command -v npx >/dev/null || { python3 -c "import urllib.request;urllib.request.urlretrieve('https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz','/tmp/node.tgz')" && tar -xzf /tmp/node.tgz -C $HOME && export PATH=$HOME/node-v20.18.0-linux-x64/bin:$PATH; }
@@ -60,6 +64,8 @@ run_group() {
   while IFS= read -r f; do
     i=$((i + 1)); local c=c$(printf %02d $i); mkdir -p $I/$c; local o="$I/$c/${c}_%05d.jpg"
     local trc=$(ffprobe -v error -select_streams v:0 -show_entries stream=color_transfer -of csv=p=0 "$f" 2>/dev/null)
+    local f35=$(ffprobe -v error -show_entries format_tags -of json "$f" 2>/dev/null | python3 -c "import sys,json;t=json.load(sys.stdin).get('format',{}).get('tags',{});print(next((v for k,v in t.items() if 'focal_length.35mm' in k.lower()),''))" 2>/dev/null)
+    echo "$c ${f35:-}" >> $D/lens.txt
     if [ "$trc" = arib-std-b67 ] || [ "$trc" = smpte2084 ]; then
       ffmpeg -nostdin -loglevel error -i "$f" -vf "fps=$((FPS * 2)),$TM,$SC" -q:v 2 "$o" || ffmpeg -nostdin -loglevel error -y -i "$f" -vf "fps=$((FPS * 2)),$SC" -q:v 2 "$o"
     else
@@ -100,6 +106,16 @@ EOF
   # a progress line every 10 minutes while the long steps run, so they can be followed from outside the pod
   ( while sleep 600; do say $J "$G: ... $(tail -c 3000 $D/colmap.log $D/train.log 2>/dev/null | tr '\r' '\n' | grep -v '^\s*$' | tail -1 | cut -c1-140)"; done ) & local WP=$!
   local C=$D/data/colmap; mkdir -p $C/sparse; : > $D/colmap.log
+  if [ "$SFMPY" = True ]; then   # global SfM (pipeline/sfm.py): minutes, not the incremental mapper's hour
+    python3 -c "import json;print(json.dumps({l.split()[0]: {'f35': l.split()[1]} for l in open('$D/lens.txt') if len(l.split()) > 1}))" > $D/lens.json 2>/dev/null
+    say $J "$G: camera solve (global, $NT threads; lenses: $(awk 'NF > 1 {printf "%s=%smm ", $1, $2}' $D/lens.txt 2>/dev/null))"
+    python3 io/pipeline/sfm.py $D/data $NT $D/lens.json > $D/colmap.log 2>&1
+    tail -c 30000 $D/colmap.log > io/splat/$J/$G/colmap_tail.log
+    say $J "$G: camera solve: $(grep '^SFM' $D/colmap.log | tail -1 | cut -c1-300)"
+    grep -q '^SFM [gi]' $D/colmap.log || rm -f $D/data/transforms.json
+  fi
+  if [ ! -f $D/data/transforms.json ]; then   # COLMAP 3.8's incremental mapper (the image's own)
+  rm -rf $C; mkdir -p $C/sparse
   say $J "$G: camera solve ($MM matching, $NT threads)"
   if ! colmap_solve $C/database.db $I $C/sparse $MM 1 $NT $D/colmap.log || [ -z "$(ls $C/sparse)" ]; then
     if grep -qiE "cuda|gpu" $D/colmap.log; then   # COLMAP's own CUDA can fail where torch works: do it on the CPUs
@@ -141,6 +157,7 @@ if len(cids) > 1:
     json.dump(T, open(out / 'transforms.json', 'w'), indent=2)
 print('ok', len(T['frames']), 'ply', T.get('ply_file_path'))
 EOF
+fi
   cp $D/tojson.log io/splat/$J/$G/ 2>/dev/null
   [ -f $D/data/transforms.json ] || { kill $WP 2>/dev/null; say $J "$G: FAILED camera solve (colmap_tail.log pushed)"; return; }
   ns-train $METHOD --data $D/data --output-dir $D/outputs --max-num-iterations $ITERS --viewer.quit-on-train-completion True \
