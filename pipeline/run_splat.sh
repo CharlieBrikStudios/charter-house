@@ -10,19 +10,24 @@
 #      default 30000), METHOD (splatfacto | splatfacto-big), RADIUS (metres: clips further apart are different places, default 90)
 set -u
 FPS=${FPS:-2}; ITERS=${ITERS:-30000}; METHOD=${METHOD:-splatfacto}; RADIUS=${RADIUS:-90}
-cd /workspace
+# the nerfstudio image may run as a non-root user: work in /workspace if we can make it ours, else in the home folder
+SUDO=""; [ "$(id -u)" = 0 ] || SUDO="sudo -n"
+WS=/workspace; { mkdir -p $WS && [ -w $WS ]; } 2>/dev/null || { $SUDO mkdir -p $WS && $SUDO chown "$(id -u)" $WS; } 2>/dev/null
+[ -w $WS ] || WS=$HOME/workspace; mkdir -p $WS; cd $WS
+export PATH=$HOME/.local/bin:$PATH
 git config --global user.email "charlie@brik-studios.com"; git config --global user.name "Charlie Baxter (RunPod splat job)"
 [ -d io ] || git clone -q --depth 1 -b splat-job "https://x-access-token:${GH_TOKEN}@github.com/CharlieBrikStudios/charter-house.git" io
 push() { (cd io && git add -A splat && git commit -qm "$1" && git pull -q --rebase origin splat-job && git push -q origin splat-job) >/dev/null 2>&1 || echo "push failed"; }
 say() { local J=$1; shift; mkdir -p io/splat/$J; echo "$(date -u +%FT%TZ) $*" | tee -a io/splat/$J/progress.log; push "splat $J: $*"; }
-pip install -q gdown pillow-heif >/dev/null 2>&1
-command -v node >/dev/null || { curl -fsSL https://deb.nodesource.com/setup_20.x | bash - >/dev/null 2>&1; apt-get install -y nodejs >/dev/null 2>&1; }
+pip install -q gdown pillow-heif >/dev/null 2>&1 || pip install -q --user gdown pillow-heif >/dev/null 2>&1
+# node for the web compression (a plain binary download: no root needed)
+command -v npx >/dev/null || { curl -fsSL https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.xz | tar -xJ -C $HOME && export PATH=$HOME/node-v20.18.0-linux-x64/bin:$PATH; }
 # iPhone clips are usually HDR (HLG): tone-map them to ordinary video colours so the scan isn't washed out (plain extract if that fails)
 TM="zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"
 
 # ------------------------------------------------------------------ one place: frames -> camera solve -> splat -> web file
 run_group() {
-  local J=$1 G=$2 W=/workspace/$1 D=/workspace/$1/$2
+  local J=$1 G=$2 W=$WS/$1 D=$WS/$1/$2
   mkdir -p $D/frames io/splat/$J/$G
   local i=0
   while IFS= read -r f; do
@@ -85,7 +90,7 @@ EOF
 
 # ------------------------------------------------------------------ one job: a Drive folder, sorted into places
 run_job() {
-  local J=$1 URL=$2 W=/workspace/$1
+  local J=$1 URL=$2 W=$WS/$1
   mkdir -p $W/raw; say $J "pod up on $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null | head -1); $(nproc) cpus; job $J"
   gdown -q --folder "$URL" -O $W/raw --remaining-ok > $W/gdown.log 2>&1
   local NV=$(find $W/raw -type f \( -iname '*.mov' -o -iname '*.mp4' -o -iname '*.m4v' \) | wc -l) NP=$(find $W/raw -type f \( -iname '*.heic' -o -iname '*.jpg' -o -iname '*.jpeg' \) | wc -l)
