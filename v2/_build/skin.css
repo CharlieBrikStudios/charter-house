@@ -798,3 +798,4 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 .team2 .awards li{flex:0 1 210px;padding:16px 16px 18px;background:var(--lift);border:1px solid var(--hair);text-align:center}
 .team2 .awards li::before{position:static;display:block;margin:2px auto 12px}
 @media (max-width:640px){.team2 .awards li{flex-basis:100%}}
+.hero-img>.cap{display:none!important}
