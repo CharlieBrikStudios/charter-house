@@ -172,7 +172,7 @@ fi
   say $J "$G: trained ($ITERS steps), exported $(du -h "$PLY" | cut -f1)"
   # compress for the web (PlayCanvas SOG, ~15x smaller; compressed PLY if this version can't write SOG)
   # (on the CPU, no WebGPU in node here; without the view-dependent colour bands: their palette step took over half an hour)
-  npx -y @playcanvas/splat-transform -w "$PLY" -N -H 0 $D/$G.sog -g cpu > $D/compress.log 2>&1 || npx -y @playcanvas/splat-transform -w "$PLY" $D/$G.compressed.ply >> $D/compress.log 2>&1
+  timeout 1200 npx -y @playcanvas/splat-transform -w "$PLY" -N -H 0 $D/$G.sog -g cpu > $D/compress.log 2>&1 || timeout 1200 npx -y @playcanvas/splat-transform -w "$PLY" $D/$G.compressed.ply >> $D/compress.log 2>&1
   local OUT=$(ls $D/$G.sog $D/$G.compressed.ply 2>/dev/null | head -1)
   [ -n "$OUT" ] || { tail -30 $D/compress.log > io/splat/$J/$G/compress_tail.log; OUT=$PLY; }
   cp $D/data/transforms.json io/splat/$J/$G/ 2>/dev/null
