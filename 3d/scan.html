@@ -117,8 +117,9 @@ scene.add(mesh);
 // ---- riding the filmed path
 const paths = meta.paths.map((p) => {
   const P = p.p.map((v) => new THREE.Vector3(...v)), F = p.f.map((v) => new THREE.Vector3(...v).normalize());
-  const s = [0]; for (let i = 1; i < P.length; i++) s.push(s[i - 1] + P[i].distanceTo(P[i - 1]));
-  return { name: p.name, P, F, s, len: s[s.length - 1] || 1 };
+  // ridden by frame (the phone's own timing): a clip can walk along the street or just pan from one spot
+  const s = P.map((_, i) => i);
+  return { name: p.name, P, F, s, len: Math.max(1, s.length - 1) };
 });
 let cur = 0, t = paths[0].start ?? 0.5, tt = t, dir = 1, idle = 0, glide = 0;
 const at = (path, u, outP, outF) => {
