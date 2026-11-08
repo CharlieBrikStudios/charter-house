@@ -36,59 +36,115 @@ echo "torch: $CUDAOK"
 TM="zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"
 
 # ------------------------------------------------------------------ one place: frames -> camera solve -> splat -> web file
+# 8 Nov, second go: the first solve (nerfstudio's ns-process-data) put every frame on ONE camera, so portrait and landscape clips,
+# the 0.5x lens and the stills fought over one set of lens values, matched each frame only with its neighbours (so separate clips
+# never joined up), ran 96 threads on 9 CPUs (45 minutes) and placed 21% of the frames. Now COLMAP is run directly: one camera per
+# clip (and per still size), every frame matched against every other (up to 450 frames), threads to match the CPUs, and the
+# biggest joined-up model is the one trained.
+ncpu() { python3 -c "
+try:
+    q, p = open('/sys/fs/cgroup/cpu.max').read().split()[:2]; n = int(q) // int(p) if q != 'max' else 0
+except Exception: n = 0
+import os; n = n or len(os.sched_getaffinity(0)); print(max(2, min(16, n)))"; }
+colmap_solve() {   # $1 database, $2 images, $3 sparse dir, $4 matcher, $5 use_gpu (1/0), $6 threads, $7 log
+  colmap feature_extractor --database_path $1 --image_path $2 --ImageReader.single_camera_per_folder 1 --ImageReader.camera_model OPENCV \
+    --SiftExtraction.use_gpu $5 --SiftExtraction.num_threads $6 >> $7 2>&1 || return 1
+  if [ $4 = exhaustive ]; then colmap exhaustive_matcher --database_path $1 --SiftMatching.use_gpu $5 --SiftMatching.num_threads $6 >> $7 2>&1 || return 1
+  else colmap sequential_matcher --database_path $1 --SiftMatching.use_gpu $5 --SiftMatching.num_threads $6 --SequentialMatching.overlap 25 >> $7 2>&1 || return 1; fi
+  colmap mapper --database_path $1 --image_path $2 --output_path $3 --Mapper.num_threads $6 --Mapper.ba_global_function_tolerance 1e-6 >> $7 2>&1
+}
 run_group() {
   local J=$1 G=$2 W=$WS/$1 D=$WS/$1/$2
-  mkdir -p $D/frames io/splat/$J/$G
-  local i=0
+  rm -rf $D; mkdir -p $D/data/images io/splat/$J/$G   # (a restart starts the place again: never prune frames twice)
+  local I=$D/data/images i=0 SC="scale=1600:1600:force_original_aspect_ratio=decrease"
   while IFS= read -r f; do
-    i=$((i + 1)); local o="$D/frames/c$(printf %02d $i)_%05d.jpg"
+    i=$((i + 1)); local c=c$(printf %02d $i); mkdir -p $I/$c; local o="$I/$c/${c}_%05d.jpg"
     local trc=$(ffprobe -v error -select_streams v:0 -show_entries stream=color_transfer -of csv=p=0 "$f" 2>/dev/null)
     if [ "$trc" = arib-std-b67 ] || [ "$trc" = smpte2084 ]; then
-      ffmpeg -nostdin -loglevel error -i "$f" -vf "fps=$((FPS * 2)),$TM,scale=1920:-2" -q:v 2 "$o" || ffmpeg -nostdin -loglevel error -y -i "$f" -vf "fps=$((FPS * 2)),scale=1920:-2" -q:v 2 "$o"
+      ffmpeg -nostdin -loglevel error -i "$f" -vf "fps=$((FPS * 2)),$TM,$SC" -q:v 2 "$o" || ffmpeg -nostdin -loglevel error -y -i "$f" -vf "fps=$((FPS * 2)),$SC" -q:v 2 "$o"
     else
-      ffmpeg -nostdin -loglevel error -i "$f" -vf "fps=$((FPS * 2)),scale=1920:-2" -q:v 2 "$o"
+      ffmpeg -nostdin -loglevel error -i "$f" -vf "fps=$((FPS * 2)),$SC" -q:v 2 "$o"
     fi
   done < <(python3 -c "import json;print('\\n'.join(x for x in json.load(open('$W/groups.json'))['$G']['files'] if x.lower().endswith(('.mov','.mp4','.m4v'))))")
-  python3 - "$W/groups.json" "$G" "$D/frames" <<'EOF'
-# keep the sharper frame of each consecutive pair (variance of the Laplacian); add the stills, 1920 px on the long side
+  python3 - "$W/groups.json" "$G" "$I" <<'EOF'
+# keep the sharper frame of each consecutive pair in each clip (variance of the Laplacian); the stills go in a folder per picture
+# size (one camera each), 1600 px on the long side
 import sys, os, glob, json, cv2
 from PIL import Image, ImageOps
 try:
     from pillow_heif import register_heif_opener; register_heif_opener()
 except Exception as e: print('no heif', e)
 groups, G, out = json.load(open(sys.argv[1])), sys.argv[2], sys.argv[3]
-fs = sorted(glob.glob(os.path.join(out, 'c*.jpg'))); drop = 0
-for a, b in zip(fs[0::2], fs[1::2]):
-    if a.split('_')[0] != b.split('_')[0]: continue
-    va = cv2.Laplacian(cv2.imread(a, 0), cv2.CV_64F).var(); vb = cv2.Laplacian(cv2.imread(b, 0), cv2.CV_64F).var()
-    os.remove(b if va >= vb else a); drop += 1
+drop = 0
+for d in sorted(glob.glob(os.path.join(out, 'c*'))):
+    fs = sorted(glob.glob(os.path.join(d, '*.jpg')))
+    for a, b in zip(fs[0::2], fs[1::2]):
+        va = cv2.Laplacian(cv2.imread(a, 0), cv2.CV_64F).var(); vb = cv2.Laplacian(cv2.imread(b, 0), cv2.CV_64F).var()
+        os.remove(b if va >= vb else a); drop += 1
+    if not os.listdir(d): os.rmdir(d)
 n = 0
 for f in groups[G]['files']:
     if not f.lower().endswith(('.heic', '.heif', '.jpg', '.jpeg', '.png')): continue
     try:
-        im = ImageOps.exif_transpose(Image.open(f)).convert('RGB'); w, h = im.size; s = 1920 / max(w, h)
+        im = ImageOps.exif_transpose(Image.open(f)).convert('RGB'); w, h = im.size; s = 1600 / max(w, h)
         if s < 1: im = im.resize((round(w * s), round(h * s)), Image.LANCZOS)
-        im.save(os.path.join(out, 'p_%03d.jpg' % n), quality=92); n += 1
+        sd = os.path.join(out, 'p_%dx%d' % im.size); os.makedirs(sd, exist_ok=True)
+        im.save(os.path.join(sd, 'p_%03d.jpg' % n), quality=92); n += 1
     except Exception as e: print('skip', f, e)
 print('dropped', drop, 'stills', n)
 EOF
-  local NF=$(ls $D/frames | wc -l)
-  say $J "$G: $NF frames ($(ls $D/frames | grep -c '^p_') stills)"
+  local NF=$(find $I -name '*.jpg' | wc -l) NS=$(find $I -path '*/p_*' -name '*.jpg' | wc -l)
+  say $J "$G: $NF frames ($NS stills) in $(ls $I | wc -l) folders"
   [ $NF -lt 25 ] && { say $J "$G: skipped, too few frames for a scan"; return; }
-  # video frames come in order: sequential matching (each frame against its neighbours, plus loop detection) is far quicker than
-  # exhaustive or vocab-tree matching (8 Nov: 306 frames sat over an hour in the camera solve)
-  local MM=${MATCH:-sequential}
+  local NT=$(ncpu) MM=${MATCH:-}; [ -n "$MM" ] || { [ $NF -le 450 ] && MM=exhaustive || MM=sequential; }
   # a progress line every 10 minutes while the long steps run, so they can be followed from outside the pod
   ( while sleep 600; do say $J "$G: ... $(tail -c 3000 $D/colmap.log $D/train.log 2>/dev/null | tr '\r' '\n' | grep -v '^\s*$' | tail -1 | cut -c1-140)"; done ) & local WP=$!
-  ns-process-data images --data $D/frames --output-dir $D/data --matching-method $MM --num-downscales 2 > $D/colmap.log 2>&1
-  if [ ! -f $D/data/transforms.json ] && grep -q "CUDA error" $D/colmap.log; then   # COLMAP's own CUDA can fail where torch works: do the camera solve on the CPUs
-    say $J "$G: COLMAP can't use the GPU here, solving on the CPUs instead"; rm -rf $D/data
-    ns-process-data images --data $D/frames --output-dir $D/data --matching-method $MM --num-downscales 2 --no-gpu > $D/colmap.log 2>&1
+  local C=$D/data/colmap; mkdir -p $C/sparse; : > $D/colmap.log
+  say $J "$G: camera solve ($MM matching, $NT threads)"
+  if ! colmap_solve $C/database.db $I $C/sparse $MM 1 $NT $D/colmap.log || [ -z "$(ls $C/sparse)" ]; then
+    if grep -qiE "cuda|gpu" $D/colmap.log; then   # COLMAP's own CUDA can fail where torch works: do it on the CPUs
+      say $J "$G: COLMAP can't use the GPU here, solving on the CPUs instead"; rm -rf $C; mkdir -p $C/sparse
+      colmap_solve $C/database.db $I $C/sparse $MM 0 $NT $D/colmap.log
+    fi
   fi
-  say $J "$G: camera solve: $(grep -iE 'colmap found poses|found poses' $D/colmap.log | tail -1 | tr -d '\r' | cut -c1-160)"
-  [ -f $D/data/transforms.json ] || { kill $WP 2>/dev/null; cp $D/colmap.log io/splat/$J/$G/; say $J "$G: FAILED camera solve (colmap.log pushed)"; return; }
+  tail -c 30000 $D/colmap.log > io/splat/$J/$G/colmap_tail.log
+  local BM=$(python3 - $C/sparse <<'EOF'
+import sys, os, struct
+d = sys.argv[1]; best = None; sizes = []
+for m in sorted((x for x in os.listdir(d) if x.isdigit()), key=int):
+    p = os.path.join(d, m, 'images.bin')
+    if not os.path.exists(p): continue
+    n = struct.unpack('<Q', open(p, 'rb').read(8))[0]; sizes.append('%s:%d' % (m, n))
+    if best is None or n > best[1]: best = (m, n)
+print((best[0] if best else 'none') + ' ' + ' '.join(sizes))
+EOF
+)
+  say $J "$G: camera solve: models (model:frames) ${BM#* } of $NF frames; training model ${BM%% *}"
+  [ "${BM%% *}" != none ] && python3 - "$C/sparse/${BM%% *}" "$D/data" > $D/tojson.log 2>&1 <<'EOF'
+# nerfstudio's own COLMAP -> transforms.json (with the starting point cloud); then make sure every frame carries its own camera's
+# lens values when there is more than one camera (older nerfstudio wrote camera 1 for everyone)
+import sys, json
+from pathlib import Path
+from nerfstudio.process_data.colmap_utils import colmap_to_json, parse_colmap_camera_params
+from nerfstudio.data.utils.colmap_parsing_utils import read_cameras_binary, read_images_binary
+rec, out = Path(sys.argv[1]), Path(sys.argv[2])
+n = colmap_to_json(recon_dir=rec, output_dir=out); print('frames', n)
+cams, ims = read_cameras_binary(rec / 'cameras.bin'), read_images_binary(rec / 'images.bin')
+T = json.load(open(out / 'transforms.json'))
+cids = {im.camera_id for im in ims.values()}
+print('cameras used', len(cids))
+if len(cids) > 1:
+    for k in ('fl_x', 'fl_y', 'cx', 'cy', 'w', 'h', 'k1', 'k2', 'k3', 'k4', 'p1', 'p2'): T.pop(k, None)
+    T.setdefault('camera_model', 'OPENCV')
+    for fr in T['frames']:
+        fr.update({k: v for k, v in parse_colmap_camera_params(cams[ims[fr['colmap_im_id']].camera_id]).items() if k != 'camera_model'})
+    json.dump(T, open(out / 'transforms.json', 'w'), indent=2)
+print('ok', len(T['frames']), 'ply', T.get('ply_file_path'))
+EOF
+  cp $D/tojson.log io/splat/$J/$G/ 2>/dev/null
+  [ -f $D/data/transforms.json ] || { kill $WP 2>/dev/null; say $J "$G: FAILED camera solve (colmap_tail.log pushed)"; return; }
   ns-train $METHOD --data $D/data --output-dir $D/outputs --max-num-iterations $ITERS --viewer.quit-on-train-completion True \
-    --pipeline.model.cull-alpha-thresh 0.005 > $D/train.log 2>&1
+    --pipeline.model.cull-alpha-thresh 0.005 nerfstudio-data --downscale-factor 1 > $D/train.log 2>&1
   kill $WP 2>/dev/null
   local CFG=$(find $D/outputs -name config.yml | head -1)
   [ -n "$CFG" ] || { tail -60 $D/train.log > io/splat/$J/$G/train_tail.log; say $J "$G: FAILED training (log pushed)"; return; }
