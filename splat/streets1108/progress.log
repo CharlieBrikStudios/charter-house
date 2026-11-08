@@ -79,3 +79,4 @@
 2026-11-08T17:58:26Z g1: ... I20261108 17:58:17.190193 140713431520384 global_mapper.cc:614] === Running iterative retriangulation and refinement ===
 2026-11-08T18:07:33Z g1: camera solve: SFM global free: 295 of 305 frames placed (97%), 44875 points, 1747 s; by folder c01:31/31 c02:42/42 c03:23/33 c04:34/34 c05:128/128 c06:33/33 p_1200x1600:4/4
 2026-11-08T18:08:27Z g1: ... 500 (1.67%)         15.858 ms            7 m, 47 s            91.45 M                                [0m
+2026-11-08T18:18:29Z g1: ... 16930 (56.43%)      47.103 ms            10 m, 15 s           31.69 M                                [0m
