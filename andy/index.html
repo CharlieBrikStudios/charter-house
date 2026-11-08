@@ -2816,6 +2816,13 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 .rb:has(.pic.v2rv.go) .rbt{opacity:1!important;transform:none!important}
 @media (prefers-reduced-motion:reduce){.rb .pic.v2rv{clip-path:none!important;transform:none!important}.rb:has(.pic.v2rv) .rbt{opacity:1!important;transform:none!important}}
 .case7 .c7f:has(>div:nth-child(4)){grid-template-columns:1fr 1fr}
+/* awards: one centred strip across both columns */
+.team2 .awards{grid-column:1/-1;text-align:center;margin:8px 0 26px;padding:24px 0 0;border-top:1px solid var(--hair)}
+.team2 .awards>.cap{display:block;text-align:center;margin:0 0 16px!important}
+.team2 .awards ul{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 16px;margin:0}
+.team2 .awards li{flex:0 1 210px;padding:16px 16px 18px;background:var(--lift);border:1px solid var(--hair);text-align:center}
+.team2 .awards li::before{position:static;display:block;margin:2px auto 12px}
+@media (max-width:640px){.team2 .awards li{flex-basis:100%}}
 
 </style>
 </head>
@@ -3136,7 +3143,7 @@ function buildingTab(){return `<div class="pane"><section class="sec first herit
    <p>Next door, Hall &amp; Co's St Marys Gate sold out off-plan and is now fully let: proof of how much demand there is for the little that gets built here.</p></div></div>
    <div class="tallwrap"><button class="pic tall" style="background-image:var(--side)" data-gal="var(--side)" aria-label="View Charter House image"></button>${hqStamp("b")}</div></div></section>
   <section class="sec"><div class="cap"><span>The team</span></div><div class="cols2">
-   <div><i class="mask teamlogo hallco" role="img" aria-label="Hall &amp; Co Property"></i><h3>Hall &amp; Co, developer</h3><ul class="keys"><li>Family-run since 1998, with 13 completed residential schemes across the North West, Cheshire and North Wales</li><li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul><div class="awards"><div class="cap">Recognition</div><ul><li><b>Award-winning restoration</b><span>Grade II-listed Bank Chambers, now the ProFolk co-working hub on Stockport's Market Place</span></li></ul></div></div>
+   <div><i class="mask teamlogo hallco" role="img" aria-label="Hall &amp; Co Property"></i><h3>Hall &amp; Co, developer</h3><ul class="keys"><li>Family-run since 1998, with 13 completed residential schemes across the North West, Cheshire and North Wales</li><li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul></div>
    <div><i class="mask teamlogo riba" role="img" aria-label="RIBA Chartered Practice"></i><h3>Ollier Smurthwaite, architect</h3><ul class="keys"><li>18 years in business, 24 awards, £200m+ of mixed-use projects</li><li>Chosen by Stockport Council to lead the regeneration of the Underbanks</li><li>A RIBA Chartered Practice, working to the conservation area's heritage principles</li></ul></div></div></section>
   <section class="sec"><div class="cap"><span>Our take</span></div><div class="person"><div class="pic" style="background-image:var(--andy)" role="img" aria-label="Andy Davies"></div>
    <div><blockquote>“I've been part of every Hall &amp; Co launch in the Underbanks and sold a big share of the apartments in each one. I invest in Stockport myself, and this is the one I'd be buying.”</blockquote><div class="by">Andy Davies, Senior Consultant</div></div></div></section>
@@ -3238,10 +3245,10 @@ CH.building=()=>`<section class="ch" id="building">${chh("02","The building","Co
    <p class="muted">Founded in 1998 by Roy and Jo Hall, starting with a coastal building in Anglesey. Now led by the next generation of the family from Alderley Edge, with a reputation for thoughtful restoration and long-term partnerships with councils.</p>
    <ul class="keys" style="margin-top:18px"><li>25+ years and 13 completed residential schemes across the North West, Cheshire and North Wales</li><li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul></div><div class="sec" style="margin-top:0"><div class="cap"><span>Meet the architect</span></div><i class="mask teamlogo riba" role="img" aria-label="RIBA Chartered Practice"></i><h3>Ollier Smurthwaite</h3>
    <p class="muted">The multi-award-winning practice Stockport Council appointed to bring its vision for the Underbanks to life, where attention to detail and retaining heritage are core principles.</p>
-   <ul class="keys" style="margin-top:18px"><li>18 years in business and 24 awards</li><li>£200m+ of mixed-use projects</li><li>Chosen to lead the regeneration of the Underbanks</li></ul><div class="awards"><div class="cap">Selected awards</div><ul><li><b>Housing Design Awards</b><span>Project Winner, Climate Innovation District, Leeds</span></li><li><b>RIBA Regional Award</b><span>and Small Project Award, Devonshire Road, Manchester</span></li><li><b>House Builder Awards</b><span>Winner, Roof Gardens</span></li><li><b>Manchester Society of Architects</b><span>Award winner 2023, The George, Stockport</span></li></ul></div>
+   <ul class="keys" style="margin-top:18px"><li>18 years in business and 24 awards</li><li>£200m+ of mixed-use projects</li><li>Chosen to lead the regeneration of the Underbanks</li></ul>
    </div>
-  <div class="teamhero">${IMG("hall_done","A completed Hall &amp; Co apartment in the Underbanks","thero")}<p class="thcap">Finished and furnished: a completed Hall &amp; Co apartment in the Underbanks</p></div>
-  <div class="teamhero">${IMG("arch_done","Inside a completed Ollier Smurthwaite and Hall &amp; Co scheme","thero")}<p class="thcap">Inside a completed Ollier Smurthwaite and Hall &amp; Co scheme</p></div></div></section>`;
+  <div class="teamhero">${IMG("stmarys","St Marys Gate, next door, by Hall &amp; Co","thero")}<p class="thcap">St Marys Gate, next door. Hall &amp; Co, completed 2025</p></div>
+  <div class="teamhero">${IMG("arch1","Ollier Smurthwaite project","thero")}<p class="thcap">An Ollier Smurthwaite scheme</p></div><div class="awards"><div class="cap">Awards and recognition</div><ul><li><b>Housing Design Awards</b><span>Project Winner, Climate Innovation District. Ollier Smurthwaite</span></li><li><b>RIBA Regional Award</b><span>and Small Project Award, Devonshire Road. Ollier Smurthwaite</span></li><li><b>House Builder Awards</b><span>Winner, Roof Gardens. Ollier Smurthwaite</span></li><li><b>Manchester Society of Architects</b><span>Award winner 2023, The George, Stockport. Ollier Smurthwaite</span></li><li><b>Award-winning restoration</b><span>Grade II-listed Bank Chambers, now ProFolk. Hall &amp; Co</span></li></ul></div></div></section>`;
 
 CH.heritage=()=>`<section class="ch" id="heritage">${chh("09","The building's heritage","Charter House is named for its neighbour, Stockport's Market Hall, right next door. Harvey Street is named after William Harvey, a prize-medal saddler, harness maker and leather goods merchant.")}
  <div class="duo w"><div><p class="lead">Harvey's shop on Heaton Lane sold brief bags, Gladstone bags, travelling rugs and driving aprons. As RV's Saddlery Stores, it also kitted out Stockport's Boy Scouts with bell tents, axes and canteens.</p>
@@ -3871,8 +3878,9 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
  function scan(){document.querySelectorAll('.montage:not([data-io])').forEach(function(m){m.dataset.io=1;if(io)io.observe(m);else m.classList.add('in')})}
  new MutationObserver(function(){clearTimeout(scan.t);scan.t=setTimeout(scan,40)}).observe(document.body,{childList:true,subtree:true});scan()})();
 (function(){if(matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;
- var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('go');io.unobserve(e.target)}})},{threshold:.33});
- function scan(){document.querySelectorAll('.rb .pic:not(.v2rv)').forEach(function(p){var r=p.getBoundingClientRect();if(r.top<innerHeight*.6&&r.bottom>0){p.classList.add('v2rv','go');return}p.classList.add('v2rv');io.observe(p)})}
+ /* observe the row, not the clipped picture: a fully clipped element never counts as visible */
+ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var p=e.target.querySelector('.pic');if(p)p.classList.add('go');io.unobserve(e.target)}})},{threshold:.3});
+ function scan(){document.querySelectorAll('.rb .pic:not(.v2rv)').forEach(function(p){var row=p.closest('.rb');var r=row.getBoundingClientRect();if(r.top<innerHeight*.6&&r.bottom>0){p.classList.add('v2rv','go');return}p.classList.add('v2rv');io.observe(row)})}
  new MutationObserver(function(){clearTimeout(scan.t);scan.t=setTimeout(scan,60)}).observe(document.body,{childList:true,subtree:true});scan()})();
 </script>
 </body>
