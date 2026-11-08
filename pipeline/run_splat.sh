@@ -29,6 +29,9 @@ python3 -m pip install -q gdown pillow-heif >/tmp/pip.log 2>&1 || python3 -m pip
 # node for the web compression (a plain binary download: no root needed)
 # (the image has no curl: python downloads it)
 command -v npx >/dev/null || { python3 -c "import urllib.request;urllib.request.urlretrieve('https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz','/tmp/node.tgz')" && tar -xzf /tmp/node.tgz -C $HOME && export PATH=$HOME/node-v20.18.0-linux-x64/bin:$PATH; }
+# is the GPU usable from this container? (a community host gave "CUDA error: unknown error" to COLMAP on 8 Nov)
+CUDAOK=$(python3 -c "import torch;x=torch.ones(64,device='cuda');print('ok', torch.version.cuda, torch.cuda.get_device_name(0), float(x.sum()))" 2>&1 | tail -1)
+echo "torch: $CUDAOK"
 # iPhone clips are usually HDR (HLG): tone-map them to ordinary video colours so the scan isn't washed out (plain extract if that fails)
 TM="zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"
 
@@ -74,6 +77,10 @@ EOF
   [ $NF -lt 25 ] && { say $J "$G: skipped, too few frames for a scan"; return; }
   local MM=vocab_tree; [ $NF -le 300 ] && MM=exhaustive
   ns-process-data images --data $D/frames --output-dir $D/data --matching-method $MM --num-downscales 2 > $D/colmap.log 2>&1
+  if [ ! -f $D/data/transforms.json ] && grep -q "CUDA error" $D/colmap.log; then   # COLMAP's own CUDA can fail where torch works: do the camera solve on the CPUs
+    say $J "$G: COLMAP can't use the GPU here, solving on the CPUs instead"; rm -rf $D/data
+    ns-process-data images --data $D/frames --output-dir $D/data --matching-method $MM --num-downscales 2 --no-gpu > $D/colmap.log 2>&1
+  fi
   say $J "$G: camera solve: $(grep -iE 'colmap found poses|found poses' $D/colmap.log | tail -1 | tr -d '\r' | cut -c1-160)"
   [ -f $D/data/transforms.json ] || { cp $D/colmap.log io/splat/$J/$G/; say $J "$G: FAILED camera solve (colmap.log pushed)"; return; }
   ns-train $METHOD --data $D/data --output-dir $D/outputs --max-num-iterations $ITERS --viewer.quit-on-train-completion True \
@@ -98,7 +105,8 @@ EOF
 # ------------------------------------------------------------------ one job: a Drive folder, sorted into places
 run_job() {
   local J=$1 URL=$2 W=$WS/$1
-  mkdir -p $W/raw; say $J "pod up on $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null | head -1); $(nproc) cpus; job $J"
+  mkdir -p $W/raw; say $J "pod up on $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null | head -1); $(nproc) cpus; job $J; torch: $CUDAOK"
+  case "$CUDAOK" in ok*) ;; *) say $J "FAILED: the GPU isn't usable from this container (needs another host)"; return ;; esac
   python3 -m gdown -q --folder "$URL" -O $W/raw --remaining-ok > $W/gdown.log 2>&1
   local NV=$(find $W/raw -type f \( -iname '*.mov' -o -iname '*.mp4' -o -iname '*.m4v' \) | wc -l) NP=$(find $W/raw -type f \( -iname '*.heic' -o -iname '*.jpg' -o -iname '*.jpeg' \) | wc -l)
   [ $((NV + NP)) -gt 0 ] || { tail -20 $W/gdown.log > io/splat/$J/gdown_tail.log; say $J "FAILED: could not download the Drive folder (shared as anyone with the link?)"; touch io/splat/$J/DONE; push "splat $J: gave up"; return; }
@@ -157,7 +165,7 @@ EOF
   say $J "places: $(python3 -c "import json;d=json.load(open('$W/groups.json'));print('; '.join('%s IMG_%s %d clips %d stills @ %s,%s' % (k, v['imgs'], v['clips'], v['stills'], round(v['lat'], 5) if v['lat'] else '?', round(v['lon'], 5) if v['lon'] else '?') for k, v in d.items()))")"
   for G in $(python3 -c "import json;print(' '.join(json.load(open('$W/groups.json'))))"); do run_group $J $G; done
   touch io/splat/$J/DONE; say $J "ALL DONE"
-  rm -rf $W/raw   # keep the pod disk free for the next job
+  grep -q "FAILED" io/splat/$J/progress.log || rm -rf $W/raw   # keep the pod disk free for the next job (the clips are kept if anything failed)
 }
 
 [ -n "${DRIVE_URL:-}" ] && [ ! -f io/splat/${JOB:-scan}/DONE ] && run_job "${JOB:-scan}" "$DRIVE_URL"
