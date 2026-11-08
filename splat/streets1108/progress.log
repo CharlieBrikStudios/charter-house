@@ -43,3 +43,4 @@
 2026-11-08T14:13:43Z g1: ... 14570 (48.57%)      46.808 ms            12 m, 2 s            31.44 M                                [0m
 2026-11-08T14:23:44Z g1: ... 26430 (88.10%)      52.191 ms            3 m, 6 s             27.77 M                                [0m
 2026-11-08T14:27:44Z g1: trained (30000 steps), exported 277M
+2026-11-08T15:43:33Z pod up on NVIDIA RTX A5000, 24564 MiB; 96 cpus; job streets1108; torch: ok 11.8 NVIDIA RTX A5000 64.0
