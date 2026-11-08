@@ -9,30 +9,30 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794167037';
-import { buildUBL } from './ublbuild.js?v=1794167037';
-import { buildUBLFitout } from './ublfit.js?v=1794167037';
-import { UBL_LEVELS } from './ubl_data.js?v=1794167037';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794167037';
-import { buildOSL } from './oslbuild.js?v=1794167037';
-import { buildOSLFitout } from './oslfit.js?v=1794167037';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794167037';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794167037';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1794167037';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794167037';
-import { buildFar, hazeUniforms } from './far.js?v=1794167037';
-import { buildRailway } from './railway.js?v=1794167037';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794167037';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794169102';
+import { buildUBL } from './ublbuild.js?v=1794169102';
+import { buildUBLFitout } from './ublfit.js?v=1794169102';
+import { UBL_LEVELS } from './ubl_data.js?v=1794169102';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794169102';
+import { buildOSL } from './oslbuild.js?v=1794169102';
+import { buildOSLFitout } from './oslfit.js?v=1794169102';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794169102';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794169102';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1794169102';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794169102';
+import { buildFar, hazeUniforms } from './far.js?v=1794169102';
+import { buildRailway } from './railway.js?v=1794169102';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794169102';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1794167037';
-import { Interior } from './interior.js?v=1794167037';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794167037';
-import { buildPHFitout } from './phfit.js?v=1794167037';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794167037';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794167037';
-import { createTour } from './tour.js?v=1794167037';
-import { buildCrowd } from './crowd.js?v=1794167037';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794167037';
+import { Forest, windUniforms } from './trees.js?v=1794169102';
+import { Interior } from './interior.js?v=1794169102';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794169102';
+import { buildPHFitout } from './phfit.js?v=1794169102';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794169102';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794169102';
+import { createTour } from './tour.js?v=1794169102';
+import { buildCrowd } from './crowd.js?v=1794169102';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794169102';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -2058,8 +2058,8 @@ function buildSpots() {
   }
   // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
   for (const p of PANO_INDEX) {
-    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794167037`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
-    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794167037`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794169102`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
+    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794169102`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner", "brewery"], "brewery": ["harvey"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2326,11 +2326,65 @@ function closeSkTour() {
   stillFrames = Math.max(stillFrames, 30);
 }
 addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.type === 'brik-tour-close') closeSkTour(); });
+// ------------------------------------------------------------------ 3D street scans: photo-real Gaussian-splat scans of the Underbank
+// trained from Charlie's phone footage (assets/scans/index.json lists them, each with the editions it belongs to). Charter House
+// is the hub with every place; The Print House and Underbank Lofts editions show their own. Each opens scan.html full screen over
+// the 3D, which pauses underneath, like the Stockport tour.
+const EDITION = IS_PH ? 'ph' : IS_UBL ? 'ubl' : IS_OSL ? 'osl' : 'ch';
+const EDITION_NAME = { ch: 'Charter House', ph: 'The Print House', ubl: 'Underbank Lofts', osl: 'Oldham Street Lofts' }[EDITION];
+let SCANS = [], SCAN_OPEN = false;
+const SCAN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg>';
+function scanMenu(show) {
+  let m = document.getElementById('scanmenu'); const b = $('#btn-scans');
+  if (!show) { if (m) m.hidden = true; b.setAttribute('aria-expanded', 'false'); return; }
+  if (!m) {
+    m = document.createElement('div'); m.id = 'scanmenu'; m.className = 'scanmenu'; m.setAttribute('role', 'menu'); m.hidden = true;
+    m.innerHTML = '<div class="label">3D scans · filmed on the street</div>' + SCANS.map((sc) => `<button role="menuitem" data-scan="${sc.id}">${SCAN_ICON}<b>${sc.name}</b><span>${sc.sub || ''}</span></button>`).join('');
+    m.addEventListener('click', (e) => { const x = e.target.closest('[data-scan]'); if (x) { scanMenu(false); openScan(x.dataset.scan); } });
+    document.body.appendChild(m);
+  }
+  const r = b.getBoundingClientRect(); m.hidden = false;
+  m.style.top = Math.round(r.bottom + 8) + 'px';
+  m.style.left = Math.round(Math.max(16, Math.min(innerWidth - m.offsetWidth - 16, r.right - m.offsetWidth))) + 'px';
+  b.setAttribute('aria-expanded', 'true');
+  setTimeout(() => { try { m.querySelector('button').focus(); } catch (e) {} }, 30);
+}
+function openScan(id) {
+  const sc = SCANS.find((x) => x.id === id); if (!sc) return;
+  let ov = document.getElementById('scanov');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'scanov'; ov.hidden = true; ov.innerHTML = '<iframe title="3D street scan" allow="fullscreen"></iframe>'; document.body.appendChild(ov); }
+  if (filmOn) endFilm(true);
+  ov.querySelector('iframe').src = `scan.html?s=${encodeURIComponent(id)}&from=${encodeURIComponent(EDITION_NAME)}`;
+  SCAN_OPEN = true; ov.hidden = false; requestAnimationFrame(() => ov.classList.add('on'));
+  setTimeout(() => { try { ov.querySelector('iframe').focus(); } catch (e) {} }, 300);
+  setHash('scan-' + id);
+}
+function closeScan() {
+  const ov = document.getElementById('scanov'); if (!ov || !SCAN_OPEN) return;
+  SCAN_OPEN = false; ov.classList.remove('on');
+  setTimeout(() => { if (!SCAN_OPEN) { ov.hidden = true; ov.querySelector('iframe').src = 'about:blank'; } }, 500);   // (frees the splat's GPU memory)
+  if (location.hash.startsWith('#scan-')) setHash('');
+  stillFrames = Math.max(stillFrames, 30);
+}
+addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.type === 'brik-scan-close') closeScan(); });
+addEventListener('pointerdown', (e) => { const m = document.getElementById('scanmenu'); if (m && !m.hidden && !m.contains(e.target) && !e.target.closest('#btn-scans')) scanMenu(false); });
+addEventListener('keydown', (e) => { const m = document.getElementById('scanmenu'); if (e.key === 'Escape' && m && !m.hidden) { scanMenu(false); $('#btn-scans').focus(); } });
+if (!START_AREA) fetch('assets/scans/index.json').then((r) => (r.ok ? r.json() : [])).then((list) => {
+  // a scan marked "preview" shows only with ?scans=1 on the address (for Charlie to look over before it goes public)
+  const PREVIEW_SCANS = /[?&]scans=1\b/.test(location.search);
+  SCANS = (list || []).filter((sc) => (!sc.editions || sc.editions.includes(EDITION)) && (!sc.preview || PREVIEW_SCANS));
+  SCANS.sort((a, b) => (b.home === EDITION) - (a.home === EDITION));   // this edition's own place first
+  if (!SCANS.length) return;
+  const b = $('#btn-scans'); b.hidden = false;
+  b.onclick = () => { const m = document.getElementById('scanmenu'); if (SCANS.length === 1) openScan(SCANS[0].id); else scanMenu(!m || m.hidden); };
+  if (SCANS.length === 1) { b.querySelector('.lg').textContent = '3D street scan'; b.querySelector('.sm').textContent = '3D scan'; }
+  const h = location.hash.match(/^#scan-([a-z0-9_-]+)$/); if (h) openScan(h[1]);
+}).catch(() => {});
 const SK_ON = !IS_PH && !IS_OSL && !IS_UBL && !START_AREA;
 if (SK_ON) { $('#btn-sk360').onclick = openSkTour; if (location.hash === '#stockport') openSkTour(); } else $('#btn-sk360').hidden = true;
 function loop() {
   requestAnimationFrame(loop);
-  if (SK_OPEN) return;   // the 360° tour is over the 3D: save the GPU
+  if (SK_OPEN || SCAN_OPEN) return;   // the 360° tour or a 3D scan is over the 3D: save the GPU
   if (STILL) { if (stillFrames <= 0) return; stillFrames--; }
   const rawDt = clock.getDelta();
   const dt = Math.min(0.05, rawDt);
@@ -2379,7 +2433,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1794167037').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1794169102').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
