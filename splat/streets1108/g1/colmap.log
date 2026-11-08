@@ -1,0 +1,8 @@
+[09:19:30] 🎉 Done copying images with prefix 'frame_'.                                        process_data_utils.py:348
+──────────────────────────────────────────────  💀 💀 💀 ERROR 💀 💀 💀  ───────────────────────────────────────────────
+Error running command: colmap feature_extractor --database_path /workspace/streets1108/g1/data/colmap/database.db 
+--image_path /workspace/streets1108/g1/data/images --ImageReader.single_camera 1 --ImageReader.camera_model OPENCV 
+--SiftExtraction.use_gpu 1
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+E1108 09:19:30.398901  5332 cudacc.cc:59] CUDA error at /colmap/src/colmap/util/cuda.cc:57 - unknown error
+
