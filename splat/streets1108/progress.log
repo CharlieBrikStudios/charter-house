@@ -20,3 +20,4 @@
 2026-11-08T12:05:14Z g1: 305 frames (4 stills) in 7 folders
 2026-11-08T12:05:15Z g1: camera solve (exhaustive matching, 7 threads)
 2026-11-08T12:15:15Z g1: ...   16  2.698175e+04    2.17e+00    2.06e+04   8.31e+00   7.45e-01  2.43e+05        1    9.34e-02    1.72e+00
+2026-11-08T12:25:17Z g1: ... I1108 12:25:16.852288  6163 incremental_mapper.cc:43] => Added observations: 0
