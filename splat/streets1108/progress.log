@@ -66,3 +66,4 @@
 2026-11-08T17:03:00Z g1: ... Step (% Done)       Train Iter (time)    ETA (time)           Train Rays / Sec                       [0m
 2026-11-08T17:13:02Z g1: ... 28910 (96.37%)      43.624 ms            47 s, 550.012 ms     33.53 M                                [0m
 2026-11-08T17:14:26Z g1: trained (30000 steps), exported 136M
+2026-11-08T17:14:36Z g1: DONE g1.sog 6.8M
