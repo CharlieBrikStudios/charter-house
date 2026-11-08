@@ -5,18 +5,15 @@ duplicate 'how it works' removed, Keep in touch moved below Heritage."""
 
 def apply(s, rep):
     # ---------- developer and architect: completed-scheme photos, awards
-    s = rep(s, '<li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul></div>',
-            '<li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul></div>', label="hall keys")
-    s = rep(s, '<p class="thcap">An Ollier Smurthwaite scheme</p></div></div></section>`;',
-            '<p class="thcap">An Ollier Smurthwaite scheme</p></div>'
-            '<div class="awards"><div class="cap">Awards and recognition</div><ul>'
-            '<li><b>Housing Design Awards</b><span>Project Winner, Climate Innovation District. Ollier Smurthwaite</span></li>'
-            '<li><b>RIBA Regional Award</b><span>and Small Project Award, Devonshire Road. Ollier Smurthwaite</span></li>'
-            '<li><b>House Builder Awards</b><span>Winner, Roof Gardens. Ollier Smurthwaite</span></li>'
-            '<li><b>Manchester Society of Architects</b><span>Award winner 2023, The George, Stockport. Ollier Smurthwaite</span></li>'
-            '<li><b>Award-winning restoration</b><span>Grade II-listed Bank Chambers, now ProFolk. Hall &amp; Co</span></li>'
-            '</ul></div>'
-            '</div></section>`;', label="awards strip")
+    import os, json
+    HERE = os.path.dirname(os.path.abspath(__file__))
+    site = json.load(open(f"{HERE}/site.json", encoding="utf-8"))
+    t0 = s.find('<div class="team2">'); h2 = s.find('<div class="teamhero">', s.find('<div class="teamhero">', t0) + 10)
+    end = s.find('</div></section>`;', h2)
+    assert 0 < t0 < h2 < end, (t0, h2, end)
+    aw = ('<div class="awards"><div class="cap">Awards and recognition</div><ul>'
+          + "".join(f'<li><b>{t}</b><span>{d}</span></li>' for t, d in site["awards"]) + '</ul></div>')
+    s = s[:end] + aw + s[end:]
 
     # ---------- BRIK banner: two clear halves
     s = rep(s, '<div class="cap bbsub">Who\'s behind BRIK</div><div class="bbtrack">',
@@ -30,8 +27,10 @@ def apply(s, rep):
     s = s[:a] + s[z:]
     fc = (fc.strip()
           .replace('<div class="sec"><div class="cap"><span>Future capital growth</span></div><h3>', '<div class="fcast"><div class="cap">Future capital growth</div><h3 class="big-h">', 1))
-    lv = '<section class="sec"><div class="cap"><span>The long-term view</span><span>Worked example from our ROI breakdown: one bed at £189,000</span></div>'
-    s = rep(s, lv, '<section class="sec lvsec"><div class="cap"><span>The long-term view</span><span>Worked example from our ROI breakdown: one bed at £189,000</span></div>' + fc, label="forecast into long view")
+    import re
+    m = re.search(r'<section class="sec"><div class="cap"><span>The long-term view</span><span>[^<]*</span></div>', s)
+    assert m, "long view"
+    s = s[:m.start()] + m.group(0).replace('<section class="sec">', '<section class="sec lvsec">', 1) + fc + s[m.end():]
 
     # ---------- Next steps: the 'how it works' grid repeats the process above; keep the hands-off banner
     a = s.find('function howBlocks(){return `<section class="sec"><div class="cap"><span>How it works</span><span>What you\'re buying</span></div><div class="buy4">')

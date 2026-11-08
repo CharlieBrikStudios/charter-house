@@ -67,6 +67,8 @@ def hpi_chart():
             f'<p class="src">Source: HM Land Registry, UK House Price Index. {lab(s_m)} to {lab(e_m)}.</p></figure>')
 
 def build(src, dst, prefix):
+    import json
+    site = json.load(open(f"{HERE}/site.json", encoding="utf-8"))
     s = open(src, encoding="utf-8").read()
     P = prefix + "assets/img/"
     F = prefix + "assets/fonts/"
@@ -112,8 +114,9 @@ def build(src, dst, prefix):
     s = rep(s, 'if(d.beds){S.beds=+d.beds;renderMain();return}', 'if(d.beds){S.beds=+d.beds;rerender("returns");return}', label="beds")
     s = rep(s, 'if(d.pstep!==undefined){S.payStep=+d.pstep;renderMain();return}', 'if(d.pstep!==undefined){S.payStep=+d.pstep;rerender("next");return}', label="pstep")
     # 4b. James's BRIK-down: one continuous quote (was a pull quote plus a separate quoted paragraph)
-    s = rep(s, '<blockquote>“With the previous Hall &amp; Co scheme next door, St Marys Gate, selling out and fully tenanting at rents 25 to 40% above forecast, the case for the Underbanks is no longer theoretical. Charter House is the chance to act on it.”</blockquote>\n  <div class="body" style="margin-top:14px"><p>“What we love about this site is how unapologetically it leans into the heritage. Conservation-led design, period brick detailing, the kind of craftsmanship that gets harder to find every year. Charter House is being built to outlast trends, not follow them.”</p></div>',
-            '<blockquote class="v2q"><p>“With the previous Hall &amp; Co scheme next door, St Marys Gate, selling out and fully tenanting at rents 25 to 40% above forecast, the case for the Underbanks is no longer theoretical. Charter House is the chance to act on it.</p><p>What we love about this site is how unapologetically it leans into the heritage. Conservation-led design, period brick detailing, the kind of craftsmanship that gets harder to find every year. Charter House is being built to outlast trends, not follow them.”</p></blockquote>', label="james quote")
+    s, k = re.subn(r'<blockquote>“([^<]*?)”</blockquote>\n  <div class="body" style="margin-top:14px"><p>“([^<]*?)”</p></div>',
+                   lambda m: f'<blockquote class="v2q"><p>“{m.group(1)}</p><p>{m.group(2)}”</p></blockquote>', s, count=1)
+    if k != 1 and not os.environ.get("SOFT"): sys.exit("PATCH NOT FOUND: james quote")
     # 4c. Stockport price chart: native SVG from HM Land Registry UK HPI (replaces the ONS screenshot)
     s = rep(s, '${IMG("d_graph","Average price, Stockport, 2020 to 2026","pic tall2 graph")}', hpi_chart(), label="hpi chart")
     # 4d. payment timeline: all three stages rendered, pinned while you scroll through them
@@ -124,8 +127,8 @@ def build(src, dst, prefix):
     s = s[:i0] + PAYSTACK + '\n   </div></div>' + s[i1:]
     s = rep(s, 'Please take your own tax and legal advice.</p>\n   </div></section>', 'Please take your own tax and legal advice.</p>\n   </section>', label="ptl close")
     # 4e. essentials panel: the scout mark instead of the building silhouette
-    s = rep(s, '<div class="esspanel"><svg class="solid" viewBox="0 0 400 220" aria-hidden="true"><path d="M0 220V58L34 12L68 58L102 12L136 58L170 12L204 58V20H400V220H250V170A22 22 0 0 0 206 170V220Z"/></svg>',
-            '<div class="esspanel"><span class="mask plogo lg7 essmark" aria-hidden="true"></span>', label="essentials mark")
+    s, k = re.subn(r'<div class="esspanel"><svg class="solid"[^>]*>.*?</svg>', '<div class="esspanel"><span class="mask plogo lg7 essmark" aria-hidden="true"></span>', s, count=1, flags=re.S)
+    if k != 1 and not os.environ.get("SOFT"): sys.exit("PATCH NOT FOUND: essentials mark")
     # 4f. gallery moves to the very end of the report
     s = rep(s, r'building:()=>CH.building().replace(/<\/section>$/,"")+galleryTab()+"</section>"', 'building:CH.building', label="gallery out of building")
     s = rep(s, '+`</div>`).join("");\n  $("#chg").style.display="";',
@@ -152,10 +155,12 @@ def build(src, dst, prefix):
     # 4i. sticky bar button
     s = rep(s, '<button class="b cta-s" id="ctaRes">Book a video call</button>', '<button class="b cta-s" id="ctaRes">Book a 3D virtual tour</button>', label="cta label")
     # 4j. developer and architect: one hero image each instead of a three-image grid
-    s = rep(s, '<div class="pics3">${IMG("street","Hall &amp; Co in the Underbanks")}${IMG("stmarys","St Marys Gate, next door, by Hall &amp; Co")}${IMG("rear","Charter House, CGI")}</div>',
-            '<div class="teamhero">${IMG("stmarys","St Marys Gate, next door, by Hall &amp; Co","thero")}<p class="thcap">St Marys Gate, next door. Hall &amp; Co, completed 2025</p></div>', label="hall hero")
-    s = rep(s, '<div class="pics3">${IMG("arch1","Ollier Smurthwaite project")}${IMG("arch2","Ollier Smurthwaite interior")}${IMG("arch3","Ollier Smurthwaite project")}</div>',
-            '<div class="teamhero">${IMG("arch1","Ollier Smurthwaite project","thero")}<p class="thcap">An Ollier Smurthwaite scheme</p></div>', label="architect hero")
+    t0 = s.find('<div class="team2">')
+    for key in ("dev_hero", "arch_hero"):
+        g0 = s.find('<div class="pics3">', t0); g1 = s.find('</div>', g0) + len('</div>')
+        assert t0 > 0 and g0 > t0, key
+        img, alt, cap = site[key]
+        s = s[:g0] + f'<div class="teamhero">${{IMG("{img}","{alt}","thero")}}<p class="thcap">{cap}</p></div>' + s[g1:]
     # 4k. Location: Why the Underbanks first, then map, on foot; tenant profile moves to Returns (rental market)
     a = s.find(' <div class="sec"><div class="cap"><span>Why the Underbanks</span></div>')
     c = s.find(' <div class="sec"><div class="cap"><span>Current tenant profile</span></div>')
@@ -176,7 +181,7 @@ def build(src, dst, prefix):
     s = s[:g] + ten.strip() + '\n  ' + s[g:]
     # 4l. BRIK in the Underbanks as a green stitched banner
     s = rep(s, ' <div class="sec"><div class="cap"><span>BRIK in the Underbanks</span><span>What we\'ve built on these streets</span></div>',
-            ' <div class="sec brikband"><div class="bbhead"><span class="mask plogo lg7 bbscout" aria-hidden="true"></span><div><div class="cap">Our involvement</div><h3 class="bbh">Rooted in the Underbanks.</h3><p class="bbp">We\'ve gone deep on this neighbourhood. We know the Underbanks street by street, we\'ve built businesses here ourselves, and we have the network of developers, investors and tenants that comes with that. Charter House is launching exclusively through BRIK Studios: our relationship with Hall &amp; Co goes back several years.</p></div></div><div class="cap bbsub">What we\'ve built on these streets</div>', label="brikband")
+            ' <div class="sec brikband"><div class="bbhead"><span class="mask plogo lg7 bbscout" aria-hidden="true"></span><div><div class="cap">Our involvement</div><h3 class="bbh">Rooted in the Underbanks.</h3><p class="bbp">We\'ve gone deep on this neighbourhood. We know the Underbanks street by street, we\'ve built businesses here ourselves, and we have the network of developers, investors and tenants that comes with that. ' + site["brik_exclusive"] + '</p></div></div><div class="cap bbsub">What we\'ve built on these streets</div>', label="brikband")
     # 5. data fixes
     s = rep(s, '${pct(v*12/EX.price)}</text>', '${pct(v*12/EX.price*100)}</text>', label="rent yield bug")
     s = rep(s, '<th>Price growth forecast</th><th>2025</th><th>2026</th><th>2027</th><th>2028</th><th>2029</th><th>5 years to 2029</th>',

@@ -2,5 +2,39 @@
   "title": "Charter House Investment Report | BRIK Studios",
   "description": "Private Pre-Launch | Boutique Heritage Apartments in Stockport's Underbanks",
   "url": "https://charliebrikstudios.github.io/charter-house/",
-  "og_source": "hero"
+  "og_source": "hero",
+  "dev_hero": [
+    "stmarys",
+    "St Marys Gate, next door, by Hall &amp; Co",
+    "St Marys Gate, next door. Hall &amp; Co, completed 2025"
+  ],
+  "arch_hero": [
+    "arch1",
+    "Ollier Smurthwaite project",
+    "An Ollier Smurthwaite scheme"
+  ],
+  "brik_exclusive": "Charter House is launching exclusively through BRIK Studios: our relationship with Hall &amp; Co goes back several years.",
+  "early_html": "<div class=\"earlynote\"><span class=\"pl\"><i></i>Private pre-launch</span><p><b>You're early.</b> Charter House isn't on the open market yet.</p></div>",
+  "awards": [
+    [
+      "Housing Design Awards",
+      "Project Winner, Climate Innovation District. Ollier Smurthwaite"
+    ],
+    [
+      "RIBA Regional Award",
+      "and Small Project Award, Devonshire Road. Ollier Smurthwaite"
+    ],
+    [
+      "House Builder Awards",
+      "Winner, Roof Gardens. Ollier Smurthwaite"
+    ],
+    [
+      "Manchester Society of Architects",
+      "Award winner 2023, The George, Stockport. Ollier Smurthwaite"
+    ],
+    [
+      "Award-winning restoration",
+      "Grade II-listed Bank Chambers, now ProFolk. Hall &amp; Co"
+    ]
+  ]
 }
