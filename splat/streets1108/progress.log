@@ -12,3 +12,4 @@
 2026-11-08T11:30:48Z g1: ... [11:11:35] 🎉 Done matching COLMAP features.                                                         colmap_utils.py:151
 2026-11-08T11:40:50Z g1: ... [11:11:35] 🎉 Done matching COLMAP features.                                                         colmap_utils.py:151
 2026-11-08T11:50:52Z g1: ... [11:11:35] 🎉 Done matching COLMAP features.                                                         colmap_utils.py:151
+2026-11-08T11:55:57Z g1: camera solve:            COLMAP only found poses for 21.02% of the images. This is low.            images_to_nerfstudio_dataset.py:138
