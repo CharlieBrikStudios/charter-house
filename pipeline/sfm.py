@@ -61,13 +61,41 @@ if no_prior and os.environ.get('SFM_CALIB', '0') == '1':   # (off by default: on
 
 def biggest(recs):
     recs = list((recs or {}).values()); return max(recs, key=lambda r: r.num_reg_images()) if recs else None
-gp = pycolmap.GlobalPipelineOptions(); gp.num_threads = NT
-out_g = os.path.join(work, 'global'); os.makedirs(out_g, exist_ok=True)
-try:
-    rec = biggest(pycolmap.global_mapping(db, img_dir, out_g, options=gp)); how = 'global'
-except Exception as e:
-    log('global mapping failed:', e); rec, how = None, 'global failed'
-log(how, rec.num_reg_images() if rec else 0)
+def lens_check(rec):   # frames on video cameras whose solved focal length is no phone lens (f / long side outside 0.3-1.4)
+    bad, ratios = 0, {}
+    for iid in rec.reg_image_ids():
+        im = rec.images[iid]
+        if im.name.startswith('p_'): continue
+        cam = rec.cameras[im.camera_id]; f = float(np.mean(cam.params[:2])) if cam.model_name in ('OPENCV', 'PINHOLE') else float(cam.params[0])
+        r = f / max(cam.width, cam.height); ratios[im.name.split('/')[0]] = round(r, 2)
+        if not 0.3 <= r <= 1.4: bad += 1
+    return bad, ratios
+# 8 Nov: with no lens prior the global solve gave one Print House clip a 31-degree lens (f = 1.8 x the long side) and the trained
+# scan came out streaky. So it is solved twice from the same matches: as is, and with every video clip that has no recorded lens
+# set to the iPhone main camera (f = 0.82 x the long side, as the first incremental solve found for most clips) marked as a prior;
+# the better one (frames placed, minus frames on an impossible lens) is kept.
+import shutil
+variants = [('free', None)] + ([('main', 0.82)] if no_prior else [])
+best = None
+for vname, fac in variants:
+    vdb = os.path.join(work, 'db_%s.db' % vname); shutil.copy(db, vdb)
+    if fac:
+        d = pycolmap.Database.open(vdb); vids = {im.camera_id for im in d.read_all_images() if not im.name.startswith('p_') and im.name.split('/')[0] in no_prior}
+        for c in d.read_all_cameras():
+            if c.camera_id not in vids: continue
+            L = max(c.width, c.height); p = list(c.params); p[0] = fac * L
+            if c.model_name in ('OPENCV', 'PINHOLE'): p[1] = fac * L
+            c.params = p; c.has_prior_focal_length = True; d.update_camera(c)
+        d.close()
+    gp = pycolmap.GlobalPipelineOptions(); gp.num_threads = NT
+    out_g = os.path.join(work, 'global_' + vname); os.makedirs(out_g, exist_ok=True)
+    try: r = biggest(pycolmap.global_mapping(vdb, img_dir, out_g, options=gp))
+    except Exception as e: log('global mapping (%s) failed:' % vname, e); r = None
+    if r is None: continue
+    bad, ratios = lens_check(r); score = r.num_reg_images() - 2 * bad
+    log('global %s: %d placed, %d on impossible lenses, reprojection %.2f px, f/long by clip %s' % (vname, r.num_reg_images(), bad, r.compute_mean_reprojection_error(), ratios))
+    if best is None or score > best[0]: best = (score, r, 'global ' + vname)
+rec, how = (best[1], best[2]) if best else (None, 'global failed')
 if rec is None or rec.num_reg_images() < 0.5 * N:
     ip = pycolmap.IncrementalPipelineOptions(); ip.num_threads = NT; ip.max_runtime_seconds = 2400; ip.ba_global_function_tolerance = 1e-6
     out_i = os.path.join(work, 'incremental'); os.makedirs(out_i, exist_ok=True)
