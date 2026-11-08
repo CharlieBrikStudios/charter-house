@@ -30,3 +30,4 @@
 2026-11-08T13:24:58Z g1: trained (30000 steps), exported 358M
 2026-11-08T13:25:18Z g1: DONE g1.compressed.ply 89M
 2026-11-08T13:27:33Z g2: 359 frames (8 stills) in 5 folders
+2026-11-08T13:27:34Z g2: camera solve (exhaustive matching, 7 threads)
