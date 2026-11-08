@@ -31,3 +31,4 @@
 2026-11-08T13:25:18Z g1: DONE g1.compressed.ply 89M
 2026-11-08T13:27:33Z g2: 359 frames (8 stills) in 5 folders
 2026-11-08T13:27:34Z g2: camera solve (exhaustive matching, 7 threads)
+2026-11-08T13:37:34Z g2: ... I1108 13:37:22.767779 12933 feature_matching.cc:231] Matching block [7/8, 5/8]
