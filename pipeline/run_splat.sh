@@ -21,7 +21,8 @@ push() { (cd io && git add -A splat && git commit -qm "$1" && git pull -q --reba
 say() { local J=$1; shift; mkdir -p io/splat/$J; echo "$(date -u +%FT%TZ) $*" | tee -a io/splat/$J/progress.log; push "splat $J: $*"; }
 pip install -q gdown pillow-heif >/dev/null 2>&1 || pip install -q --user gdown pillow-heif >/dev/null 2>&1
 # node for the web compression (a plain binary download: no root needed)
-command -v npx >/dev/null || { curl -fsSL https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.xz | tar -xJ -C $HOME && export PATH=$HOME/node-v20.18.0-linux-x64/bin:$PATH; }
+# (the image has no curl: python downloads it)
+command -v npx >/dev/null || { python3 -c "import urllib.request;urllib.request.urlretrieve('https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz','/tmp/node.tgz')" && tar -xzf /tmp/node.tgz -C $HOME && export PATH=$HOME/node-v20.18.0-linux-x64/bin:$PATH; }
 # iPhone clips are usually HDR (HLG): tone-map them to ordinary video colours so the scan isn't washed out (plain extract if that fails)
 TM="zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"
 
