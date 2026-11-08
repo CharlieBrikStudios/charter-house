@@ -8,3 +8,4 @@
 2026-11-08T09:21:18Z g2: camera solve: 
 2026-11-08T09:21:19Z g2: FAILED camera solve (colmap.log pushed)
 2026-11-08T09:21:24Z g3: 9 frames (3 stills)
+2026-11-08T09:21:26Z g3: skipped, too few frames for a scan
