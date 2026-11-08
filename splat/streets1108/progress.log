@@ -39,3 +39,4 @@
 2026-11-08T13:43:39Z g1: camera solve (global, 7 threads; lenses: )
 2026-11-08T13:53:39Z g1: ... I20261108 13:53:32.243924 135387741681216 pairing.cc:214] Processing block [5/7, 6/7]
 2026-11-08T14:03:19Z g1: camera solve: SFM global: 295 of 305 frames placed (97%), 53397 points, 1178 s; by folder c01:31/31 c02:42/42 c03:23/33 c04:34/34 c05:128/128 c06:33/33 p_1200x1600:4/4
+2026-11-08T14:03:41Z g1: ... Disabled comet/tensorboard/wandb event writers
