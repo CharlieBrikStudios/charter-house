@@ -97,3 +97,6 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
    if(window.Hls)return go();var sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';sc.onload=go;sc.onerror=function(){close();open(src,'_blank','noopener')};document.head.appendChild(sc)}
  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-film]');if(!b)return;e.preventDefault();play(b.dataset.film)});
 })();
+(function(){var io='IntersectionObserver' in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.25}):null;
+ function scan(){document.querySelectorAll('.pennants:not([data-io])').forEach(function(m){m.dataset.io=1;if(io)io.observe(m);else m.classList.add('in')})}
+ new MutationObserver(function(){clearTimeout(scan.t);scan.t=setTimeout(scan,50)}).observe(document.body,{childList:true,subtree:true});scan()})();

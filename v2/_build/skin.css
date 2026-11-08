@@ -874,3 +874,26 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 .tparr:disabled{opacity:.25!important}
 @media (max-width:760px){.tparr{display:grid!important}.tpnav{justify-content:center}}
 #view .brikband .bbh{text-transform:none!important;letter-spacing:-.02em!important}
+
+/* ================= pass 13: award pennants, like hanging banners over a photo ================= */
+.team2 .awards.pennants{position:relative;grid-column:1/-1;text-align:left;margin:20px 0 10px;padding:clamp(26px,3.4vw,44px) clamp(18px,3vw,40px) clamp(30px,4vw,52px);border:0!important;overflow:hidden;
+ background:linear-gradient(180deg,rgba(14,12,10,.55),rgba(14,12,10,.35) 40%,rgba(14,12,10,.7)),var(--pbg) center/cover no-repeat}
+.pennants .pnhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 24px;margin-bottom:clamp(20px,2.6vw,32px)}
+#view .pennants .pnhead .cap{color:#EADFCB!important;margin:0!important;border:0!important;padding:0!important}
+#view .pennants .pnh{font:600 clamp(24px,2.6vw,36px)/1.1 "Besley",Georgia,serif!important;color:#fff!important;margin:0!important;text-transform:none!important}
+.pennants .pnrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:clamp(10px,1.4vw,18px);list-style:none;margin:0;padding:0}
+.pennant{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;min-height:clamp(300px,26vw,360px);padding:30px 16px 54px;color:#fff;
+ background:rgba(20,18,16,.82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);clip-path:polygon(0 0,100% 0,100% 100%,50% 91%,0 100%);
+ transform-origin:50% 0;opacity:0;transform:translateY(-36px);transition:opacity .7s ease calc(var(--i)*.12s),transform .9s cubic-bezier(.2,.9,.25,1.15) calc(var(--i)*.12s)}
+.pennants.in .pennant{opacity:1;transform:none}
+.pennants.in .pennant:hover{transform:rotate(-1.2deg)}
+.penline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.penline polygon{fill:none;stroke:rgba(255,255,255,.75);stroke-width:1.2}
+.pnbody{font:600 clamp(14px,1.15vw,16px)/1.15 var(--wide);letter-spacing:.06em;text-transform:uppercase;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.35);width:100%}
+.pnstat{font:600 10px/1.2 var(--wide);letter-spacing:.2em;text-transform:uppercase;color:#E8C9A6}
+.pncat{font:500 12.5px/1.35 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:#F3EDE4}
+.pnproj{font:500 14px/1.35 "Besley",Georgia,serif;color:#fff}
+.pnyear{margin-top:auto;font:700 clamp(20px,1.8vw,24px)/1 var(--sans);letter-spacing:.04em;color:#fff}
+#view .pennants .pnnote{margin:24px 0 0;color:#EFE8DE!important;font-size:14px}
+@media (max-width:760px){.pennants .pnrow{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:none}.pennants .pnrow::-webkit-scrollbar{display:none}.pennant{flex:0 0 58%;scroll-snap-align:start}}
+@media (prefers-reduced-motion:reduce){.pennant{opacity:1;transform:none}}

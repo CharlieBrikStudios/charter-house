@@ -2900,6 +2900,29 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 @media (max-width:760px){.tparr{display:grid!important}.tpnav{justify-content:center}}
 #view .brikband .bbh{text-transform:none!important;letter-spacing:-.02em!important}
 
+/* ================= pass 13: award pennants, like hanging banners over a photo ================= */
+.team2 .awards.pennants{position:relative;grid-column:1/-1;text-align:left;margin:20px 0 10px;padding:clamp(26px,3.4vw,44px) clamp(18px,3vw,40px) clamp(30px,4vw,52px);border:0!important;overflow:hidden;
+ background:linear-gradient(180deg,rgba(14,12,10,.55),rgba(14,12,10,.35) 40%,rgba(14,12,10,.7)),var(--pbg) center/cover no-repeat}
+.pennants .pnhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 24px;margin-bottom:clamp(20px,2.6vw,32px)}
+#view .pennants .pnhead .cap{color:#EADFCB!important;margin:0!important;border:0!important;padding:0!important}
+#view .pennants .pnh{font:600 clamp(24px,2.6vw,36px)/1.1 "Besley",Georgia,serif!important;color:#fff!important;margin:0!important;text-transform:none!important}
+.pennants .pnrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:clamp(10px,1.4vw,18px);list-style:none;margin:0;padding:0}
+.pennant{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;min-height:clamp(300px,26vw,360px);padding:30px 16px 54px;color:#fff;
+ background:rgba(20,18,16,.82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);clip-path:polygon(0 0,100% 0,100% 100%,50% 91%,0 100%);
+ transform-origin:50% 0;opacity:0;transform:translateY(-36px);transition:opacity .7s ease calc(var(--i)*.12s),transform .9s cubic-bezier(.2,.9,.25,1.15) calc(var(--i)*.12s)}
+.pennants.in .pennant{opacity:1;transform:none}
+.pennants.in .pennant:hover{transform:rotate(-1.2deg)}
+.penline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.penline polygon{fill:none;stroke:rgba(255,255,255,.75);stroke-width:1.2}
+.pnbody{font:600 clamp(14px,1.15vw,16px)/1.15 var(--wide);letter-spacing:.06em;text-transform:uppercase;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.35);width:100%}
+.pnstat{font:600 10px/1.2 var(--wide);letter-spacing:.2em;text-transform:uppercase;color:#E8C9A6}
+.pncat{font:500 12.5px/1.35 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:#F3EDE4}
+.pnproj{font:500 14px/1.35 "Besley",Georgia,serif;color:#fff}
+.pnyear{margin-top:auto;font:700 clamp(20px,1.8vw,24px)/1 var(--sans);letter-spacing:.04em;color:#fff}
+#view .pennants .pnnote{margin:24px 0 0;color:#EFE8DE!important;font-size:14px}
+@media (max-width:760px){.pennants .pnrow{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:none}.pennants .pnrow::-webkit-scrollbar{display:none}.pennant{flex:0 0 58%;scroll-snap-align:start}}
+@media (prefers-reduced-motion:reduce){.pennant{opacity:1;transform:none}}
+
 :root{--film:url("assets/img/film.webp");--tplogo:url("assets/img/trustpilot.png")}
 </style>
 </head>
@@ -3328,7 +3351,7 @@ CH.building=()=>`<section class="ch" id="building">${chh("02","The building","Co
    <ul class="keys" style="margin-top:18px"><li>18 years in business and 24 awards</li><li>£200m+ of mixed-use projects</li><li>Chosen to lead the regeneration of the Underbanks</li></ul>
    </div>
   <div class="teamhero">${IMG("stmarys","St Marys Gate, next door, by Hall &amp; Co","thero")}<p class="thcap">St Marys Gate, next door. Hall &amp; Co, completed 2025</p></div>
-  <div class="teamhero">${IMG("arch1","Ollier Smurthwaite project","thero")}<p class="thcap">An Ollier Smurthwaite scheme</p></div><div class="awards"><div class="cap">Awards and recognition</div><ul><li><b>Housing Design Awards</b><span>Project Winner, Climate Innovation District. Ollier Smurthwaite</span></li><li><b>RIBA Regional Award</b><span>and Small Project Award, Devonshire Road. Ollier Smurthwaite</span></li><li><b>House Builder Awards</b><span>Winner, Roof Gardens. Ollier Smurthwaite</span></li><li><b>Manchester Society of Architects</b><span>Winner, Multiple Residential (Unbuilt), 2023. The George, Stockport. Ollier Smurthwaite</span></li><li><b>Award-winning restoration</b><span>Grade II-listed Bank Chambers, now ProFolk. Hall &amp; Co</span></li></ul></div></div></section>`;
+  <div class="teamhero">${IMG("arch1","Ollier Smurthwaite project","thero")}<p class="thcap">An Ollier Smurthwaite scheme</p></div><div class="awards pennants" style="--pbg:var(--arch1)"><div class="pnhead"><div class="cap">Award-winning team</div><h3 class="pnh">The architect behind the Underbanks.</h3></div><div class="pnrow"><div class="pennant" style="--i:0"><svg class="penline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="5,1.6 95,1.6 95,97 50,88 5,97" vector-effect="non-scaling-stroke"/></svg><span class="pnbody">Manchester Society of Architects</span><span class="pnstat">Winner</span><span class="pncat">Multiple Residential (Unbuilt)</span><span class="pnproj">The George, Stockport</span><b class="pnyear">2023</b></div><div class="pennant" style="--i:1"><svg class="penline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="5,1.6 95,1.6 95,97 50,88 5,97" vector-effect="non-scaling-stroke"/></svg><span class="pnbody">Housing Design Awards</span><span class="pnstat">Project Winner</span><span class="pnproj">Climate Innovation District</span><b class="pnyear">2017</b></div><div class="pennant" style="--i:2"><svg class="penline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="5,1.6 95,1.6 95,97 50,88 5,97" vector-effect="non-scaling-stroke"/></svg><span class="pnbody">House Builder Awards</span><span class="pnstat">Winner</span><span class="pnproj">Roof Gardens</span><b class="pnyear">2016</b></div><div class="pennant" style="--i:3"><svg class="penline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="5,1.6 95,1.6 95,97 50,88 5,97" vector-effect="non-scaling-stroke"/></svg><span class="pnbody">Manchester Society of Architects</span><span class="pnstat">Winner</span><span class="pncat">Unbuilt Residential</span><span class="pnproj">City Gardens</span><b class="pnyear">2016</b></div><div class="pennant" style="--i:4"><svg class="penline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="5,1.6 95,1.6 95,97 50,88 5,97" vector-effect="non-scaling-stroke"/></svg><span class="pnbody">RIBA Regional Awards</span><span class="pnstat">Small Project Award</span><span class="pnproj">Devonshire Road</span><b class="pnyear">2012</b></div></div><p class="pnnote">Hall &amp; Co: the award-winning restoration of Grade II-listed Bank Chambers, now ProFolk, on Stockport's Market Place.</p></div></div></section>`;
 
 CH.heritage=()=>`<section class="ch" id="heritage">${chh("09","The building's heritage","Charter House is named for its neighbour, Stockport's Market Hall, right next door. Harvey Street is named after William Harvey, a prize-medal saddler, harness maker and leather goods merchant.")}
  <div class="duo w"><div><p class="lead">Harvey's shop on Heaton Lane sold brief bags, Gladstone bags, travelling rugs and driving aprons. As RV's Saddlery Stores, it also kitted out Stockport's Boy Scouts with bell tents, axes and canteens.</p>
@@ -3979,6 +4002,9 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
    if(window.Hls)return go();var sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';sc.onload=go;sc.onerror=function(){close();open(src,'_blank','noopener')};document.head.appendChild(sc)}
  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-film]');if(!b)return;e.preventDefault();play(b.dataset.film)});
 })();
+(function(){var io='IntersectionObserver' in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.25}):null;
+ function scan(){document.querySelectorAll('.pennants:not([data-io])').forEach(function(m){m.dataset.io=1;if(io)io.observe(m);else m.classList.add('in')})}
+ new MutationObserver(function(){clearTimeout(scan.t);scan.t=setTimeout(scan,50)}).observe(document.body,{childList:true,subtree:true});scan()})();
 </script>
 </body>
 </html>

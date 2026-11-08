@@ -11,8 +11,13 @@ def apply(s, rep):
     t0 = s.find('<div class="team2">'); h2 = s.find('<div class="teamhero">', s.find('<div class="teamhero">', t0) + 10)
     end = s.find('</div></section>`;', h2)
     assert 0 < t0 < h2 < end, (t0, h2, end)
-    aw = ('<div class="awards"><div class="cap">Awards and recognition</div><ul>'
-          + "".join(f'<li><b>{t}</b><span>{d}</span></li>' for t, d in site["awards"]) + '</ul></div>')
+    pen = '<svg class="penline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="5,1.6 95,1.6 95,97 50,88 5,97" vector-effect="non-scaling-stroke"/></svg>'
+    aw = ('<div class="awards pennants" style="--pbg:var(--' + site.get("awards_bg", "arch1") + ')"><div class="pnhead"><div class="cap">Award-winning team</div>'
+          '<h3 class="pnh">' + site.get("awards_h", "Award-winning team.") + '</h3></div><div class="pnrow">'
+          + "".join(f'<div class="pennant" style="--i:{k}">{pen}<span class="pnbody">{b}</span><span class="pnstat">{st}</span>'
+                    + (f'<span class="pncat">{c}</span>' if c else '') + f'<span class="pnproj">{pr}</span><b class="pnyear">{y}</b></div>'
+                    for k, (b, st, c, pr, y) in enumerate(site["awards"]))
+          + '</div>' + (f'<p class="pnnote">{site["awards_note"]}</p>' if site.get("awards_note") else '') + '</div>')
     s = s[:end] + aw + s[end:]
 
     # ---------- BRIK banner: two clear halves

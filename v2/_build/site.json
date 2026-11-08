@@ -18,24 +18,39 @@
   "early_html": "<div class=\"earlynote\"><span class=\"pl\"><i></i>Private pre-launch</span><p><b>You're early.</b> Charter House isn't on the open market yet.</p></div>",
   "awards": [
     [
-      "Housing Design Awards",
-      "Project Winner, Climate Innovation District. Ollier Smurthwaite"
+      "Manchester Society of Architects",
+      "Winner",
+      "Multiple Residential (Unbuilt)",
+      "The George, Stockport",
+      "2023"
     ],
     [
-      "RIBA Regional Award",
-      "and Small Project Award, Devonshire Road. Ollier Smurthwaite"
+      "Housing Design Awards",
+      "Project Winner",
+      "",
+      "Climate Innovation District",
+      "2017"
     ],
     [
       "House Builder Awards",
-      "Winner, Roof Gardens. Ollier Smurthwaite"
+      "Winner",
+      "",
+      "Roof Gardens",
+      "2016"
     ],
     [
       "Manchester Society of Architects",
-      "Winner, Multiple Residential (Unbuilt), 2023. The George, Stockport. Ollier Smurthwaite"
+      "Winner",
+      "Unbuilt Residential",
+      "City Gardens",
+      "2016"
     ],
     [
-      "Award-winning restoration",
-      "Grade II-listed Bank Chambers, now ProFolk. Hall &amp; Co"
+      "RIBA Regional Awards",
+      "Small Project Award",
+      "",
+      "Devonshire Road",
+      "2012"
     ]
   ],
   "film": {
@@ -76,5 +91,8 @@
       "When is completion?",
       "Early 2028. We'll keep you updated as the build progresses, and you'll get notice to complete well ahead of the date."
     ]
-  ]
+  ],
+  "awards_note": "Hall &amp; Co: the award-winning restoration of Grade II-listed Bank Chambers, now ProFolk, on Stockport's Market Place.",
+  "awards_bg": "arch1",
+  "awards_h": "The architect behind the Underbanks."
 }
