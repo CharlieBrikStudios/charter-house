@@ -41,3 +41,4 @@
 2026-11-08T14:03:19Z g1: camera solve: SFM global: 295 of 305 frames placed (97%), 53397 points, 1178 s; by folder c01:31/31 c02:42/42 c03:23/33 c04:34/34 c05:128/128 c06:33/33 p_1200x1600:4/4
 2026-11-08T14:03:41Z g1: ... Disabled comet/tensorboard/wandb event writers
 2026-11-08T14:13:43Z g1: ... 14570 (48.57%)      46.808 ms            12 m, 2 s            31.44 M                                [0m
+2026-11-08T14:23:44Z g1: ... 26430 (88.10%)      52.191 ms            3 m, 6 s             27.77 M                                [0m
