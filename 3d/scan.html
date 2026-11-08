@@ -110,7 +110,7 @@ if (files) {   // a big scan comes in 90 MB parts (GitHub's file limit): join th
 if (meta.quat) mesh.quaternion.set(...meta.quat);
 // the file may hold the splat turned 180 degrees about x (y and z flipped, as SPZ/SOG writers do for PLY's y-down axes):
 // scan.json "flip" (or ?flip=0/1 for testing) undoes it before the scan's own turn
-const flip = q.has('flip') ? q.get('flip') === '1' : meta.flip !== false;
+const flip = q.has('flip') ? q.get('flip') === '1' : meta.flip === true;   // (off: Spark reads splat-transform's SOG in the PLY's own axes)
 if (flip) mesh.quaternion.multiply(new THREE.Quaternion(1, 0, 0, 0));
 scene.add(mesh);
 
