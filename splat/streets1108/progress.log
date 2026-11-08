@@ -103,3 +103,4 @@
 2026-11-08T19:42:03Z g3: skipped, too few frames for a scan
 2026-11-08T19:42:42Z g4: 140 frames (0 stills) in 2 folders
 2026-11-08T19:42:43Z g4: camera solve (global, 7 threads; lenses: )
+2026-11-08T19:52:43Z g4: ... I20261108 19:52:40.231187 129137675519104 global_mapper.cc:391] Global bundle adjustment iteration 3 / 3, fixed-rotation stage finished
