@@ -5,21 +5,18 @@ duplicate 'how it works' removed, Keep in touch moved below Heritage."""
 
 def apply(s, rep):
     # ---------- developer and architect: completed-scheme photos, awards
-    s = rep(s, '${IMG("stmarys","St Marys Gate, next door, by Hall &amp; Co","thero")}<p class="thcap">St Marys Gate, next door. Hall &amp; Co, completed 2025</p>',
-            '${IMG("hall_done","A completed Hall &amp; Co apartment in the Underbanks","thero")}<p class="thcap">Finished and furnished: a completed Hall &amp; Co apartment in the Underbanks</p>', label="hall photo")
-    s = rep(s, '${IMG("arch1","Ollier Smurthwaite project","thero")}<p class="thcap">An Ollier Smurthwaite scheme</p>',
-            '${IMG("arch_done","Inside a completed Ollier Smurthwaite and Hall &amp; Co scheme","thero")}<p class="thcap">Inside a completed Ollier Smurthwaite and Hall &amp; Co scheme</p>', label="arch photo")
     s = rep(s, '<li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul></div>',
-            '<li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul>'
-            '<div class="awards"><div class="cap">Recognition</div><ul><li><b>Award-winning restoration</b><span>Grade II-listed Bank Chambers, now the ProFolk co-working hub on Stockport\'s Market Place</span></li></ul></div></div>', label="hall awards")
-    s = rep(s, '<li>Chosen to lead the regeneration of the Underbanks</li></ul>\n   </div>',
-            '<li>Chosen to lead the regeneration of the Underbanks</li></ul>'
-            '<div class="awards"><div class="cap">Selected awards</div><ul>'
-            '<li><b>Housing Design Awards</b><span>Project Winner, Climate Innovation District, Leeds</span></li>'
-            '<li><b>RIBA Regional Award</b><span>and Small Project Award, Devonshire Road, Manchester</span></li>'
-            '<li><b>House Builder Awards</b><span>Winner, Roof Gardens</span></li>'
-            '<li><b>Manchester Society of Architects</b><span>Award winner 2023, The George, Stockport</span></li>'
-            '</ul></div>\n   </div>', label="arch awards")
+            '<li>St Marys Gate next door: 50 apartments, completed 2025, sold out off-plan and fully let</li></ul></div>', label="hall keys")
+    s = rep(s, '<p class="thcap">An Ollier Smurthwaite scheme</p></div></div></section>`;',
+            '<p class="thcap">An Ollier Smurthwaite scheme</p></div>'
+            '<div class="awards"><div class="cap">Awards and recognition</div><ul>'
+            '<li><b>Housing Design Awards</b><span>Project Winner, Climate Innovation District. Ollier Smurthwaite</span></li>'
+            '<li><b>RIBA Regional Award</b><span>and Small Project Award, Devonshire Road. Ollier Smurthwaite</span></li>'
+            '<li><b>House Builder Awards</b><span>Winner, Roof Gardens. Ollier Smurthwaite</span></li>'
+            '<li><b>Manchester Society of Architects</b><span>Award winner 2023, The George, Stockport. Ollier Smurthwaite</span></li>'
+            '<li><b>Award-winning restoration</b><span>Grade II-listed Bank Chambers, now ProFolk. Hall &amp; Co</span></li>'
+            '</ul></div>'
+            '</div></section>`;', label="awards strip")
 
     # ---------- BRIK banner: two clear halves
     s = rep(s, '<div class="cap bbsub">Who\'s behind BRIK</div><div class="bbtrack">',
