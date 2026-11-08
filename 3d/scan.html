@@ -158,7 +158,7 @@ setTimeout(() => { $('hint').style.opacity = 0; }, 6000);
 const clock = new THREE.Clock();
 // for the headless check (scancheck.mjs): jump to a point on a path and hold still
 let free = null;
-window.__scan = { ready: true, go(i, u) { free = null; cur = i; t = tt = u; idle = -1e9; yawT = yawOff = 0; }, cam(p, l) { free = [p, l]; }, paths: paths.length, path: (i) => ({ p: paths[i].P[0].toArray(), f: paths[i].F[0].toArray() }) };
+window.__scan = { ready: true, go(i, u) { free = null; cur = i; t = tt = u; idle = -1e9; yawT = yawOff = 0; }, cam(p, l) { free = [p, l]; }, mesh, THREE, paths: paths.length, path: (i) => ({ p: paths[i].P[0].toArray(), f: paths[i].F[0].toArray() }) };
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1), path = paths[cur];
   idle += dt;
