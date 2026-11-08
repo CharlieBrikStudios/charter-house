@@ -15,3 +15,4 @@
 2026-11-08T11:55:57Z g1: camera solve:            COLMAP only found poses for 21.02% of the images. This is low.            images_to_nerfstudio_dataset.py:138
 2026-11-08T12:00:54Z g1: ... 13200 (44.00%)      23.162 ms            6 m, 29 s            18.07 M                                [0m
 2026-11-08T12:02:22Z pod up on NVIDIA RTX A5000, 24564 MiB; 96 cpus; job streets1108; torch: ok 11.8 NVIDIA RTX A5000 64.0
+2026-11-08T12:03:25Z DOWNLOADED 13 clips and 15 stills, 1.1G: the Drive copies can go now
