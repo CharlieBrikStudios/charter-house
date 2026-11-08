@@ -75,16 +75,21 @@ EOF
   local NF=$(ls $D/frames | wc -l)
   say $J "$G: $NF frames ($(ls $D/frames | grep -c '^p_') stills)"
   [ $NF -lt 25 ] && { say $J "$G: skipped, too few frames for a scan"; return; }
-  local MM=vocab_tree; [ $NF -le 300 ] && MM=exhaustive
+  # video frames come in order: sequential matching (each frame against its neighbours, plus loop detection) is far quicker than
+  # exhaustive or vocab-tree matching (8 Nov: 306 frames sat over an hour in the camera solve)
+  local MM=${MATCH:-sequential}
+  # a progress line every 10 minutes while the long steps run, so they can be followed from outside the pod
+  ( while sleep 600; do say $J "$G: ... $(tail -c 3000 $D/colmap.log $D/train.log 2>/dev/null | tr '\r' '\n' | grep -v '^\s*$' | tail -1 | cut -c1-140)"; done ) & local WP=$!
   ns-process-data images --data $D/frames --output-dir $D/data --matching-method $MM --num-downscales 2 > $D/colmap.log 2>&1
   if [ ! -f $D/data/transforms.json ] && grep -q "CUDA error" $D/colmap.log; then   # COLMAP's own CUDA can fail where torch works: do the camera solve on the CPUs
     say $J "$G: COLMAP can't use the GPU here, solving on the CPUs instead"; rm -rf $D/data
     ns-process-data images --data $D/frames --output-dir $D/data --matching-method $MM --num-downscales 2 --no-gpu > $D/colmap.log 2>&1
   fi
   say $J "$G: camera solve: $(grep -iE 'colmap found poses|found poses' $D/colmap.log | tail -1 | tr -d '\r' | cut -c1-160)"
-  [ -f $D/data/transforms.json ] || { cp $D/colmap.log io/splat/$J/$G/; say $J "$G: FAILED camera solve (colmap.log pushed)"; return; }
+  [ -f $D/data/transforms.json ] || { kill $WP 2>/dev/null; cp $D/colmap.log io/splat/$J/$G/; say $J "$G: FAILED camera solve (colmap.log pushed)"; return; }
   ns-train $METHOD --data $D/data --output-dir $D/outputs --max-num-iterations $ITERS --viewer.quit-on-train-completion True \
     --pipeline.model.cull-alpha-thresh 0.005 > $D/train.log 2>&1
+  kill $WP 2>/dev/null
   local CFG=$(find $D/outputs -name config.yml | head -1)
   [ -n "$CFG" ] || { tail -60 $D/train.log > io/splat/$J/$G/train_tail.log; say $J "$G: FAILED training (log pushed)"; return; }
   ns-export gaussian-splat --load-config "$CFG" --output-dir $D/export > $D/export.log 2>&1
