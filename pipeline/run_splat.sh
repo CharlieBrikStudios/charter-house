@@ -172,13 +172,29 @@ fi
   say $J "$G: trained ($ITERS steps), exported $(du -h "$PLY" | cut -f1)"
   # a few pictures of the trained scan from the filmed cameras (GPU, seconds), pushed so the scan can be judged without a browser
   timeout 900 ns-render dataset --load-config "$CFG" --output-path $D/renders --split train --rendered-output-names rgb > $D/render.log 2>&1
-  python3 - "$D/renders" "io/splat/$J/$G" <<'EOF2'
+  python3 - "$D/renders" "io/splat/$J/$G" "$D/data/images" <<'EOF2'
 import sys, glob, os
 from PIL import Image
 fs = sorted(glob.glob(os.path.join(sys.argv[1], '**', '*.jpg'), recursive=True) + glob.glob(os.path.join(sys.argv[1], '**', '*.png'), recursive=True))
 for k, f in enumerate(fs[len(fs) // 10::max(1, len(fs) // 5)][:5]):
     im = Image.open(f).convert('RGB'); im.thumbnail((640, 640)); im.save(os.path.join(sys.argv[2], 'preview_%d.jpg' % k), quality=82)
 print(len(fs), 'renders')
+# how well the scan reproduces each filmed frame (PSNR of the render against the frame itself, both at 400 px): the viewer only
+# rides the stretches of footage the scan got right (8 Nov: at the Print House two clips came out sharp, three filmed through
+# a site fence did not)
+import json, numpy as np
+src = sys.argv[3] if len(sys.argv) > 3 else ''
+q = {}
+for f in fs:
+    stem = os.path.splitext(os.path.basename(f))[0]
+    cand = glob.glob(os.path.join(src, '*', stem + '.jpg')) + glob.glob(os.path.join(src, stem + '.jpg'))
+    if not cand: continue
+    a = Image.open(f).convert('RGB'); b = Image.open(cand[0]).convert('RGB').resize(a.size)
+    a.thumbnail((400, 400)); b.thumbnail((400, 400))
+    d = np.asarray(a, dtype=np.float32) - np.asarray(b, dtype=np.float32); mse = float((d * d).mean())
+    q[os.path.relpath(cand[0], src)] = round(10 * np.log10(255 ** 2 / max(mse, 1e-6)), 2)
+json.dump(q, open(os.path.join(sys.argv[2], 'quality.json'), 'w'))
+print('quality for', len(q), 'frames; median PSNR', np.median(list(q.values())) if q else None)
 EOF2
   # compress for the web (PlayCanvas SOG, ~15x smaller; compressed PLY if this version can't write SOG)
   # (on the CPU, no WebGPU in node here; without the view-dependent colour bands: their palette step took over half an hour)
