@@ -146,6 +146,10 @@ def apply(s, rep):
   <div class="ctaline"><button class="b solid" data-call>Book a 3D virtual tour</button><a class="b line" href="${WA_}${encodeURIComponent("Hi Charlie, I've been looking at Charter House. Could we set up a 3D video tour?")}" target="_blank" rel="noopener">WhatsApp me</a></div>
   <p class="fine">30 minutes on Microsoft Teams, at a time that suits you. No obligation.</p></div></section></div>`}
 const EARLY=`''' + site["early_html"] + "`;"
+    import re as _re
+    wa = _re.search(r'encodeURIComponent\("Hi [^"]*3D video tour\?"\)', s[a:ze])
+    assert wa, "whatsapp text"
+    choose = choose.replace('encodeURIComponent("Hi Charlie, I\'ve been looking at Charter House. Could we set up a 3D video tour?")', wa.group(0))
     s = s[:a] + choose + s[ze:]
     s = rep(s, '<span class="plt">Early access to the top-floor apartments, before Charter House goes public.</span>',
             '<span class="plt">You\'re early: Charter House isn\'t on the open market yet.</span>', label="prelaunch strip")
