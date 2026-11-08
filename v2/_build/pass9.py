@@ -25,8 +25,8 @@ def apply(s, rep):
  ["Scarcity keeps rents and values ahead.","When supply can't grow, demand holds rents and values up. Manchester keeps adding towers, yet Ancoats' red-brick mills still command a premium, and we expect the Underbanks' red brick to do the same. Next door, St Marys Gate already lets for 22 to 39% above its forecast.",[["+22–39%","above forecast rents next door"]],"Returns"],
  ["The last site in the Underbanks. Secure yours.","Charter House is the last site to be developed in the Underbanks. When these apartments are gone, there's nothing like them coming.",[],"Next steps"]];
 const CASEN=CASE.length,c2=n=>String(n).padStart(2,"0");
-function caseBand(i){const c=CASE[i];return `<div class="case7 rise" id="case-${i+1}"><div class="c7body"><div class="c7l"><span class="c7n"><b>${c2(i+1)}</b><i>/ ${c2(CASEN)}</i></span><h3 class="c7h">${c[0]}</h3></div><div class="c7r"><p>${c[1]}</p>${c[2].length?`<dl class="c7f">${c[2].map(([f,l])=>`<div><dt>${f}</dt><dd>${l}</dd></div>`).join("")}</dl>`:""}${i===CASEN-1?`<div class="row"><button class="b solid" data-call>Book a 3D virtual tour</button></div>`:""}</div></div></div>`}
-function caseTag(i){return `<div class="c7tag" id="case-${i+1}"><span class="c7n"><b>${c2(i+1)}</b><i>/ ${c2(CASEN)}</i></span></div>`}
+function caseBand(i){const c=CASE[i];return `<div class="case7 rise" id="case-${i+1}"><div class="c7body"><div class="c7l"><span class="c7n"><b>${c2(i+1)}</b><i>${i+1} of ${CASEN}</i></span><h3 class="c7h">${c[0]}</h3></div><div class="c7r"><p>${c[1]}</p>${c[2].length?`<dl class="c7f">${c[2].map(([f,l])=>`<div><dt>${f}</dt><dd>${l}</dd></div>`).join("")}</dl>`:""}${i===CASEN-1?`<div class="row"><button class="b solid" data-call>Book a 3D virtual tour</button></div>`:""}</div></div></div>`}
+function caseTag(i){return `<div class="c7tag" id="case-${i+1}"><span class="c7n"><b>${c2(i+1)}</b><i>${i+1} of ${CASEN}</i></span></div>`}
 const CASEMAP=`<section class="casemap"><div class="cmhead"><div class="cap">How this report runs</div><h3 class="cmh">Seven reasons, in the order you'll read them.</h3><p>Tap any line to jump straight to it.</p></div><ol class="cmlist">${CASE.map((c,i)=>`<li><button data-case="${i+1}"><span class="cmn">${c2(i+1)}</span><b>${c[0]}</b><span class="cmk">${c[3]}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button></li>`).join("")}</ol></section>`;
 '''
     s = rep(s, "const CH={};", case_js + "const CH={};", label="case defs")
@@ -81,11 +81,13 @@ const CASEMAP=`<section class="casemap"><div class="cmhead"><div class="cap">How
     assert 0 < b_ < c_ < d_ < e_ < f_ < g_ < h_, (b_, c_, d_, e_, f_, g_, h_)
     A, B, C, D, E, F, G, tail = t[:b_], t[b_:c_], t[c_:d_], t[d_:e_], t[e_:f_], t[f_:g_], t[g_:h_], t[h_:]
     B = B.replace('<div class="bigstat">', '<div class="bigstat">${caseTag(2)}', 1)
+    B = B.replace('<div class="cap">The UK\'s largest town-centre regeneration</div>', '<h3 class="c7h">The UK\'s largest town-centre regeneration.</h3>', 1)
     t2 = A + '\n ${caseBand(0)}' + F + '\n ${caseBand(1)}' + C + D + B + E + '\n ' + G + tail
     s = s[:a] + t2 + s[z:]
 
     # ---------- Location: the Underbanks step
-    hook = '${chh("04","Location","A minute from the Underbanks, ten from the station.")}\n'
+    import re
+    hook = re.search(r'\$\{chh\("\d\d","Location","[^"]*"\)\}\n', s).group(0)
     assert s.count(hook) == 1, s.count(hook)
     s = s.replace(hook, hook + ' ${caseBand(3)}\n', 1)
 
