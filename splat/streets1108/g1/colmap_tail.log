@@ -1,307 +1,293 @@
-:20.485524 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00035.jpg
-I20261108 13:45:20.485537 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:20.485546 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:20.485556 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:20.485573 135387284493888 feature_extraction.cc:294]   Features:        7004 (SIFT)
-I20261108 13:45:21.758301 135387284493888 feature_extraction.cc:270] Processed file [22/33]
-I20261108 13:45:21.758380 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00043.jpg
-I20261108 13:45:21.758391 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:21.758400 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:21.758411 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:21.758426 135387284493888 feature_extraction.cc:294]   Features:        4700 (SIFT)
-I20261108 13:45:22.021300 135387284493888 feature_extraction.cc:270] Processed file [23/33]
-I20261108 13:45:22.021393 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00053.jpg
-I20261108 13:45:22.021405 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:22.021414 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:22.021424 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:22.021441 135387284493888 feature_extraction.cc:294]   Features:        5116 (SIFT)
-I20261108 13:45:22.029830 135387284493888 feature_extraction.cc:270] Processed file [24/33]
-I20261108 13:45:22.029895 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00052.jpg
-I20261108 13:45:22.029907 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:22.029916 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:22.029925 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:22.029941 135387284493888 feature_extraction.cc:294]   Features:        5609 (SIFT)
-I20261108 13:45:22.208830 135387284493888 feature_extraction.cc:270] Processed file [25/33]
-I20261108 13:45:22.208914 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00046.jpg
-I20261108 13:45:22.208955 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:22.208965 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:22.208976 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:22.208993 135387284493888 feature_extraction.cc:294]   Features:        5536 (SIFT)
-I20261108 13:45:22.397395 135387284493888 feature_extraction.cc:270] Processed file [26/33]
-I20261108 13:45:22.397469 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00049.jpg
-I20261108 13:45:22.397483 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:22.397492 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:22.397503 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:22.397520 135387284493888 feature_extraction.cc:294]   Features:        5553 (SIFT)
-I20261108 13:45:22.403146 135387284493888 feature_extraction.cc:270] Processed file [27/33]
-I20261108 13:45:22.403203 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00048.jpg
-I20261108 13:45:22.403213 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:22.403221 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:22.403241 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:22.403257 135387284493888 feature_extraction.cc:294]   Features:        5279 (SIFT)
-I20261108 13:45:23.036967 135387284493888 feature_extraction.cc:270] Processed file [28/33]
-I20261108 13:45:23.037078 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00056.jpg
-I20261108 13:45:23.037100 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:23.037120 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:23.037141 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:23.037171 135387284493888 feature_extraction.cc:294]   Features:        5959 (SIFT)
-I20261108 13:45:23.960672 135387284493888 feature_extraction.cc:270] Processed file [29/33]
-I20261108 13:45:23.960792 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00058.jpg
-I20261108 13:45:23.960816 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:23.960836 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:23.960857 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:23.960886 135387284493888 feature_extraction.cc:294]   Features:        4820 (SIFT)
-I20261108 13:45:24.239050 135387284493888 feature_extraction.cc:270] Processed file [30/33]
-I20261108 13:45:24.239170 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00060.jpg
-I20261108 13:45:24.239198 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:24.239218 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:24.239240 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:24.239269 135387284493888 feature_extraction.cc:294]   Features:        4821 (SIFT)
-I20261108 13:45:24.507217 135387284493888 feature_extraction.cc:270] Processed file [31/33]
-I20261108 13:45:24.507340 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00061.jpg
-I20261108 13:45:24.507370 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:24.507391 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:24.507411 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:24.507442 135387284493888 feature_extraction.cc:294]   Features:        5313 (SIFT)
-I20261108 13:45:25.442207 135387284493888 feature_extraction.cc:270] Processed file [32/33]
-I20261108 13:45:25.442320 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00064.jpg
-I20261108 13:45:25.442418 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:25.442439 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:25.442459 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:25.442489 135387284493888 feature_extraction.cc:294]   Features:        6776 (SIFT)
-I20261108 13:45:25.555067 135387284493888 feature_extraction.cc:270] Processed file [33/33]
-I20261108 13:45:25.555132 135387284493888 feature_extraction.cc:273]   Name:            c06/c06_00065.jpg
-I20261108 13:45:25.555139 135387284493888 feature_extraction.cc:282]   Dimensions:      900 x 1600
-I20261108 13:45:25.555145 135387284493888 feature_extraction.cc:285]   Camera:          #6 - RADIAL
-I20261108 13:45:25.555152 135387284493888 feature_extraction.cc:289]   Focal Length:    1200.00px
-I20261108 13:45:25.555163 135387284493888 feature_extraction.cc:294]   Features:        6556 (SIFT)
-I20261108 13:45:25.579717 135387741681216 timer.cc:90] Elapsed time: 0.215 [minutes]
-I20261108 13:45:25.600444 135387741681216 feature_extraction.cc:498] === Feature extraction ===
-I20261108 13:45:25.600881 135387617945152 sift.cc:764] Creating SIFT CPU feature extractor
-I20261108 13:45:25.600918 135387609552448 sift.cc:764] Creating SIFT CPU feature extractor
-I20261108 13:45:25.600953 135387601159744 sift.cc:764] Creating SIFT CPU feature extractor
-I20261108 13:45:25.601001 135387592767040 sift.cc:764] Creating SIFT CPU feature extractor
-I20261108 13:45:25.601039 135387584374336 sift.cc:764] Creating SIFT CPU feature extractor
-I20261108 13:45:25.601075 135387276101184 sift.cc:764] Creating SIFT CPU feature extractor
-I20261108 13:45:25.601119 135387267708480 sift.cc:764] Creating SIFT CPU feature extractor
-I20261108 13:45:28.568599 135387259315776 feature_extraction.cc:270] Processed file [1/4]
-I20261108 13:45:28.568817 135387259315776 feature_extraction.cc:273]   Name:            p_1200x1600/p_000.jpg
-I20261108 13:45:28.568834 135387259315776 feature_extraction.cc:282]   Dimensions:      1200 x 1600
-I20261108 13:45:28.568848 135387259315776 feature_extraction.cc:285]   Camera:          #7 - RADIAL
-I20261108 13:45:28.568864 135387259315776 feature_extraction.cc:289]   Focal Length:    1920.00px
-I20261108 13:45:28.568887 135387259315776 feature_extraction.cc:294]   Features:        5260 (SIFT)
-I20261108 13:45:28.596796 135387259315776 feature_extraction.cc:270] Processed file [2/4]
-I20261108 13:45:28.596897 135387259315776 feature_extraction.cc:273]   Name:            p_1200x1600/p_001.jpg
-I20261108 13:45:28.596914 135387259315776 feature_extraction.cc:282]   Dimensions:      1200 x 1600
-I20261108 13:45:28.596929 135387259315776 feature_extraction.cc:285]   Camera:          #8 - RADIAL
-I20261108 13:45:28.596944 135387259315776 feature_extraction.cc:289]   Focal Length:    1920.00px
-I20261108 13:45:28.596967 135387259315776 feature_extraction.cc:294]   Features:        4778 (SIFT)
-I20261108 13:45:28.723283 135387259315776 feature_extraction.cc:270] Processed file [3/4]
-I20261108 13:45:28.723374 135387259315776 feature_extraction.cc:273]   Name:            p_1200x1600/p_002.jpg
-I20261108 13:45:28.723385 135387259315776 feature_extraction.cc:282]   Dimensions:      1200 x 1600
-I20261108 13:45:28.723394 135387259315776 feature_extraction.cc:285]   Camera:          #9 - RADIAL
-I20261108 13:45:28.723405 135387259315776 feature_extraction.cc:289]   Focal Length:    1920.00px
-I20261108 13:45:28.723420 135387259315776 feature_extraction.cc:294]   Features:        7405 (SIFT)
-I20261108 13:45:29.374196 135387259315776 feature_extraction.cc:270] Processed file [4/4]
-I20261108 13:45:29.374294 135387259315776 feature_extraction.cc:273]   Name:            p_1200x1600/p_003.jpg
-I20261108 13:45:29.374316 135387259315776 feature_extraction.cc:282]   Dimensions:      1200 x 1600
-I20261108 13:45:29.374354 135387259315776 feature_extraction.cc:285]   Camera:          #10 - RADIAL
-I20261108 13:45:29.374376 135387259315776 feature_extraction.cc:289]   Focal Length:    1920.00px
-I20261108 13:45:29.374440 135387259315776 feature_extraction.cc:294]   Features:        6729 (SIFT)
-I20261108 13:45:29.406793 135387741681216 timer.cc:90] Elapsed time: 0.063 [minutes]
-  108s features 305 images in 7 folders
-I20261108 13:45:29.491670 135387741681216 feature_matching.cc:196] === Feature matching & geometric verification ===
-I20261108 13:45:29.493498 135387259315776 sift.cc:1685] Creating SIFT CPU feature matcher
-I20261108 13:45:29.493562 135387724895808 sift.cc:1685] Creating SIFT CPU feature matcher
-I20261108 13:45:29.493532 135387276101184 sift.cc:1685] Creating SIFT CPU feature matcher
-I20261108 13:45:29.493544 135387733288512 sift.cc:1685] Creating SIFT CPU feature matcher
-I20261108 13:45:29.493516 135387267708480 sift.cc:1685] Creating SIFT CPU feature matcher
-I20261108 13:45:29.493586 135387716503104 sift.cc:1685] Creating SIFT CPU feature matcher
-I20261108 13:45:29.493602 135387626337856 sift.cc:1685] Creating SIFT CPU feature matcher
-I20261108 13:45:29.495468 135387741681216 pairing.cc:181] Generating exhaustive image pairs...
-I20261108 13:45:29.495503 135387741681216 pairing.cc:214] Processing block [1/7, 1/7]
-I20261108 13:45:46.065607 135387741681216 feature_matching.cc:218] in 16.570s
-I20261108 13:45:46.065739 135387741681216 pairing.cc:214] Processing block [1/7, 2/7]
-I20261108 13:45:59.457245 135387741681216 feature_matching.cc:218] in 13.392s
-I20261108 13:45:59.457352 135387741681216 pairing.cc:214] Processing block [1/7, 3/7]
-I20261108 13:46:13.959995 135387741681216 feature_matching.cc:218] in 14.503s
-I20261108 13:46:13.960127 135387741681216 pairing.cc:214] Processing block [1/7, 4/7]
-I20261108 13:46:26.803977 135387741681216 feature_matching.cc:218] in 12.844s
-I20261108 13:46:26.804084 135387741681216 pairing.cc:214] Processing block [1/7, 5/7]
-I20261108 13:46:40.715515 135387741681216 feature_matching.cc:218] in 13.911s
-I20261108 13:46:40.715611 135387741681216 pairing.cc:214] Processing block [1/7, 6/7]
-I20261108 13:46:54.115306 135387741681216 feature_matching.cc:218] in 13.400s
-I20261108 13:46:54.115462 135387741681216 pairing.cc:214] Processing block [1/7, 7/7]
-I20261108 13:46:54.309941 135387741681216 feature_matching.cc:218] in 0.195s
-I20261108 13:46:54.310022 135387741681216 pairing.cc:214] Processing block [2/7, 1/7]
-I20261108 13:47:15.143687 135387741681216 feature_matching.cc:218] in 20.834s
-I20261108 13:47:15.143786 135387741681216 pairing.cc:214] Processing block [2/7, 2/7]
-I20261108 13:47:37.751048 135387741681216 feature_matching.cc:218] in 22.607s
-I20261108 13:47:37.751130 135387741681216 pairing.cc:214] Processing block [2/7, 3/7]
-I20261108 13:47:51.912964 135387741681216 feature_matching.cc:218] in 14.162s
-I20261108 13:47:51.913075 135387741681216 pairing.cc:214] Processing block [2/7, 4/7]
-I20261108 13:48:07.557836 135387741681216 feature_matching.cc:218] in 15.645s
-I20261108 13:48:07.557917 135387741681216 pairing.cc:214] Processing block [2/7, 5/7]
-I20261108 13:48:23.752901 135387741681216 feature_matching.cc:218] in 16.195s
-I20261108 13:48:23.753013 135387741681216 pairing.cc:214] Processing block [2/7, 6/7]
-I20261108 13:48:39.058657 135387741681216 feature_matching.cc:218] in 15.306s
-I20261108 13:48:39.058723 135387741681216 pairing.cc:214] Processing block [2/7, 7/7]
-I20261108 13:48:39.265910 135387741681216 feature_matching.cc:218] in 0.207s
-I20261108 13:48:39.265987 135387741681216 pairing.cc:214] Processing block [3/7, 1/7]
-I20261108 13:48:54.677635 135387741681216 feature_matching.cc:218] in 15.412s
-I20261108 13:48:54.677736 135387741681216 pairing.cc:214] Processing block [3/7, 2/7]
-I20261108 13:49:15.061127 135387741681216 feature_matching.cc:218] in 20.383s
-I20261108 13:49:15.061212 135387741681216 pairing.cc:214] Processing block [3/7, 3/7]
-I20261108 13:49:36.078309 135387741681216 feature_matching.cc:218] in 21.017s
-I20261108 13:49:36.078428 135387741681216 pairing.cc:214] Processing block [3/7, 4/7]
-I20261108 13:49:49.272284 135387741681216 feature_matching.cc:218] in 13.194s
-I20261108 13:49:49.272500 135387741681216 pairing.cc:214] Processing block [3/7, 5/7]
-I20261108 13:50:04.989116 135387741681216 feature_matching.cc:218] in 15.717s
-I20261108 13:50:04.989178 135387741681216 pairing.cc:214] Processing block [3/7, 6/7]
-I20261108 13:50:20.245965 135387741681216 feature_matching.cc:218] in 15.257s
-I20261108 13:50:20.246071 135387741681216 pairing.cc:214] Processing block [3/7, 7/7]
-I20261108 13:50:20.514526 135387741681216 feature_matching.cc:218] in 0.268s
-I20261108 13:50:20.514604 135387741681216 pairing.cc:214] Processing block [4/7, 1/7]
-I20261108 13:50:35.292655 135387741681216 feature_matching.cc:218] in 14.778s
-I20261108 13:50:35.292741 135387741681216 pairing.cc:214] Processing block [4/7, 2/7]
-I20261108 13:50:51.182946 135387741681216 feature_matching.cc:218] in 15.890s
-I20261108 13:50:51.183055 135387741681216 pairing.cc:214] Processing block [4/7, 3/7]
-I20261108 13:51:08.669243 135387741681216 feature_matching.cc:218] in 17.486s
-I20261108 13:51:08.669311 135387741681216 pairing.cc:214] Processing block [4/7, 4/7]
-I20261108 13:51:26.116081 135387741681216 feature_matching.cc:218] in 17.447s
-I20261108 13:51:26.116188 135387741681216 pairing.cc:214] Processing block [4/7, 5/7]
-I20261108 13:51:47.383019 135387741681216 feature_matching.cc:218] in 21.267s
-I20261108 13:51:47.383107 135387741681216 pairing.cc:214] Processing block [4/7, 6/7]
-I20261108 13:52:02.923188 135387741681216 feature_matching.cc:218] in 15.540s
-I20261108 13:52:02.923277 135387741681216 pairing.cc:214] Processing block [4/7, 7/7]
-I20261108 13:52:03.166783 135387741681216 feature_matching.cc:218] in 0.244s
-I20261108 13:52:03.166857 135387741681216 pairing.cc:214] Processing block [5/7, 1/7]
-I20261108 13:52:18.579164 135387741681216 feature_matching.cc:218] in 15.412s
-I20261108 13:52:18.579250 135387741681216 pairing.cc:214] Processing block [5/7, 2/7]
-I20261108 13:52:35.508358 135387741681216 feature_matching.cc:218] in 16.929s
-I20261108 13:52:35.508472 135387741681216 pairing.cc:214] Processing block [5/7, 3/7]
-I20261108 13:52:53.717412 135387741681216 feature_matching.cc:218] in 18.209s
-I20261108 13:52:53.717491 135387741681216 pairing.cc:214] Processing block [5/7, 4/7]
-I20261108 13:53:14.232419 135387741681216 feature_matching.cc:218] in 20.515s
-I20261108 13:53:14.232473 135387741681216 pairing.cc:214] Processing block [5/7, 5/7]
-I20261108 13:53:32.243841 135387741681216 feature_matching.cc:218] in 18.011s
-I20261108 13:53:32.243924 135387741681216 pairing.cc:214] Processing block [5/7, 6/7]
-I20261108 13:53:45.705500 135387741681216 feature_matching.cc:218] in 13.462s
-I20261108 13:53:45.705608 135387741681216 pairing.cc:214] Processing block [5/7, 7/7]
-I20261108 13:53:45.908355 135387741681216 feature_matching.cc:218] in 0.203s
-I20261108 13:53:45.908403 135387741681216 pairing.cc:214] Processing block [6/7, 1/7]
-I20261108 13:54:01.581647 135387741681216 feature_matching.cc:218] in 15.673s
-I20261108 13:54:01.581757 135387741681216 pairing.cc:214] Processing block [6/7, 2/7]
-I20261108 13:54:18.562549 135387741681216 feature_matching.cc:218] in 16.981s
-I20261108 13:54:18.562674 135387741681216 pairing.cc:214] Processing block [6/7, 3/7]
-I20261108 13:54:36.240460 135387741681216 feature_matching.cc:218] in 17.678s
-I20261108 13:54:36.240537 135387741681216 pairing.cc:214] Processing block [6/7, 4/7]
-I20261108 13:54:55.892513 135387741681216 feature_matching.cc:218] in 19.652s
-I20261108 13:54:55.892586 135387741681216 pairing.cc:214] Processing block [6/7, 5/7]
-I20261108 13:55:17.164966 135387741681216 feature_matching.cc:218] in 21.272s
-I20261108 13:55:17.165010 135387741681216 pairing.cc:214] Processing block [6/7, 6/7]
-I20261108 13:55:31.898349 135387741681216 feature_matching.cc:218] in 14.733s
-I20261108 13:55:31.898419 135387741681216 pairing.cc:214] Processing block [6/7, 7/7]
-I20261108 13:55:32.134231 135387741681216 feature_matching.cc:218] in 0.236s
-I20261108 13:55:32.134313 135387741681216 pairing.cc:214] Processing block [7/7, 1/7]
-I20261108 13:55:35.010464 135387741681216 feature_matching.cc:218] in 2.876s
-I20261108 13:55:35.010540 135387741681216 pairing.cc:214] Processing block [7/7, 2/7]
-I20261108 13:55:38.285519 135387741681216 feature_matching.cc:218] in 3.275s
-I20261108 13:55:38.285600 135387741681216 pairing.cc:214] Processing block [7/7, 3/7]
-I20261108 13:55:41.521278 135387741681216 feature_matching.cc:218] in 3.236s
-I20261108 13:55:41.521323 135387741681216 pairing.cc:214] Processing block [7/7, 4/7]
-I20261108 13:55:44.609728 135387741681216 feature_matching.cc:218] in 3.088s
-I20261108 13:55:44.609808 135387741681216 pairing.cc:214] Processing block [7/7, 5/7]
-I20261108 13:55:47.765196 135387741681216 feature_matching.cc:218] in 3.155s
-I20261108 13:55:47.765275 135387741681216 pairing.cc:214] Processing block [7/7, 6/7]
-I20261108 13:55:50.928929 135387741681216 feature_matching.cc:218] in 3.164s
-I20261108 13:55:50.929012 135387741681216 pairing.cc:214] Processing block [7/7, 7/7]
-I20261108 13:55:51.070270 135387741681216 feature_matching.cc:218] in 0.141s
-I20261108 13:55:51.070395 135387741681216 timer.cc:90] Elapsed time: 10.360 [minutes]
-  730s matched
-I20261108 13:55:51.133444 135390697120896 database_cache.cc:82] Loading rigs...
-I20261108 13:55:51.133498 135390697120896 database_cache.cc:92]  10 in 0.000s
-I20261108 13:55:51.133509 135390697120896 database_cache.cc:100] Loading cameras...
-I20261108 13:55:51.133528 135390697120896 database_cache.cc:118]  10 in 0.000s
-I20261108 13:55:51.133542 135390697120896 database_cache.cc:126] Loading frames...
-I20261108 13:55:51.133770 135390697120896 database_cache.cc:136]  305 in 0.000s
-I20261108 13:55:51.133777 135390697120896 database_cache.cc:144] Loading matches...
-I20261108 13:55:51.165248 135390697120896 database_cache.cc:163]  5818 in 0.031s
-I20261108 13:55:51.165302 135390697120896 database_cache.cc:171] Loading images...
-I20261108 13:55:51.227846 135390697120896 database_cache.cc:268]  305 in 0.063s (connected 304, loaded 304)
-I20261108 13:55:51.227904 135390697120896 database_cache.cc:282] Loading pose priors...
-I20261108 13:55:51.227922 135390697120896 database_cache.cc:290]  0 in 0.000s
-I20261108 13:55:51.227929 135390697120896 database_cache.cc:298] Building correspondence graph...
-I20261108 13:55:51.526428 135390697120896 database_cache.cc:327]  in 0.299s (ignored 0)
-I20261108 13:55:51.526693 135390697120896 two_view_geometry.cc:1834] Decomposing relative poses...
-I20261108 13:55:55.271468 135390697120896 two_view_geometry.cc:1936] Decomposed 5815 relative poses (0 failed) in 3.745s
-W20261108 13:55:55.272532 135390697120896 global_pipeline.cc:62] Less than 50% of cameras have prior focal lengths. The global mapper depends on reasonably good focal length priors to perform well. Consider running 'colmap view_graph_calibrator' before 'colmap global_mapper' or providing camera calibrations manually.
-I20261108 13:55:55.298790 135390697120896 pose_graph.cc:51] Loaded 5815 edges into pose graph
-I20261108 13:57:14.203020 135390697120896 rotation_averaging.cc:274] Marked 1720 image pairs as invalid with relative rotation error > 10 degrees
-I20261108 13:57:14.250201 135390697120896 rotation_averaging.cc:274] Marked 5 image pairs as invalid with relative rotation error > 10 degrees
-I20261108 13:57:14.250681 135390697120896 global_pipeline.cc:302] Found 2 connected component(s) after rotation filtering
-I20261108 13:57:14.250788 135390697120896 global_pipeline.cc:319] === Reconstructing component 1 / 2 with 295 images ===
-I20261108 13:57:15.500542 135390697120896 pose_graph.cc:51] Loaded 5781 edges into pose graph
-I20261108 13:57:15.500612 135390697120896 global_mapper.cc:553] === Running rotation averaging ===
-I20261108 13:58:34.610634 135390697120896 rotation_averaging.cc:274] Marked 1721 image pairs as invalid with relative rotation error > 10 degrees
-I20261108 13:59:53.554252 135390697120896 rotation_averaging.cc:274] Marked 22 image pairs as invalid with relative rotation error > 10 degrees
-I20261108 13:59:53.555550 135390697120896 global_mapper.cc:559] Rotation averaging done in 158.055 seconds
-I20261108 13:59:53.555580 135390697120896 global_mapper.cc:565] === Running track establishment ===
-I20261108 13:59:54.970217 135390697120896 global_mapper.cc:206] Established 241864 tracks from 993260 observations
-I20261108 13:59:55.175846 135390697120896 global_mapper.cc:261] Kept 127655 tracks, discarded 711 due to inconsistency
-I20261108 13:59:55.271915 135390697120896 global_mapper.cc:302] Before filtering: 127655, after filtering: 127655
-I20261108 13:59:55.429214 135390697120896 global_mapper.cc:569] Track establishment done in 1.87364 seconds
-I20261108 13:59:55.429291 135390697120896 global_mapper.cc:575] === Running global positioning ===
-I20261108 13:59:55.429313 135390697120896 global_positioning.cc:39] Setting up the global positioner problem
-W20261108 13:59:56.896323 135390697120896 global_positioning.cc:408] Requested to use GPU for bundle adjustment, but COLMAP was compiled without CUDA support. Falling back to CPU-based solvers.
-I20261108 13:59:56.896413 135390697120896 global_positioning.cc:59] Solving the global positioner problem
-I20261108 14:01:21.828408 135390697120896 global_positioning.cc:70] Ceres Solver Report: Iterations: 70, Initial cost: 4.932115e+06, Final cost: 5.391101e+01, Termination: CONVERGENCE
-I20261108 14:01:22.973133 135390697120896 global_mapper.cc:584] Global positioning done in 87.5438 seconds
-I20261108 14:01:23.026788 135390697120896 global_mapper.cc:596] === Running iterative bundle adjustment ===
-W20261108 14:01:23.736062 135390697120896 bundle_adjustment_ceres.cc:195] Requested to use GPU for bundle adjustment, but COLMAP was compiled without CUDA support. Falling back to CPU-based solvers.
-I20261108 14:01:34.576399 135390697120896 global_mapper.cc:391] Global bundle adjustment iteration 1 / 3, fixed-rotation stage finished
-I20261108 14:01:44.303148 135390697120896 global_mapper.cc:401] Global bundle adjustment iteration 1 / 3 finished
-I20261108 14:01:44.361145 135390697120896 global_mapper.cc:424] Filtering tracks by reprojection ...
-I20261108 14:02:01.259315 135390697120896 global_mapper.cc:391] Global bundle adjustment iteration 2 / 3, fixed-rotation stage finished
-I20261108 14:02:20.436651 135390697120896 global_mapper.cc:401] Global bundle adjustment iteration 2 / 3 finished
-I20261108 14:02:20.496714 135390697120896 global_mapper.cc:424] Filtering tracks by reprojection ...
-I20261108 14:02:31.688243 135390697120896 global_mapper.cc:391] Global bundle adjustment iteration 3 / 3, fixed-rotation stage finished
-I20261108 14:02:40.069652 135390697120896 global_mapper.cc:401] Global bundle adjustment iteration 3 / 3 finished
-I20261108 14:02:40.140993 135390697120896 global_mapper.cc:424] Filtering tracks by reprojection ...
-I20261108 14:02:40.339633 135390697120896 global_mapper.cc:449] Filtering tracks by reprojection ...
-I20261108 14:02:40.595461 135390697120896 global_mapper.cc:608] Iterative bundle adjustment done in 77.5686 seconds
-I20261108 14:02:40.595534 135390697120896 global_mapper.cc:614] === Running iterative retriangulation and refinement ===
-I20261108 14:03:08.477687 135390697120896 global_mapper.cc:623] Iterative retriangulation and refinement done in 27.8822 seconds
-I20261108 14:03:08.510741 135390697120896 global_pipeline.cc:183] Reconstruction done in 353.01 seconds
-I20261108 14:03:08.513082 135390697120896 global_pipeline.cc:319] === Reconstructing component 2 / 2 with 9 images ===
-I20261108 14:03:08.529461 135390697120896 pose_graph.cc:51] Loaded 34 edges into pose graph
-I20261108 14:03:08.529482 135390697120896 global_mapper.cc:553] === Running rotation averaging ===
-I20261108 14:03:08.530501 135390697120896 rotation_averaging.cc:274] Marked 5 image pairs as invalid with relative rotation error > 10 degrees
-I20261108 14:03:08.531354 135390697120896 rotation_averaging.cc:274] Marked 0 image pairs as invalid with relative rotation error > 10 degrees
-I20261108 14:03:08.531374 135390697120896 global_mapper.cc:559] Rotation averaging done in 0.001886 seconds
-I20261108 14:03:08.531381 135390697120896 global_mapper.cc:565] === Running track establishment ===
-I20261108 14:03:08.547996 135390697120896 global_mapper.cc:206] Established 9357 tracks from 34952 observations
-I20261108 14:03:08.552734 135390697120896 global_mapper.cc:261] Kept 5738 tracks, discarded 11 due to inconsistency
-I20261108 14:03:08.554739 135390697120896 global_mapper.cc:302] Before filtering: 5738, after filtering: 5738
-I20261108 14:03:08.557828 135390697120896 global_mapper.cc:569] Track establishment done in 0.026444 seconds
-I20261108 14:03:08.557853 135390697120896 global_mapper.cc:575] === Running global positioning ===
-I20261108 14:03:08.557861 135390697120896 global_positioning.cc:39] Setting up the global positioner problem
-I20261108 14:03:08.600782 135390697120896 global_positioning.cc:59] Solving the global positioner problem
-I20261108 14:03:14.007803 135390697120896 global_positioning.cc:70] Ceres Solver Report: Iterations: 101, Initial cost: 1.924010e+05, Final cost: 7.285995e-02, Termination: NO_CONVERGENCE
-I20261108 14:03:14.054786 135390697120896 global_mapper.cc:584] Global positioning done in 5.49694 seconds
-I20261108 14:03:14.056137 135390697120896 global_mapper.cc:596] === Running iterative bundle adjustment ===
-I20261108 14:03:17.031687 135390697120896 global_mapper.cc:391] Global bundle adjustment iteration 1 / 3, fixed-rotation stage finished
-I20261108 14:03:18.481891 135390697120896 global_mapper.cc:401] Global bundle adjustment iteration 1 / 3 finished
-I20261108 14:03:18.484277 135390697120896 global_mapper.cc:424] Filtering tracks by reprojection ...
-I20261108 14:03:18.499438 135390697120896 global_mapper.cc:443] fewer than 0.1% tracks are filtered, stop the iteration.
-I20261108 14:03:18.499571 135390697120896 global_mapper.cc:449] Filtering tracks by reprojection ...
-I20261108 14:03:18.505400 135390697120896 global_mapper.cc:608] Iterative bundle adjustment done in 4.44923 seconds
-I20261108 14:03:18.505427 135390697120896 global_mapper.cc:614] === Running iterative retriangulation and refinement ===
-E20261108 14:03:18.509286 135390697120896 global_mapper.cc:26] Cannot run bundle adjustment: no 3D points to optimize
-I20261108 14:03:18.509501 135390697120896 global_pipeline.cc:183] Reconstruction done in 9.98002 seconds
-E20261108 14:03:18.509513 135390697120896 global_pipeline.cc:190] Global mapping failed
-I20261108 14:03:18.510685 135390697120896 global_pipeline.cc:254] Extracting colors ...
-I20261108 14:03:19.068680 135390697120896 global_pipeline.cc:260] Kept 1 reconstruction(s), discarded 0 with fewer than 3 registered frames, and failed to reconstruct 1
-W20261108 14:03:19.068740 135390697120896 global_pipeline.cc:62] Less than 50% of cameras have prior focal lengths. The global mapper depends on reasonably good focal length priors to perform well. Consider running 'colmap view_graph_calibrator' before 'colmap global_mapper' or providing camera calibrations manually.
- 1178s global 295
-SFM global: 295 of 305 frames placed (97%), 53397 points, 1178 s; by folder c01:31/31 c02:42/42 c03:23/33 c04:34/34 c05:128/128 c06:33/33 p_1200x1600:4/4
+ 135223790515776 feature_extraction.cc:294]   Features:        5279 (SIFT)
+I20261108 15:48:21.598037 135223790515776 feature_extraction.cc:270] Processed file [27/33]
+I20261108 15:48:21.598143 135223790515776 feature_extraction.cc:273]   Name:            c06/c06_00049.jpg
+I20261108 15:48:21.598165 135223790515776 feature_extraction.cc:282]   Dimensions:      900 x 1600
+I20261108 15:48:21.598183 135223790515776 feature_extraction.cc:285]   Camera:          #6 - RADIAL
+I20261108 15:48:21.598218 135223790515776 feature_extraction.cc:289]   Focal Length:    1200.00px
+I20261108 15:48:21.598250 135223790515776 feature_extraction.cc:294]   Features:        5553 (SIFT)
+I20261108 15:48:22.191806 135223790515776 feature_extraction.cc:270] Processed file [28/33]
+I20261108 15:48:22.191925 135223790515776 feature_extraction.cc:273]   Name:            c06/c06_00056.jpg
+I20261108 15:48:22.191949 135223790515776 feature_extraction.cc:282]   Dimensions:      900 x 1600
+I20261108 15:48:22.191968 135223790515776 feature_extraction.cc:285]   Camera:          #6 - RADIAL
+I20261108 15:48:22.191989 135223790515776 feature_extraction.cc:289]   Focal Length:    1200.00px
+I20261108 15:48:22.192059 135223790515776 feature_extraction.cc:294]   Features:        5959 (SIFT)
+I20261108 15:48:22.926889 135223790515776 feature_extraction.cc:270] Processed file [29/33]
+I20261108 15:48:22.927024 135223790515776 feature_extraction.cc:273]   Name:            c06/c06_00058.jpg
+I20261108 15:48:22.927047 135223790515776 feature_extraction.cc:282]   Dimensions:      900 x 1600
+I20261108 15:48:22.927067 135223790515776 feature_extraction.cc:285]   Camera:          #6 - RADIAL
+I20261108 15:48:22.927088 135223790515776 feature_extraction.cc:289]   Focal Length:    1200.00px
+I20261108 15:48:22.927119 135223790515776 feature_extraction.cc:294]   Features:        4820 (SIFT)
+I20261108 15:48:23.312192 135223790515776 feature_extraction.cc:270] Processed file [30/33]
+I20261108 15:48:23.312265 135223790515776 feature_extraction.cc:273]   Name:            c06/c06_00060.jpg
+I20261108 15:48:23.312275 135223790515776 feature_extraction.cc:282]   Dimensions:      900 x 1600
+I20261108 15:48:23.312284 135223790515776 feature_extraction.cc:285]   Camera:          #6 - RADIAL
+I20261108 15:48:23.312294 135223790515776 feature_extraction.cc:289]   Focal Length:    1200.00px
+I20261108 15:48:23.312310 135223790515776 feature_extraction.cc:294]   Features:        4821 (SIFT)
+I20261108 15:48:23.545318 135223790515776 feature_extraction.cc:270] Processed file [31/33]
+I20261108 15:48:23.545410 135223790515776 feature_extraction.cc:273]   Name:            c06/c06_00061.jpg
+I20261108 15:48:23.545421 135223790515776 feature_extraction.cc:282]   Dimensions:      900 x 1600
+I20261108 15:48:23.545429 135223790515776 feature_extraction.cc:285]   Camera:          #6 - RADIAL
+I20261108 15:48:23.545439 135223790515776 feature_extraction.cc:289]   Focal Length:    1200.00px
+I20261108 15:48:23.545461 135223790515776 feature_extraction.cc:294]   Features:        5313 (SIFT)
+I20261108 15:48:24.337186 135223790515776 feature_extraction.cc:270] Processed file [32/33]
+I20261108 15:48:24.337307 135223790515776 feature_extraction.cc:273]   Name:            c06/c06_00064.jpg
+I20261108 15:48:24.337347 135223790515776 feature_extraction.cc:282]   Dimensions:      900 x 1600
+I20261108 15:48:24.337372 135223790515776 feature_extraction.cc:285]   Camera:          #6 - RADIAL
+I20261108 15:48:24.337393 135223790515776 feature_extraction.cc:289]   Focal Length:    1200.00px
+I20261108 15:48:24.337425 135223790515776 feature_extraction.cc:294]   Features:        6776 (SIFT)
+I20261108 15:48:24.676556 135223790515776 feature_extraction.cc:270] Processed file [33/33]
+I20261108 15:48:24.676678 135223790515776 feature_extraction.cc:273]   Name:            c06/c06_00065.jpg
+I20261108 15:48:24.676702 135223790515776 feature_extraction.cc:282]   Dimensions:      900 x 1600
+I20261108 15:48:24.676722 135223790515776 feature_extraction.cc:285]   Camera:          #6 - RADIAL
+I20261108 15:48:24.676743 135223790515776 feature_extraction.cc:289]   Focal Length:    1200.00px
+I20261108 15:48:24.676774 135223790515776 feature_extraction.cc:294]   Features:        6556 (SIFT)
+I20261108 15:48:24.705445 135224109299264 timer.cc:90] Elapsed time: 0.216 [minutes]
+I20261108 15:48:24.771218 135224109299264 feature_extraction.cc:498] === Feature extraction ===
+I20261108 15:48:24.772104 135224048473664 sift.cc:764] Creating SIFT CPU feature extractor
+I20261108 15:48:24.772137 135224056866368 sift.cc:764] Creating SIFT CPU feature extractor
+I20261108 15:48:24.772375 135223773730368 sift.cc:764] Creating SIFT CPU feature extractor
+I20261108 15:48:24.772236 135224040080960 sift.cc:764] Creating SIFT CPU feature extractor
+I20261108 15:48:24.772260 135223815693888 sift.cc:764] Creating SIFT CPU feature extractor
+I20261108 15:48:24.772317 135223782123072 sift.cc:764] Creating SIFT CPU feature extractor
+I20261108 15:48:24.772203 135223824086592 sift.cc:764] Creating SIFT CPU feature extractor
+I20261108 15:48:27.667624 135223689868864 feature_extraction.cc:270] Processed file [1/4]
+I20261108 15:48:27.667762 135223689868864 feature_extraction.cc:273]   Name:            p_1200x1600/p_000.jpg
+I20261108 15:48:27.667819 135223689868864 feature_extraction.cc:282]   Dimensions:      1200 x 1600
+I20261108 15:48:27.667840 135223689868864 feature_extraction.cc:285]   Camera:          #7 - RADIAL
+I20261108 15:48:27.667860 135223689868864 feature_extraction.cc:289]   Focal Length:    1920.00px
+I20261108 15:48:27.667891 135223689868864 feature_extraction.cc:294]   Features:        5260 (SIFT)
+I20261108 15:48:27.751289 135223689868864 feature_extraction.cc:270] Processed file [2/4]
+I20261108 15:48:27.751424 135223689868864 feature_extraction.cc:273]   Name:            p_1200x1600/p_001.jpg
+I20261108 15:48:27.751448 135223689868864 feature_extraction.cc:282]   Dimensions:      1200 x 1600
+I20261108 15:48:27.751467 135223689868864 feature_extraction.cc:285]   Camera:          #8 - RADIAL
+I20261108 15:48:27.751488 135223689868864 feature_extraction.cc:289]   Focal Length:    1920.00px
+I20261108 15:48:27.751520 135223689868864 feature_extraction.cc:294]   Features:        4778 (SIFT)
+I20261108 15:48:27.794021 135223689868864 feature_extraction.cc:270] Processed file [3/4]
+I20261108 15:48:27.794136 135223689868864 feature_extraction.cc:273]   Name:            p_1200x1600/p_002.jpg
+I20261108 15:48:27.794160 135223689868864 feature_extraction.cc:282]   Dimensions:      1200 x 1600
+I20261108 15:48:27.794180 135223689868864 feature_extraction.cc:285]   Camera:          #9 - RADIAL
+I20261108 15:48:27.794201 135223689868864 feature_extraction.cc:289]   Focal Length:    1920.00px
+I20261108 15:48:27.794232 135223689868864 feature_extraction.cc:294]   Features:        7405 (SIFT)
+I20261108 15:48:28.425162 135223689868864 feature_extraction.cc:270] Processed file [4/4]
+I20261108 15:48:28.425274 135223689868864 feature_extraction.cc:273]   Name:            p_1200x1600/p_003.jpg
+I20261108 15:48:28.425297 135223689868864 feature_extraction.cc:282]   Dimensions:      1200 x 1600
+I20261108 15:48:28.425317 135223689868864 feature_extraction.cc:285]   Camera:          #10 - RADIAL
+I20261108 15:48:28.425356 135223689868864 feature_extraction.cc:289]   Focal Length:    1920.00px
+I20261108 15:48:28.425388 135223689868864 feature_extraction.cc:294]   Features:        6729 (SIFT)
+I20261108 15:48:28.452940 135224109299264 timer.cc:90] Elapsed time: 0.061 [minutes]
+  107s features 305 images in 7 folders
+I20261108 15:48:28.504433 135224109299264 feature_matching.cc:196] === Feature matching & geometric verification ===
+I20261108 15:48:28.506093 135223773730368 sift.cc:1685] Creating SIFT CPU feature matcher
+I20261108 15:48:28.506123 135223782123072 sift.cc:1685] Creating SIFT CPU feature matcher
+I20261108 15:48:28.506091 135223689868864 sift.cc:1685] Creating SIFT CPU feature matcher
+I20261108 15:48:28.506237 135224100906560 sift.cc:1685] Creating SIFT CPU feature matcher
+I20261108 15:48:28.506263 135224065259072 sift.cc:1685] Creating SIFT CPU feature matcher
+I20261108 15:48:28.506255 135224084121152 sift.cc:1685] Creating SIFT CPU feature matcher
+I20261108 15:48:28.506247 135224092513856 sift.cc:1685] Creating SIFT CPU feature matcher
+I20261108 15:48:28.507315 135224109299264 pairing.cc:181] Generating exhaustive image pairs...
+I20261108 15:48:28.507354 135224109299264 pairing.cc:214] Processing block [1/7, 1/7]
+I20261108 15:48:44.911284 135224109299264 feature_matching.cc:218] in 16.404s
+I20261108 15:48:44.911483 135224109299264 pairing.cc:214] Processing block [1/7, 2/7]
+I20261108 15:48:57.957698 135224109299264 feature_matching.cc:218] in 13.046s
+I20261108 15:48:57.957779 135224109299264 pairing.cc:214] Processing block [1/7, 3/7]
+I20261108 15:49:12.059955 135224109299264 feature_matching.cc:218] in 14.102s
+I20261108 15:49:12.060037 135224109299264 pairing.cc:214] Processing block [1/7, 4/7]
+I20261108 15:49:24.752275 135224109299264 feature_matching.cc:218] in 12.692s
+I20261108 15:49:24.752400 135224109299264 pairing.cc:214] Processing block [1/7, 5/7]
+I20261108 15:49:38.351519 135224109299264 feature_matching.cc:218] in 13.599s
+I20261108 15:49:38.351604 135224109299264 pairing.cc:214] Processing block [1/7, 6/7]
+I20261108 15:49:51.517078 135224109299264 feature_matching.cc:218] in 13.165s
+I20261108 15:49:51.517160 135224109299264 pairing.cc:214] Processing block [1/7, 7/7]
+I20261108 15:49:51.704895 135224109299264 feature_matching.cc:218] in 0.188s
+I20261108 15:49:51.704936 135224109299264 pairing.cc:214] Processing block [2/7, 1/7]
+I20261108 15:50:13.942949 135224109299264 feature_matching.cc:218] in 22.238s
+I20261108 15:50:13.943063 135224109299264 pairing.cc:214] Processing block [2/7, 2/7]
+I20261108 15:50:37.216800 135224109299264 feature_matching.cc:218] in 23.274s
+I20261108 15:50:37.216890 135224109299264 pairing.cc:214] Processing block [2/7, 3/7]
+I20261108 15:50:51.090070 135224109299264 feature_matching.cc:218] in 13.873s
+I20261108 15:50:51.090144 135224109299264 pairing.cc:214] Processing block [2/7, 4/7]
+I20261108 15:51:06.154301 135224109299264 feature_matching.cc:218] in 15.064s
+I20261108 15:51:06.154409 135224109299264 pairing.cc:214] Processing block [2/7, 5/7]
+I20261108 15:51:22.314503 135224109299264 feature_matching.cc:218] in 16.160s
+I20261108 15:51:22.314573 135224109299264 pairing.cc:214] Processing block [2/7, 6/7]
+I20261108 15:51:37.415604 135224109299264 feature_matching.cc:218] in 15.101s
+I20261108 15:51:37.415700 135224109299264 pairing.cc:214] Processing block [2/7, 7/7]
+I20261108 15:51:37.627976 135224109299264 feature_matching.cc:218] in 0.212s
+I20261108 15:51:37.628056 135224109299264 pairing.cc:214] Processing block [3/7, 1/7]
+I20261108 15:51:52.668864 135224109299264 feature_matching.cc:218] in 15.041s
+I20261108 15:51:52.668982 135224109299264 pairing.cc:214] Processing block [3/7, 2/7]
+I20261108 15:52:12.809020 135224109299264 feature_matching.cc:218] in 20.140s
+I20261108 15:52:12.809111 135224109299264 pairing.cc:214] Processing block [3/7, 3/7]
+I20261108 15:52:35.983017 135224109299264 feature_matching.cc:218] in 23.174s
+I20261108 15:52:35.983148 135224109299264 pairing.cc:214] Processing block [3/7, 4/7]
+I20261108 15:52:49.035396 135224109299264 feature_matching.cc:218] in 13.052s
+I20261108 15:52:49.035483 135224109299264 pairing.cc:214] Processing block [3/7, 5/7]
+I20261108 15:53:04.804876 135224109299264 feature_matching.cc:218] in 15.769s
+I20261108 15:53:04.804925 135224109299264 pairing.cc:214] Processing block [3/7, 6/7]
+I20261108 15:53:19.840000 135224109299264 feature_matching.cc:218] in 15.035s
+I20261108 15:53:19.840082 135224109299264 pairing.cc:214] Processing block [3/7, 7/7]
+I20261108 15:53:20.083040 135224109299264 feature_matching.cc:218] in 0.243s
+I20261108 15:53:20.083116 135224109299264 pairing.cc:214] Processing block [4/7, 1/7]
+I20261108 15:53:34.010588 135224109299264 feature_matching.cc:218] in 13.927s
+I20261108 15:53:34.010671 135224109299264 pairing.cc:214] Processing block [4/7, 2/7]
+I20261108 15:53:49.404359 135224109299264 feature_matching.cc:218] in 15.394s
+I20261108 15:53:49.404458 135224109299264 pairing.cc:214] Processing block [4/7, 3/7]
+I20261108 15:54:06.128617 135224109299264 feature_matching.cc:218] in 16.724s
+I20261108 15:54:06.128726 135224109299264 pairing.cc:214] Processing block [4/7, 4/7]
+I20261108 15:54:23.776021 135224109299264 feature_matching.cc:218] in 17.647s
+I20261108 15:54:23.776102 135224109299264 pairing.cc:214] Processing block [4/7, 5/7]
+I20261108 15:54:46.118820 135224109299264 feature_matching.cc:218] in 22.343s
+I20261108 15:54:46.118968 135224109299264 pairing.cc:214] Processing block [4/7, 6/7]
+I20261108 15:55:01.175211 135224109299264 feature_matching.cc:218] in 15.056s
+I20261108 15:55:01.175283 135224109299264 pairing.cc:214] Processing block [4/7, 7/7]
+I20261108 15:55:01.401889 135224109299264 feature_matching.cc:218] in 0.227s
+I20261108 15:55:01.401967 135224109299264 pairing.cc:214] Processing block [5/7, 1/7]
+I20261108 15:55:16.264566 135224109299264 feature_matching.cc:218] in 14.863s
+I20261108 15:55:16.264716 135224109299264 pairing.cc:214] Processing block [5/7, 2/7]
+I20261108 15:55:32.434367 135224109299264 feature_matching.cc:218] in 16.170s
+I20261108 15:55:32.434455 135224109299264 pairing.cc:214] Processing block [5/7, 3/7]
+I20261108 15:55:49.520774 135224109299264 feature_matching.cc:218] in 17.086s
+I20261108 15:55:49.520892 135224109299264 pairing.cc:214] Processing block [5/7, 4/7]
+I20261108 15:56:09.337223 135224109299264 feature_matching.cc:218] in 19.816s
+I20261108 15:56:09.337308 135224109299264 pairing.cc:214] Processing block [5/7, 5/7]
+I20261108 15:56:27.994376 135224109299264 feature_matching.cc:218] in 18.657s
+I20261108 15:56:27.994478 135224109299264 pairing.cc:214] Processing block [5/7, 6/7]
+I20261108 15:56:40.904062 135224109299264 feature_matching.cc:218] in 12.910s
+I20261108 15:56:40.904145 135224109299264 pairing.cc:214] Processing block [5/7, 7/7]
+I20261108 15:56:41.108117 135224109299264 feature_matching.cc:218] in 0.204s
+I20261108 15:56:41.108193 135224109299264 pairing.cc:214] Processing block [6/7, 1/7]
+I20261108 15:56:55.430433 135224109299264 feature_matching.cc:218] in 14.322s
+I20261108 15:56:55.430516 135224109299264 pairing.cc:214] Processing block [6/7, 2/7]
+I20261108 15:57:11.255819 135224109299264 feature_matching.cc:218] in 15.825s
+I20261108 15:57:11.255933 135224109299264 pairing.cc:214] Processing block [6/7, 3/7]
+I20261108 15:57:27.464308 135224109299264 feature_matching.cc:218] in 16.208s
+I20261108 15:57:27.464411 135224109299264 pairing.cc:214] Processing block [6/7, 4/7]
+I20261108 15:57:47.805458 135224109299264 feature_matching.cc:218] in 20.341s
+I20261108 15:57:47.805577 135224109299264 pairing.cc:214] Processing block [6/7, 5/7]
+I20261108 15:58:09.316467 135224109299264 feature_matching.cc:218] in 21.511s
+I20261108 15:58:09.316552 135224109299264 pairing.cc:214] Processing block [6/7, 6/7]
+I20261108 15:58:23.926406 135224109299264 feature_matching.cc:218] in 14.610s
+I20261108 15:58:23.926516 135224109299264 pairing.cc:214] Processing block [6/7, 7/7]
+I20261108 15:58:24.155852 135224109299264 feature_matching.cc:218] in 0.229s
+I20261108 15:58:24.155932 135224109299264 pairing.cc:214] Processing block [7/7, 1/7]
+I20261108 15:58:26.997227 135224109299264 feature_matching.cc:218] in 2.841s
+I20261108 15:58:26.997303 135224109299264 pairing.cc:214] Processing block [7/7, 2/7]
+I20261108 15:58:30.133182 135224109299264 feature_matching.cc:218] in 3.136s
+I20261108 15:58:30.133257 135224109299264 pairing.cc:214] Processing block [7/7, 3/7]
+I20261108 15:58:33.238323 135224109299264 feature_matching.cc:218] in 3.105s
+I20261108 15:58:33.238412 135224109299264 pairing.cc:214] Processing block [7/7, 4/7]
+I20261108 15:58:36.157310 135224109299264 feature_matching.cc:218] in 2.919s
+I20261108 15:58:36.157403 135224109299264 pairing.cc:214] Processing block [7/7, 5/7]
+I20261108 15:58:39.200276 135224109299264 feature_matching.cc:218] in 3.043s
+I20261108 15:58:39.200363 135224109299264 pairing.cc:214] Processing block [7/7, 6/7]
+I20261108 15:58:42.308461 135224109299264 feature_matching.cc:218] in 3.108s
+I20261108 15:58:42.308510 135224109299264 pairing.cc:214] Processing block [7/7, 7/7]
+I20261108 15:58:42.448041 135224109299264 feature_matching.cc:218] in 0.140s
+I20261108 15:58:42.448117 135224109299264 timer.cc:90] Elapsed time: 10.232 [minutes]
+  721s matched
+I20261108 15:58:42.521038 135227065066624 database_cache.cc:82] Loading rigs...
+I20261108 15:58:42.521163 135227065066624 database_cache.cc:92]  10 in 0.000s
+I20261108 15:58:42.521199 135227065066624 database_cache.cc:100] Loading cameras...
+I20261108 15:58:42.521255 135227065066624 database_cache.cc:118]  10 in 0.000s
+I20261108 15:58:42.521298 135227065066624 database_cache.cc:126] Loading frames...
+I20261108 15:58:42.522195 135227065066624 database_cache.cc:136]  305 in 0.001s
+I20261108 15:58:42.522232 135227065066624 database_cache.cc:144] Loading matches...
+I20261108 15:58:42.586831 135227065066624 database_cache.cc:163]  5818 in 0.065s
+I20261108 15:58:42.586889 135227065066624 database_cache.cc:171] Loading images...
+I20261108 15:58:42.651363 135227065066624 database_cache.cc:268]  305 in 0.064s (connected 304, loaded 304)
+I20261108 15:58:42.651426 135227065066624 database_cache.cc:282] Loading pose priors...
+I20261108 15:58:42.651441 135227065066624 database_cache.cc:290]  0 in 0.000s
+I20261108 15:58:42.651448 135227065066624 database_cache.cc:298] Building correspondence graph...
+I20261108 15:58:42.940027 135227065066624 database_cache.cc:327]  in 0.289s (ignored 0)
+I20261108 15:58:42.940282 135227065066624 two_view_geometry.cc:1834] Decomposing relative poses...
+I20261108 15:58:46.593944 135227065066624 two_view_geometry.cc:1936] Decomposed 5815 relative poses (1 failed) in 3.654s
+W20261108 15:58:46.594572 135227065066624 global_pipeline.cc:62] Less than 50% of cameras have prior focal lengths. The global mapper depends on reasonably good focal length priors to perform well. Consider running 'colmap view_graph_calibrator' before 'colmap global_mapper' or providing camera calibrations manually.
+I20261108 15:58:46.610429 135227065066624 pose_graph.cc:51] Loaded 5814 edges into pose graph
+I20261108 15:59:59.101900 135227065066624 rotation_averaging.cc:274] Marked 1753 image pairs as invalid with relative rotation error > 10 degrees
+I20261108 15:59:59.131694 135227065066624 rotation_averaging.cc:274] Marked 4 image pairs as invalid with relative rotation error > 10 degrees
+I20261108 15:59:59.132069 135227065066624 global_pipeline.cc:302] Found 2 connected component(s) after rotation filtering
+I20261108 15:59:59.132174 135227065066624 global_pipeline.cc:319] === Reconstructing component 1 / 2 with 295 images ===
+I20261108 16:00:00.268504 135227065066624 pose_graph.cc:51] Loaded 5780 edges into pose graph
+I20261108 16:00:00.268574 135227065066624 global_mapper.cc:553] === Running rotation averaging ===
+I20261108 16:01:14.373000 135227065066624 rotation_averaging.cc:274] Marked 1746 image pairs as invalid with relative rotation error > 10 degrees
+I20261108 16:02:31.698722 135227065066624 rotation_averaging.cc:274] Marked 13 image pairs as invalid with relative rotation error > 10 degrees
+I20261108 16:02:31.699899 135227065066624 global_mapper.cc:559] Rotation averaging done in 151.431 seconds
+I20261108 16:02:31.699927 135227065066624 global_mapper.cc:565] === Running track establishment ===
+I20261108 16:02:33.361881 135227065066624 global_mapper.cc:206] Established 240269 tracks from 987946 observations
+I20261108 16:02:33.573213 135227065066624 global_mapper.cc:261] Kept 126904 tracks, discarded 713 due to inconsistency
+I20261108 16:02:33.684285 135227065066624 global_mapper.cc:302] Before filtering: 126904, after filtering: 126904
+I20261108 16:02:33.893912 135227065066624 global_mapper.cc:569] Track establishment done in 2.19399 seconds
+I20261108 16:02:33.893994 135227065066624 global_mapper.cc:575] === Running global positioning ===
+I20261108 16:02:33.894013 135227065066624 global_positioning.cc:39] Setting up the global positioner problem
+W20261108 16:02:35.468821 135227065066624 global_positioning.cc:408] Requested to use GPU for bundle adjustment, but COLMAP was compiled without CUDA support. Falling back to CPU-based solvers.
+I20261108 16:02:35.468957 135227065066624 global_positioning.cc:59] Solving the global positioner problem
+I20261108 16:03:57.036288 135227065066624 global_positioning.cc:70] Ceres Solver Report: Iterations: 67, Initial cost: 4.919614e+06, Final cost: 5.075232e+01, Termination: CONVERGENCE
+I20261108 16:03:58.171413 135227065066624 global_mapper.cc:584] Global positioning done in 84.2774 seconds
+I20261108 16:03:58.225913 135227065066624 global_mapper.cc:596] === Running iterative bundle adjustment ===
+W20261108 16:03:58.965079 135227065066624 bundle_adjustment_ceres.cc:195] Requested to use GPU for bundle adjustment, but COLMAP was compiled without CUDA support. Falling back to CPU-based solvers.
+I20261108 16:04:07.544384 135227065066624 global_mapper.cc:391] Global bundle adjustment iteration 1 / 3, fixed-rotation stage finished
+I20261108 16:04:22.725351 135227065066624 global_mapper.cc:401] Global bundle adjustment iteration 1 / 3 finished
+I20261108 16:04:22.796373 135227065066624 global_mapper.cc:424] Filtering tracks by reprojection ...
+W20261108 16:04:36.020350 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:36.170835 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:37.443784 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:37.859059 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:37.998235 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:38.134543 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:38.556338 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:39.538072 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:39.953564 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:04:40.090539 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+I20261108 16:04:40.694071 135227065066624 global_mapper.cc:391] Global bundle adjustment iteration 2 / 3, fixed-rotation stage finished
+I20261108 16:05:17.977259 135227065066624 global_mapper.cc:401] Global bundle adjustment iteration 2 / 3 finished
+I20261108 16:05:18.051035 135227065066624 global_mapper.cc:424] Filtering tracks by reprojection ...
+W20261108 16:05:24.815338 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:05:24.960876 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:05:25.947932 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:05:26.089298 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:05:26.526456 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:05:28.113449 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:05:28.250367 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+W20261108 16:05:28.667070 135227065066624 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: CHOLMOD warning: Matrix not positive definite.
+I20261108 16:05:29.275474 135227065066624 global_mapper.cc:391] Global bundle adjustment iteration 3 / 3, fixed-rotation stage finished
+I20261108 16:05:34.224012 135227065066624 global_mapper.cc:401] Global bundle adjustment iteration 3 / 3 finished
+I20261108 16:05:34.286850 135227065066624 global_mapper.cc:424] Filtering tracks by reprojection ...
+I20261108 16:05:34.490690 135227065066624 global_mapper.cc:449] Filtering tracks by reprojection ...
+I20261108 16:05:34.744034 135227065066624 global_mapper.cc:608] Iterative bundle adjustment done in 96.5181 seconds
+I20261108 16:05:34.744119 135227065066624 global_mapper.cc:614] === Running iterative retriangulation and refinement ===
+I20261108 16:05:56.970711 135227065066624 global_mapper.cc:623] Iterative retriangulation and refinement done in 22.2266 seconds
+I20261108 16:05:57.024555 135227065066624 global_pipeline.cc:183] Reconstruction done in 356.756 seconds
+I20261108 16:05:57.026920 135227065066624 global_pipeline.cc:319] === Reconstructing component 2 / 2 with 9 images ===
+I20261108 16:05:57.048607 135227065066624 pose_graph.cc:51] Loaded 34 edges into pose graph
+I20261108 16:05:57.048667 135227065066624 global_mapper.cc:553] === Running rotation averaging ===
+I20261108 16:05:57.049843 135227065066624 rotation_averaging.cc:274] Marked 4 image pairs as invalid with relative rotation error > 10 degrees
+I20261108 16:05:57.050814 135227065066624 rotation_averaging.cc:274] Marked 0 image pairs as invalid with relative rotation error > 10 degrees
+I20261108 16:05:57.050836 135227065066624 global_mapper.cc:559] Rotation averaging done in 0.002164 seconds
+I20261108 16:05:57.050846 135227065066624 global_mapper.cc:565] === Running track establishment ===
+I20261108 16:05:57.070117 135227065066624 global_mapper.cc:206] Established 9440 tracks from 35179 observations
+I20261108 16:05:57.077958 135227065066624 global_mapper.cc:261] Kept 5758 tracks, discarded 12 due to inconsistency
+I20261108 16:05:57.081759 135227065066624 global_mapper.cc:302] Before filtering: 5758, after filtering: 5758
+I20261108 16:05:57.088187 135227065066624 global_mapper.cc:569] Track establishment done in 0.037343 seconds
+I20261108 16:05:57.088238 135227065066624 global_mapper.cc:575] === Running global positioning ===
+I20261108 16:05:57.088247 135227065066624 global_positioning.cc:39] Setting up the global positioner problem
+I20261108 16:05:57.141024 135227065066624 global_positioning.cc:59] Solving the global positioner problem
+I20261108 16:06:00.245993 135227065066624 global_positioning.cc:70] Ceres Solver Report: Iterations: 59, Initial cost: 1.838649e+05, Final cost: 1.245261e-01, Termination: CONVERGENCE
+I20261108 16:06:00.304322 135227065066624 global_mapper.cc:584] Global positioning done in 3.21609 seconds
+I20261108 16:06:00.305723 135227065066624 global_mapper.cc:596] === Running iterative bundle adjustment ===
+I20261108 16:06:00.903127 135227065066624 global_mapper.cc:391] Global bundle adjustment iteration 1 / 3, fixed-rotation stage finished
+I20261108 16:06:02.802764 135227065066624 global_mapper.cc:401] Global bundle adjustment iteration 1 / 3 finished
+I20261108 16:06:02.804798 135227065066624 global_mapper.cc:424] Filtering tracks by reprojection ...
+I20261108 16:06:02.970165 135227065066624 global_mapper.cc:391] Global bundle adjustment iteration 3 / 3, fixed-rotation stage finished
+I20261108 16:06:03.155131 135227065066624 global_mapper.cc:401] Global bundle adjustment iteration 3 / 3 finished
+I20261108 16:06:03.157371 135227065066624 global_mapper.cc:424] Filtering tracks by reprojection ...
+I20261108 16:06:03.167151 135227065066624 global_mapper.cc:449] Filtering tracks by reprojection ...
+I20261108 16:06:03.173977 135227065066624 global_mapper.cc:608] Iterative bundle adjustment done in 2.86824 seconds
+I20261108 16:06:03.174035 135227065066624 global_mapper.cc:614] === Running iterative retriangulation and refinement ===
+I20261108 16:06:04.742197 135227065066624 global_mapper.cc:623] Iterative retriangulation and refinement done in 1.56817 seconds
+I20261108 16:06:04.745250 135227065066624 global_pipeline.cc:183] Reconstruction done in 7.69659 seconds
+I20261108 16:06:04.746434 135227065066624 global_pipeline.cc:254] Extracting colors ...
+I20261108 16:06:05.378164 135227065066624 global_pipeline.cc:254] Extracting colors ...
+I20261108 16:06:05.416640 135227065066624 global_pipeline.cc:260] Kept 2 reconstruction(s), discarded 0 with fewer than 3 registered frames, and failed to reconstruct 0
+W20261108 16:06:05.416702 135227065066624 global_pipeline.cc:62] Less than 50% of cameras have prior focal lengths. The global mapper depends on reasonably good focal length priors to perform well. Consider running 'colmap view_graph_calibrator' before 'colmap global_mapper' or providing camera calibrations manually.
+ 1164s global 295
+SFM global: 295 of 305 frames placed (97%), 54290 points, 1164 s; by folder c01:31/31 c02:42/42 c03:23/33 c04:34/34 c05:128/128 c06:33/33 p_1200x1600:4/4
