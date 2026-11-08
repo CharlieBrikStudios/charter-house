@@ -15,11 +15,17 @@ SUDO=""; [ "$(id -u)" = 0 ] || SUDO="sudo -n"
 WS=/workspace; { mkdir -p $WS && [ -w $WS ]; } 2>/dev/null || { $SUDO mkdir -p $WS && $SUDO chown "$(id -u)" $WS; } 2>/dev/null
 [ -w $WS ] || WS=$HOME/workspace; mkdir -p $WS; cd $WS
 export PATH=$HOME/.local/bin:$PATH
+# the nerfstudio image is lean (no git, no curl): install what the job needs
+echo "env: uid $(id -u), $(python3 --version 2>&1), pip $(python3 -m pip --version 2>&1 | cut -c1-40), apt $(command -v apt-get), sudo $(command -v sudo), git $(command -v git)"
+if ! command -v git >/dev/null; then
+  (export DEBIAN_FRONTEND=noninteractive; $SUDO apt-get update -qq && $SUDO apt-get install -y -qq git xz-utils ca-certificates) >/tmp/apt.log 2>&1 || { echo "apt failed:"; tail -5 /tmp/apt.log; }
+fi
+command -v git >/dev/null || { echo "no git: giving up"; sleep infinity; }
 git config --global user.email "charlie@brik-studios.com"; git config --global user.name "Charlie Baxter (RunPod splat job)"
 [ -d io ] || git clone -q --depth 1 -b splat-job "https://x-access-token:${GH_TOKEN}@github.com/CharlieBrikStudios/charter-house.git" io
 push() { (cd io && git add -A splat && git commit -qm "$1" && git pull -q --rebase origin splat-job && git push -q origin splat-job) >/dev/null 2>&1 || echo "push failed"; }
 say() { local J=$1; shift; mkdir -p io/splat/$J; echo "$(date -u +%FT%TZ) $*" | tee -a io/splat/$J/progress.log; push "splat $J: $*"; }
-pip install -q gdown pillow-heif >/dev/null 2>&1 || pip install -q --user gdown pillow-heif >/dev/null 2>&1
+python3 -m pip install -q gdown pillow-heif >/tmp/pip.log 2>&1 || python3 -m pip install -q --user gdown pillow-heif >>/tmp/pip.log 2>&1 || { echo "pip failed:"; tail -5 /tmp/pip.log; }
 # node for the web compression (a plain binary download: no root needed)
 # (the image has no curl: python downloads it)
 command -v npx >/dev/null || { python3 -c "import urllib.request;urllib.request.urlretrieve('https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz','/tmp/node.tgz')" && tar -xzf /tmp/node.tgz -C $HOME && export PATH=$HOME/node-v20.18.0-linux-x64/bin:$PATH; }
@@ -93,7 +99,7 @@ EOF
 run_job() {
   local J=$1 URL=$2 W=$WS/$1
   mkdir -p $W/raw; say $J "pod up on $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null | head -1); $(nproc) cpus; job $J"
-  gdown -q --folder "$URL" -O $W/raw --remaining-ok > $W/gdown.log 2>&1
+  python3 -m gdown -q --folder "$URL" -O $W/raw --remaining-ok > $W/gdown.log 2>&1
   local NV=$(find $W/raw -type f \( -iname '*.mov' -o -iname '*.mp4' -o -iname '*.m4v' \) | wc -l) NP=$(find $W/raw -type f \( -iname '*.heic' -o -iname '*.jpg' -o -iname '*.jpeg' \) | wc -l)
   [ $((NV + NP)) -gt 0 ] || { tail -20 $W/gdown.log > io/splat/$J/gdown_tail.log; say $J "FAILED: could not download the Drive folder (shared as anyone with the link?)"; touch io/splat/$J/DONE; push "splat $J: gave up"; return; }
   say $J "DOWNLOADED $NV clips and $NP stills, $(du -sh $W/raw | cut -f1): the Drive copies can go now"
