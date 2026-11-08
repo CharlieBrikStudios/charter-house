@@ -94,5 +94,24 @@
   ],
   "awards_note": "Hall &amp; Co: the award-winning restoration of Grade II-listed Bank Chambers, now ProFolk, on Stockport's Market Place.",
   "awards_bg": "arch1",
-  "awards_h": "The architect behind the Underbanks."
+  "awards_h": "The architect behind the Underbanks.",
+  "urgency": {
+    "cap": "Private pre-launch · Why now",
+    "h": "Our last launches sold out in days, not months.",
+    "stats": [
+      [
+        "Under 2 weeks",
+        "Underbank Lofts, our last launch, sold out"
+      ],
+      [
+        "5 and 7 days",
+        "The Print House, phases one and two"
+      ],
+      [
+        "Sold out",
+        "St Marys Gate next door, off-plan"
+      ]
+    ],
+    "p": "Charter House is the last site to be developed in the Underbanks: 27 apartments, and it isn't on the open market yet. The best apartments always go first, so book your 3D tour and choose yours before it launches."
+  }
 }

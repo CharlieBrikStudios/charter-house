@@ -197,7 +197,7 @@ def build(src, dst, prefix):
     # 8. link previews (WhatsApp, iMessage, LinkedIn): proper title, description and a picture
     import json, html as _h
     site = json.load(open(f"{HERE}/site.json", encoding="utf-8"))
-    url = site["url"] + ("andy/" if prefix else "")
+    url = site["url"] + ("andy/" if "/andy/" in dst else "")
     img = site["url"] + "assets/img/og.jpg"
     esc = lambda x: x.replace("&", "&amp;").replace('"', "&quot;")
     t, d = esc(site["title"]), esc(site["description"])
@@ -223,6 +223,10 @@ def build(src, dst, prefix):
     s = pass10.apply(s, rep)
     import pass12
     s, p12css = pass12.apply(s, rep)
+    if os.environ.get("V3"):
+        import pass_v3
+        s = pass_v3.apply(s, rep)
+        p12css += open(f"{HERE}/skin_v3.css", encoding="utf-8").read()
     # 6. skin
     css = (open(f"{HERE}/skin.css", encoding="utf-8").read() + "\n" + p12css).replace("{{F}}", F).replace("{{P}}", P)
     js = open(f"{HERE}/skin.js", encoding="utf-8").read()
@@ -234,7 +238,9 @@ def build(src, dst, prefix):
     open(dst, "w", encoding="utf-8").write(s)
     print(dst, round(os.path.getsize(dst) / 1024), "KB")
 
-build(f"{HERE}/src/index.html", f"{V2}/index.html", "")
-build(f"{HERE}/src/andy/index.html", f"{V2}/andy/index.html", "../")
+OUT = os.environ.get("OUT", V2)          # where the pages go
+PFX = os.environ.get("PFX", "")          # extra path from the output folder to the shared assets
+build(f"{HERE}/src/index.html", f"{OUT}/index.html", PFX)
+build(f"{HERE}/src/andy/index.html", f"{OUT}/andy/index.html", "../" + PFX)
 if MISSES:
     print("MISSES:\n  " + "\n  ".join(dict.fromkeys(MISSES)))
