@@ -791,3 +791,10 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 .rb:has(.pic.v2rv.go) .rbt{opacity:1!important;transform:none!important}
 @media (prefers-reduced-motion:reduce){.rb .pic.v2rv{clip-path:none!important;transform:none!important}.rb:has(.pic.v2rv) .rbt{opacity:1!important;transform:none!important}}
 .case7 .c7f:has(>div:nth-child(4)){grid-template-columns:1fr 1fr}
+/* awards: one centred strip across both columns */
+.team2 .awards{grid-column:1/-1;text-align:center;margin:8px 0 26px;padding:24px 0 0;border-top:1px solid var(--hair)}
+.team2 .awards>.cap{display:block;text-align:center;margin:0 0 16px!important}
+.team2 .awards ul{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 16px;margin:0}
+.team2 .awards li{flex:0 1 210px;padding:16px 16px 18px;background:var(--lift);border:1px solid var(--hair);text-align:center}
+.team2 .awards li::before{position:static;display:block;margin:2px auto 12px}
+@media (max-width:640px){.team2 .awards li{flex-basis:100%}}
