@@ -81,7 +81,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const base = 'assets/scans/' + id + '/';
 const fileOverride = q.get('f');   // (testing: another encoding of the same scan, e.g. t/t.spz)
 let meta;
-try { meta = await (await fetch(base + 'scan.json')).json(); }
+try { meta = await (await fetch(base + 'scan.json', { cache: 'no-cache' })).json(); }   // (revalidated: Pages lets browsers keep files 10 minutes)
 catch (e) { $('err').hidden = false; $('err').textContent = 'This scan isn’t ready yet.'; $('pct').hidden = true; throw e; }
 document.title = meta.title + ' · 3D Scan';
 $('title').textContent = meta.title; $('sub').textContent = meta.sub || ''; $('loadName').textContent = meta.title;
@@ -119,7 +119,7 @@ if (files) {   // a big scan comes in 90 MB parts (GitHub's file limit): join th
   for (const f of files) { const r = await fetch(f); const rd = r.body.getReader(); for (;;) { const { done, value } = await rd.read(); if (done) break; bufs.push(value); got += value.length; onProgress({ lengthComputable: true, loaded: got, total }); } }
   const all = new Uint8Array(got); let o = 0; for (const b of bufs) { all.set(b, o); o += b.length; }
   mesh = new SplatMesh({ fileBytes: all.buffer, fileName: meta.file });
-} else mesh = new SplatMesh({ url: base + (fileOverride || meta.file), onProgress });
+} else mesh = new SplatMesh({ url: base + (fileOverride || meta.file) + (meta.v ? '?v=' + meta.v : ''), onProgress });
 if (meta.quat) mesh.quaternion.set(...meta.quat);
 // the file may hold the splat turned 180 degrees about x (y and z flipped, as SPZ/SOG writers do for PLY's y-down axes):
 // scan.json "flip" (or ?flip=0/1 for testing) undoes it before the scan's own turn
