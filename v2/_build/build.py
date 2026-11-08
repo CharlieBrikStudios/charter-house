@@ -186,6 +186,28 @@ def build(src, dst, prefix):
     s = rep(s, '<small>on capital deployed, 5-year exit</small>', '<small>on capital deployed, 5-year hold</small>', label="5yr exit")
     s = rep(s, '<div class="cap">Annualised</div>', '<div class="cap">Average a year</div>', label="roi annualised")
     s = rep(s, 'Annualised return is the total return divided by the years held.', 'Average annual return is the total return divided by the years held; it is not compounded.', count=0, label="annualised note")
+    # 8. link previews (WhatsApp, iMessage, LinkedIn): proper title, description and a picture
+    import json, html as _h
+    site = json.load(open(f"{HERE}/site.json", encoding="utf-8"))
+    url = site["url"] + ("andy/" if prefix else "")
+    img = site["url"] + "assets/img/og.jpg"
+    esc = lambda x: x.replace("&", "&amp;").replace('"', "&quot;")
+    t, d = esc(site["title"]), esc(site["description"])
+    s, k = re.subn(r'<title>[^<]*</title>', f'<title>{t}</title>', s, count=1)
+    assert k == 1
+    s, k = re.subn(r'<meta name="description" content="[^"]*">',
+                   f'<meta name="description" content="{d}">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="BRIK Studios">'
+                   f'\n<meta property="og:title" content="{t}">\n<meta property="og:description" content="{d}">\n<meta property="og:url" content="{url}">'
+                   f'\n<meta property="og:image" content="{img}">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">'
+                   f'\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:title" content="{t}">\n<meta name="twitter:description" content="{d}">\n<meta name="twitter:image" content="{img}">', s, count=1)
+    assert k == 1
+    og = f"{V2}/assets/img/og.jpg"
+    if not os.path.exists(og):
+        from PIL import Image
+        im = Image.open(f"{V2}/assets/img/{site['og_source']}.webp").convert("RGB")
+        w, h = im.size; tw = min(w, round(h * 1200 / 630)); th = round(tw * 630 / 1200)
+        im = im.crop(((w - tw) // 2, (h - th) // 2, (w - tw) // 2 + tw, (h - th) // 2 + th)).resize((1200, 630), Image.LANCZOS)
+        im.save(og, "JPEG", quality=84, optimize=True, progressive=True)
     # 9. the sales story and the rest of pass 9
     import pass9
     s = pass9.apply(s, rep)
