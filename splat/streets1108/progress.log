@@ -32,3 +32,4 @@
 2026-11-08T13:27:33Z g2: 359 frames (8 stills) in 5 folders
 2026-11-08T13:27:34Z g2: camera solve (exhaustive matching, 7 threads)
 2026-11-08T13:37:34Z g2: ... I1108 13:37:22.767779 12933 feature_matching.cc:231] Matching block [7/8, 5/8]
+2026-11-08T13:40:52Z pod up on NVIDIA RTX A5000, 24564 MiB; 96 cpus; job streets1108; torch: ok 11.8 NVIDIA RTX A5000 64.0
