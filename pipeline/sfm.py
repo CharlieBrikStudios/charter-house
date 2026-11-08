@@ -29,7 +29,9 @@ dev = pycolmap.Device.cuda if getattr(pycolmap, 'has_cuda', False) else pycolmap
 folders = sorted(d for d in os.listdir(img_dir) if os.path.isdir(os.path.join(img_dir, d)))
 names = {d: sorted(d + '/' + f for f in os.listdir(os.path.join(img_dir, d)) if f.lower().endswith(('.jpg', '.jpeg', '.png'))) for d in folders}
 N = sum(len(v) for v in names.values())
-ext = pycolmap.FeatureExtractionOptions(); ext.num_threads = NT; ext.sift.max_num_features = 8192; ext.max_image_size = 1600
+ext = pycolmap.FeatureExtractionOptions(); ext.num_threads = NT; ext.max_image_size = 1600
+# (matching every pair costs features squared: 4096 a frame keeps 300+ frames to minutes on the CPUs)
+ext.sift.max_num_features = int(os.environ.get('SFM_FEATURES', 8192 if N <= 150 else 4096))
 from PIL import Image
 no_prior = []
 for d in folders:

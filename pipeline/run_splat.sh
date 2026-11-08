@@ -59,6 +59,7 @@ colmap_solve() {   # $1 database, $2 images, $3 sparse dir, $4 matcher, $5 use_g
 }
 run_group() {
   local J=$1 G=$2 W=$WS/$1 D=$WS/$1/$2
+  if ls io/splat/$J/$G/*.sog io/splat/$J/$G/*.compressed.ply io/splat/$J/$G/*.part00 >/dev/null 2>&1; then echo "$G already done"; return; fi   # (a pod restart doesn't redo finished places)
   rm -rf $D; mkdir -p $D/data/images io/splat/$J/$G   # (a restart starts the place again: never prune frames twice)
   local I=$D/data/images i=0 SC="scale=1600:1600:force_original_aspect_ratio=decrease"
   while IFS= read -r f; do
