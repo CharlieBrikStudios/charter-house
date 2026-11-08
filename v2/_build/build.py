@@ -16,9 +16,12 @@ sys.path.insert(0, HERE)
 V2 = os.path.dirname(HERE) if os.path.basename(HERE) == "_build" else "/home/claude/charter-house/v2"
 REPO = os.path.dirname(V2)
 
+MISSES = []
 def rep(s, old, new, count=1, label=""):
     n = s.count(old)
     if n < 1:
+        if os.environ.get("SOFT"):  # report every missing patch instead of stopping at the first
+            MISSES.append(label or old[:80]); return s
         sys.exit(f"PATCH NOT FOUND: {label or old[:80]}")
     return s.replace(old, new) if count == 0 else s.replace(old, new, count)
 
@@ -160,7 +163,7 @@ def build(src, dst, prefix):
     assert 0 < a < c < d, (a, c, d)
     why, ten = s[a:c], s[c:d]
     s = s[:a] + s[d:]
-    hook = '${chh("04","Location","A minute from the Underbanks, ten from the station.")}\n'
+    hook = re.search(r'\$\{chh\("\d\d","Location","[^"]*"\)\}\n', s).group(0)
     assert s.count(hook) == 1
     s = s.replace(hook, hook + why.replace('<div class="sec">', '<div class="sec locwhy">', 1))
     ten = ten.replace('<span>Current tenant profile</span>', '<span>Who rents here</span><span>Current tenant profile</span>', 1)
@@ -226,3 +229,5 @@ def build(src, dst, prefix):
 
 build(f"{HERE}/src/index.html", f"{V2}/index.html", "")
 build(f"{HERE}/src/andy/index.html", f"{V2}/andy/index.html", "../")
+if MISSES:
+    print("MISSES:\n  " + "\n  ".join(dict.fromkeys(MISSES)))

@@ -799,3 +799,11 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 .team2 .awards li::before{position:static;display:block;margin:2px auto 12px}
 @media (max-width:640px){.team2 .awards li{flex-basis:100%}}
 .hero-img>.cap{display:none!important}
+/* every step reads the same: badge, then one big headline */
+#view .bigstat .c7h{font-family:"Besley",Georgia,serif!important;font-weight:600!important;font-size:clamp(28px,3.2vw,46px)!important;line-height:1.06!important;color:#fff!important;margin:0 0 18px!important;letter-spacing:-.02em!important;max-width:18em}
+/* the step number: a cream disc that stands off the colour */
+.case7 .c7n,.bigstat .c7tag .c7n{display:inline-flex!important;align-items:center!important;gap:14px!important;margin:0 0 22px!important}
+#view .case7 .c7n b,#view .bigstat .c7n b{display:grid;place-items:center;width:clamp(64px,6vw,84px);height:clamp(64px,6vw,84px);border-radius:50%;background:#F6F0E6;color:var(--accent)!important;font-size:clamp(28px,2.8vw,38px)!important;line-height:1!important;letter-spacing:-.02em!important;box-shadow:0 0 0 6px rgba(246,240,230,.16),0 14px 26px -14px rgba(0,0,0,.5)}
+#view #case-2 .c7n b,#view #case-4 .c7n b,#view #case-6 .c7n b{color:#96401F!important}
+#view .case7 .c7n i,#view .bigstat .c7n i{display:flex;flex-direction:column;gap:5px;font:600 11px/1 var(--wide)!important;letter-spacing:.2em!important;text-transform:uppercase;color:#F3ECE2!important}
+#view .case7 .c7n i::before,#view .bigstat .c7n i::before{content:"Step";font:inherit;color:inherit}
