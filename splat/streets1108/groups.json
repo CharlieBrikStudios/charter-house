@@ -1,0 +1,66 @@
+{
+ "g1": {
+  "lat": 53.40905305555556,
+  "lon": -2.156455277777778,
+  "imgs": "6533-6572",
+  "clips": 6,
+  "stills": 4,
+  "files": [
+   "/workspace/streets1108/raw/IMG_6533.HEIC",
+   "/workspace/streets1108/raw/IMG_6534.HEIC",
+   "/workspace/streets1108/raw/IMG_6535.HEIC",
+   "/workspace/streets1108/raw/IMG_6536.MOV",
+   "/workspace/streets1108/raw/IMG_6537.MOV",
+   "/workspace/streets1108/raw/IMG_6538.HEIC",
+   "/workspace/streets1108/raw/IMG_6569.MOV",
+   "/workspace/streets1108/raw/IMG_6570.MOV",
+   "/workspace/streets1108/raw/IMG_6571.MOV",
+   "/workspace/streets1108/raw/IMG_6572.MOV"
+  ]
+ },
+ "g2": {
+  "lat": 53.410866203703705,
+  "lon": -2.1567342592592595,
+  "imgs": "6545-6568",
+  "clips": 4,
+  "stills": 8,
+  "files": [
+   "/workspace/streets1108/raw/IMG_6545.HEIC",
+   "/workspace/streets1108/raw/IMG_6551.HEIC",
+   "/workspace/streets1108/raw/IMG_6557.HEIC",
+   "/workspace/streets1108/raw/IMG_6558.MOV",
+   "/workspace/streets1108/raw/IMG_6560.MOV",
+   "/workspace/streets1108/raw/IMG_6562.HEIC",
+   "/workspace/streets1108/raw/IMG_6563.HEIC",
+   "/workspace/streets1108/raw/IMG_6564.HEIC",
+   "/workspace/streets1108/raw/IMG_6565.HEIC",
+   "/workspace/streets1108/raw/IMG_6566.HEIC",
+   "/workspace/streets1108/raw/IMG_6567.MOV",
+   "/workspace/streets1108/raw/IMG_6568.MOV"
+  ]
+ },
+ "g3": {
+  "lat": 53.41069305555555,
+  "lon": -2.1548305555555554,
+  "imgs": "6552-6556",
+  "clips": 1,
+  "stills": 3,
+  "files": [
+   "/workspace/streets1108/raw/IMG_6552.MOV",
+   "/workspace/streets1108/raw/IMG_6554.HEIC",
+   "/workspace/streets1108/raw/IMG_6555.HEIC",
+   "/workspace/streets1108/raw/IMG_6556.HEIC"
+  ]
+ },
+ "g4": {
+  "lat": 53.4112,
+  "lon": -2.15785,
+  "imgs": "6559-6561",
+  "clips": 2,
+  "stills": 0,
+  "files": [
+   "/workspace/streets1108/raw/IMG_6559.MOV",
+   "/workspace/streets1108/raw/IMG_6561.MOV"
+  ]
+ }
+}
