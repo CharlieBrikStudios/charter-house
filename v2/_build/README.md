@@ -1,17 +1,25 @@
 # Charter House investment report, V2 draft
 
-A single-scroll, light-theme rebuild of the Charter House investment report. It's a draft: the live report at the repo root (`/index.html` and `/andy/`) is untouched.
+V2 is the live report restyled, not rebuilt. It keeps every Charter House element, animation and interaction: the scout, the CH seals, the stitching, the lockup reveal, the counters, the map, the payment timeline and the 3D tour prompts. What changes:
 
-- `v2/index.html` is Charlie's version.
-- `v2/andy/index.html` is Andy's version.
-- `v2/assets/` holds web-optimised images (WebP) and self-hosted fonts (Bodoni Moda and Figtree, as in the BRIK shareholder report).
+- **One continuous scroll.** The tab bar becomes a jump-to-section menu that highlights where you are.
+- **Lighter, warmer palette.** Alternating sand and cream bands, a brick "Choose your apartment" band and forest green feature blocks. Dark mode is off.
+- **Clearer type.** Bodoni Moda for headlines and figures (as in the BRIK shareholder report), Besley for block titles, Figtree for body text, larger lead paragraphs and brick section labels.
+- **Faster.** Images are WebP files instead of being embedded, so the page goes from about 11.6MB to about 0.3MB.
+- **Fixes.** The rent-growth yield labels are corrected, the Savills forecast is updated to June 2026, and "annualised" is now labelled as an average.
+
+The live report at the repo root (`/index.html`, `/andy/`) is untouched.
 
 ## Editing
 
-Both pages are generated from `build.py`, with the styles in `styles.css` and the behaviour in `app.js`. To change copy or numbers, edit `build.py` and run:
+V2 is generated from the live pages:
 
 ```
 python3 v2/_build/build.py
 ```
 
-The returns figures are calculated in `build.py`, using the same model as the live report (the `EX` dictionary). Change the price, rent or rates there and every table and chart updates.
+- `build.py` copies the live `index.html` and `andy/index.html`, applies the fixes and the single-scroll change, and adds the skin.
+- `skin.css` holds the visual restyle.
+- `skin.js` adds the italic emphasis on headlines.
+
+Copy and number changes go in the live pages as before. Re-run the build to pull them into V2.
