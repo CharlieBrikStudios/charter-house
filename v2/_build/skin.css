@@ -897,3 +897,4 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 #view .pennants .pnnote{margin:24px 0 0;color:#EFE8DE!important;font-size:14px}
 @media (max-width:760px){.pennants .pnrow{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:none}.pennants .pnrow::-webkit-scrollbar{display:none}.pennant{flex:0 0 58%;scroll-snap-align:start}}
 @media (prefers-reduced-motion:reduce){.pennant{opacity:1;transform:none}}
+.team2 .awards.pennants{background-color:#1C1915!important}.pennants .pnhead,.pennants .pnnote{text-shadow:0 1px 12px rgba(0,0,0,.45)}
