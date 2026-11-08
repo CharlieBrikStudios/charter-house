@@ -1,0 +1,1 @@
+2026-11-08T09:32:16Z pod up on NVIDIA GeForce RTX 3090, 24576 MiB; 16 cpus; job streets1108; torch: RuntimeError: CUDA unknown error - this may be due to an incorrectly set up environment, e.g. changing env variable CUDA_VISIBLE_DEVICES after program start. Setting the available devices to be zero.
