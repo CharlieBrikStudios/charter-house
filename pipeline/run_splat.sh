@@ -170,6 +170,16 @@ fi
   local PLY=$(find $D/export -name '*.ply' | head -1)
   [ -n "$PLY" ] || { tail -40 $D/export.log > io/splat/$J/$G/export_tail.log; say $J "$G: FAILED export (log pushed)"; return; }
   say $J "$G: trained ($ITERS steps), exported $(du -h "$PLY" | cut -f1)"
+  # a few pictures of the trained scan from the filmed cameras (GPU, seconds), pushed so the scan can be judged without a browser
+  timeout 900 ns-render dataset --load-config "$CFG" --output-path $D/renders --split train --rendered-output-names rgb > $D/render.log 2>&1
+  python3 - "$D/renders" "io/splat/$J/$G" <<'EOF2'
+import sys, glob, os
+from PIL import Image
+fs = sorted(glob.glob(os.path.join(sys.argv[1], '**', '*.jpg'), recursive=True) + glob.glob(os.path.join(sys.argv[1], '**', '*.png'), recursive=True))
+for k, f in enumerate(fs[len(fs) // 10::max(1, len(fs) // 5)][:5]):
+    im = Image.open(f).convert('RGB'); im.thumbnail((640, 640)); im.save(os.path.join(sys.argv[2], 'preview_%d.jpg' % k), quality=82)
+print(len(fs), 'renders')
+EOF2
   # compress for the web (PlayCanvas SOG, ~15x smaller; compressed PLY if this version can't write SOG)
   # (on the CPU, no WebGPU in node here; without the view-dependent colour bands: their palette step took over half an hour)
   timeout 1200 npx -y @playcanvas/splat-transform -w "$PLY" -N -H 0 $D/$G.sog -g cpu > $D/compress.log 2>&1 || timeout 1200 npx -y @playcanvas/splat-transform -w "$PLY" $D/$G.compressed.ply >> $D/compress.log 2>&1
