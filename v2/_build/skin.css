@@ -2,8 +2,6 @@
    Sits on top of the live report's styles, so every interaction, animation and
    Charter House motif (scout, seals, stitching, lockup) is kept. */
 
-@font-face{font-family:"Bodoni Moda";src:url("{{F}}bodoni-moda-opsz.woff2") format("woff2");font-weight:400 900;font-style:normal;font-display:swap}
-@font-face{font-family:"Bodoni Moda";src:url("{{F}}bodoni-moda-opsz-italic.woff2") format("woff2");font-weight:400 900;font-style:italic;font-display:swap}
 @font-face{font-family:"Figtree";src:url("{{F}}figtree-400.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Figtree";src:url("{{F}}figtree-500.woff2") format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:"Figtree";src:url("{{F}}figtree-600.woff2") format("woff2");font-weight:600 700;font-display:swap}
@@ -14,7 +12,7 @@
   --ink:#221C19; --text:#3A322D; --muted:#6B6058; --hair:rgba(34,28,25,.13); --rule:rgba(107,96,88,.3);
   --brick:#A44C28; --rust:#A44C28; --gold-cta:#A44C28; --cta-ink:#FFFFFF; --forest:#22503D; --khaki:#ABA38B; --sage:#9DA38A; --leather:#C68A55;
   --char:#22503D; --dark:#22503D; --stitch:rgba(198,138,85,.8);
-  --serif:"Besley",Clarendon,Georgia,serif; --display:"Bodoni Moda",Didot,Georgia,serif;
+  --serif:"Besley",Clarendon,Georgia,serif; --display:"Besley",Clarendon,Georgia,serif;
   --clar:"Besley",Clarendon,Georgia,serif; --ital:"Besley",Georgia,serif;
   --sans:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   --wide:"Archivo","Figtree",system-ui,sans-serif;
@@ -658,3 +656,41 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 .pcar .proc li{min-height:0!important;max-height:none!important}
 @media (max-width:640px){.pcar .proc li{flex:0 0 78vw!important;padding:20px!important}.pcview{mask-image:none;-webkit-mask-image:none;margin:0 -16px;padding:18px 0 22px}}
 .pcar .proc{height:auto!important}
+
+
+/* ================= pass 10: one sturdy serif, orange and green in turn ================= */
+/* every headline and big figure in Besley, heavy enough to read at a glance */
+.w-main h1,.big-h,.sh,.chh h2,.w-hero,#welcome .w-hero,.ptitle h2,.cmp h2,#view .case7 .c7h,#view .casemap .cmh,#view .rentmkt .rmh,#view .refsch .rfh,.brikband .bbh,#t-stockport .chh h2{
+  font-family:"Besley",Clarendon,Georgia,serif!important;font-weight:600!important;font-style:normal!important;font-optical-sizing:auto!important;font-variation-settings:normal!important;letter-spacing:-.02em!important}
+.stats .v,.kpis .v,.roi .v,.roi .v.big,.gstat b,.bsn,.bsn span,#view .growband .gstat b,.chh .no,.cmn,.c7n b,.clip .sticker b,.dcard .stat,.tlv,.pca{
+  font-family:"Besley",Clarendon,Georgia,serif!important;font-weight:600!important;font-style:normal!important;font-variation-settings:normal!important;letter-spacing:-.02em!important}
+.chh h2{font-size:clamp(34px,4.2vw,60px)!important;line-height:1.04!important}
+#view .case7 .c7h{font-size:clamp(28px,3.2vw,46px)!important;line-height:1.06!important}
+#t-stockport .chh h2{font-size:clamp(36px,6vw,88px)!important;line-height:.98!important;letter-spacing:-.01em!important}
+#view .growband .gstat b{font-size:clamp(56px,7vw,104px)!important}
+.chh .no{font-size:clamp(40px,4.8vw,72px)!important}
+
+/* orange back in: the skin-in-the-game box, every other step banner, the growth banner */
+.hq{background:#A44C28!important}
+#view .hq .cap,.hq .cap,#view .hq .cap span{color:#FFE8DC!important}
+#case-2,#case-4,#case-6{background:#96401F!important;box-shadow:0 30px 60px -38px rgba(90,36,14,.65)!important}
+#case-2::before,#case-4::before,#case-6::before{border-color:rgba(255,226,208,.4)!important}
+#case-2 .c7k,#case-4 .c7k,#case-6 .c7k,#view #case-2 .cap,#view #case-4 .cap,#view #case-6 .cap{color:#FFD9C4!important}
+#case-2 .c7n,#case-4 .c7n,#case-6 .c7n{color:#FFE6D8!important}
+#view #case-2 .c7r p,#view #case-4 .c7r p,#view #case-6 .c7r p{color:#FBEDE4!important}
+#case-2 .c7f li,#case-4 .c7f li,#case-6 .c7f li{border-color:rgba(255,226,208,.5)!important}
+#case-2 .b.solid,#case-4 .b.solid,#case-6 .b.solid{color:#96401F!important}
+#case-2 .c7top,#case-4 .c7top,#case-6 .c7top{border-color:rgba(255,226,208,.3)!important}
+.growband{background:#96401F!important;box-shadow:0 30px 60px -38px rgba(90,36,14,.65)!important}
+.growband::before{border-color:rgba(255,226,208,.4)!important}
+#view .growband .cap,#view .growband .cap span{color:#FFD9C4!important}
+#view .growband .gstat span{color:#FBE3D6!important}
+#view .growband .gbp{color:#FBEDE4!important}
+.cmlist li:nth-child(even) button{border-top-color:#A44C28}
+.cmlist li:nth-child(even) .cmn{color:#A44C28}
+.cmlist li:nth-child(even) .cmk{color:#8A3B1C}
+.cmlist li:nth-child(even) button:hover{background:#F8E7DD}
+.clip .sticker{background:#A44C28!important}
+.clip .sticker em{color:#FFE3D2!important}
+.chh .no{color:#A44C28!important}
+#t-units .chh .no{color:#CFE3D6!important}

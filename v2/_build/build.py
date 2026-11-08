@@ -89,10 +89,9 @@ def build(src, dst, prefix):
     assert n1 >= 7 and n2 >= 5, (n1, n2)
     head = head.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="color-scheme" content="light only">', 1)
     s = head + tail
-    # 3. fonts: self-hosted Bodoni Moda + Figtree, Archivo + Besley from Google
+    # 3. fonts: self-hosted Figtree, Archivo + Besley from Google (Bodoni dropped: too thin to read)
     s = re.sub(r'<link href="https://fonts.googleapis.com/css2\?[^"]+" rel="stylesheet">',
-               '<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600&family=Besley:ital,wght@0,500;0,600;0,800;1,500&display=swap" rel="stylesheet">'
-               f'\n<link rel="preload" href="{F}bodoni-moda-opsz.woff2" as="font" type="font/woff2" crossorigin>'
+               '<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600&family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">'
                f'\n<link rel="preload" href="{F}figtree-400.woff2" as="font" type="font/woff2" crossorigin>', s)
     # 4. one continuous scroll
     i = s.find('function renderMain(){if(!TABS[S.tab])')
