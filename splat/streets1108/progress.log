@@ -92,3 +92,4 @@
 2026-11-08T18:39:37Z g2: camera solve (global, 7 threads; lenses: )
 2026-11-08T18:49:37Z g2: ... I20261108 18:49:35.147623 130287849698880 pairing.cc:214] Processing block [4/8, 6/8]
 2026-11-08T18:59:39Z g2: ... I20261108 18:59:02.590907 130290818094208 global_mapper.cc:553] === Running rotation averaging ===
+2026-11-08T19:09:43Z g2: ... I20261108 19:08:32.933503 130290818094208 global_mapper.cc:553] === Running rotation averaging ===
