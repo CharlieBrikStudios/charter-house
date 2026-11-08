@@ -95,7 +95,15 @@ for iid in rec.reg_image_ids():
     frames.append({'file_path': 'images/' + im.name, 'transform_matrix': c2w.tolist(), 'colmap_im_id': int(iid),
                    'fl_x': fx, 'fl_y': fy, 'cx': cx, 'cy': cy, 'w': cam.width, 'h': cam.height, 'k1': k1, 'k2': k2, 'p1': p1, 'p2': p2})
 frames.sort(key=lambda f: f['file_path'])
-pts = [(p.xyz, p.color) for p in rec.points3D.values()]
+# drop stray cameras: 8 Nov, one Print House frame was solved 2.5 km from the rest, so nerfstudio squeezed the whole street into a
+# thousandth of its space and trained a blurry scan (340k splats). Same for stray points (they would set the scene's size too).
+C = np.array([f['transform_matrix'][i][3] for f in frames for i in range(3)]).reshape(-1, 3)
+mid = np.median(C, axis=0); dist = np.linalg.norm(C - mid, axis=1); r90 = max(float(np.percentile(dist, 90)), 1e-6)
+keep = dist <= 6 * r90
+if (~keep).any():
+    log('dropped %d stray cameras (over %.2f from the middle; furthest %.1f)' % ((~keep).sum(), 6 * r90, dist.max()))
+    frames = [f for f, k in zip(frames, keep) if k]
+pts = [(p.xyz, p.color) for p in rec.points3D.values() if np.linalg.norm(p.xyz - mid) <= 40 * r90]
 with open(os.path.join(data, 'sparse_pc.ply'), 'wb') as f:
     f.write(('ply\nformat binary_little_endian 1.0\nelement vertex %d\nproperty float x\nproperty float y\nproperty float z\n'
              'property uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n' % len(pts)).encode())
