@@ -29,3 +29,4 @@
 2026-11-08T13:15:24Z g1: ... 20710 (69.03%)      55.230 ms            8 m, 33 s            26.65 M                                [0m
 2026-11-08T13:24:58Z g1: trained (30000 steps), exported 358M
 2026-11-08T13:25:18Z g1: DONE g1.compressed.ply 89M
+2026-11-08T13:27:33Z g2: 359 frames (8 stills) in 5 folders
