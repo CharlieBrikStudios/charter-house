@@ -17,3 +17,7 @@
   if(document.readyState!=="loading")run();else document.addEventListener("DOMContentLoaded",run);
   new MutationObserver(function(){clearTimeout(run.t);run.t=setTimeout(run,30);}).observe(document.body,{childList:true,subtree:true});
 })();
+
+/* keep the section nav pinned directly under the header */
+(function(){function setH(){var h=document.querySelector('.hdr');if(h)document.documentElement.style.setProperty('--hdrh',Math.round(h.getBoundingClientRect().height)+'px');}
+setH();addEventListener('resize',setH);addEventListener('load',setH);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(setH);})();

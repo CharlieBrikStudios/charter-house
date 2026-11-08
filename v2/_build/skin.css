@@ -189,3 +189,71 @@ body{background:var(--stone)!important;color:var(--text);font:400 16px/1.6 var(-
 .foot .flogos .logo,.foot .flogos .bcap{color:var(--ink)!important}
 .foot .footrow p{color:var(--muted)!important}
 .foot .flogos .bcap,.foot .flogos .logo{background-color:var(--ink)!important;color:var(--ink)!important;opacity:1!important}
+
+/* ================= pass 3: sticky + contrast ================= */
+/* sticky stack: header pinned to the very top, section nav pinned under it, no gap */
+body.rep .hdr,.hdr{top:0!important;z-index:40!important}
+body.rep .tabs,body.rep .gtabs,.gtabs{top:var(--hdrh,72px)!important;z-index:39!important}
+.hdr,.gtabs{box-shadow:0 1px 0 var(--hair)}
+.hdr{background:#F7F1EC!important}
+.gtabs{background:#F7F1EC!important}
+
+/* small caps labels: darker brick so they pass on every band */
+:root{--brick-t:#8A3B1C}
+.sec>.cap,.nsec .cap,.nh .cap,.chh .cap,.duo>div>.cap:first-child,.gtabs .tg.on .tgl,.tbox>.cap,.sec .cap:first-child{color:var(--brick-t)!important}
+.cap span+span{color:#5C524B!important}
+
+/* text on the coloured blocks: always near-white, never grey */
+.hq .ownby,.hq .ownby *{color:#FFE9DD!important}
+#view .bigstat .fine,#view .bigstat p,#view .bigstat span,#view .bigstat .cap{color:#F3EBDD!important}
+#view .bigstat .cap{color:#EBCDAE!important}
+.mapnote,.cap.mapnote{background:var(--ink)!important;color:#fff!important}
+#t-units .cap,#t-units .cap span,#t-units .sec>.cap span+span,#t-returns .stats .hl .cap{color:#FFF4EC!important}
+#t-returns .stats .hl small{color:#FFE9DD!important}
+
+/* rental evidence: readable greens */
+.bar.ach b,.bt .up,.bt .up small,.bar.ach .up{color:#17603F!important}
+.bt .up{background:#DDF4EA!important}
+
+/* any label or caption sitting on a photo gets a solid chip */
+.hero-img .cap,.evimg .cap,.ccar .cap,.pic .cap,.rb .pic .cap,.gal button span,.skt span,.arch figcaption,.arch span,.evimg span{
+  background:rgba(34,28,25,.82)!important;color:#fff!important;padding:6px 9px!important;text-shadow:none!important}
+
+/* cover: headline over the photo with a stronger scrim */
+#welcome .w-img::after{background:linear-gradient(180deg,rgba(20,14,11,0) 30%,rgba(20,14,11,.82) 100%)!important}
+#welcome .w-hero,#welcome .w-hero *{color:#fff!important;text-shadow:0 2px 18px rgba(0,0,0,.35)}
+#welcome .w-hero .wopp{color:#FFD9C4!important}
+
+/* bottom call-to-action bar */
+.ctabar{background:#FFFCF9!important;border-top:3px solid var(--brick)!important;box-shadow:0 -10px 30px rgba(34,28,25,.12)}
+.ctabar::before{display:none!important}
+.ctabar p,.ctabar p *{color:var(--ink)!important}
+.ctabar p span{color:#4A403A!important}
+
+/* body text on light bands: one consistent dark colour */
+.gsec:not(#t-units) p:not(.fine):not(.lead),.gsec:not(#t-units) li{color:#3A322D}
+.gsec:not(#t-units) .muted{color:#4F4640!important}
+#t-units .sec>.cap span,#t-units .sec>.cap span+span,#t-units .cap span{color:#FFF4EC!important}
+#view .handsoff .cap,#view .jz .cap,#view .dc .cap,#view .case.dark .cap{color:#EBCDAE!important}
+/* agent card buttons */
+.acard .ab{color:var(--ink)!important;border:1px solid var(--ink)!important;background:transparent!important}
+.acard .ab svg{stroke:currentColor!important}
+.acard .ab.wa{background:#157A3E!important;border-color:#157A3E!important;color:#fff!important}
+.acard .abook,.acard .txt{color:var(--brick-t)!important;text-decoration:underline;text-underline-offset:4px}
+.acard .afacts b{color:var(--ink)!important}.acard .afacts span{color:#5C524B!important}
+.lb .cap,.lb p,.lb figcaption{color:#EFE7E1!important}
+/* section nav: full-width solid bar, one slim row */
+.gtabs{box-shadow:0 0 0 100vmax #F7F1EC,0 1px 0 100vmax var(--hair)!important;clip-path:inset(0 -100vmax -1px -100vmax)!important;border-top:0!important;
+  min-height:0!important;padding-top:8px!important;padding-bottom:8px!important;align-items:center!important}
+.gtabs .tgl{display:none!important}
+.gtabs .tg{padding:0!important;border:0!important}
+.gtabs .tg+.tg{border-left:1px solid var(--hair)!important;padding-left:14px!important}
+.gtabs [role=tab]{font-size:13.5px!important;color:#4A403A!important}
+.gtabs [role=tab] .tn0{color:#8A7F77!important}
+.hdr{box-shadow:0 0 0 100vmax #F7F1EC;clip-path:inset(0 -100vmax)}
+.gtabs [role=tab] .tn0{color:#5E554F!important}
+.gtabs [data-tab=units],.gtabs [data-tab=units] *{color:#fff!important}
+.gtabs [data-tab=units] .tn0{color:#FFE3D3!important}
+.gtabs [role=tab][aria-selected="true"],.gtabs [role=tab][aria-selected="true"] *{color:#fff!important}
+.gtabs [role=tab][aria-selected="true"] .tn0{color:#F2C6AE!important}
+#welcome .w-top{gap:18px;flex-wrap:wrap}
