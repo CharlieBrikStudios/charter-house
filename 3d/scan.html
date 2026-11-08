@@ -25,7 +25,7 @@
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; }
 body { background: var(--night); color: var(--ink); font: 15px/1.45 var(--f-body); overflow: hidden; -webkit-font-smoothing: antialiased; touch-action: none; }
-canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; cursor: grab; }
+canvas { display: block; position: fixed; top: 0; left: 50%; transform: translateX(-50%); cursor: grab; box-shadow: 0 0 120px 30px rgba(0,0,0,.55); }
 canvas.drag { cursor: grabbing; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 999px; }
@@ -92,10 +92,23 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, phone ? 1.5 : 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.setClearColor(0x0e0c0b, 1);
 document.body.prepend(renderer.domElement);
+renderer.domElement.id = 'view';
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(meta.fov || 58, innerWidth / innerHeight, meta.near || 0.02, meta.far || 400);
 scene.add(new SparkRenderer({ renderer }));
-addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+// the picture keeps the footage's shape: phone clips are portrait, and the scan breaks up beyond what the phone saw. On a wide
+// screen the picture stands in the middle at full height (a little wider than the clip); on a phone it fills the screen
+let frameAspect = 0.5625, frameFov = 60, paths = [], cur = 0;
+function frame() {
+  const p = paths[cur] || null;
+  if (p) { frameAspect = p.aspect; frameFov = p.fov; }
+  const A = innerWidth / innerHeight, a = Math.min(1.6, frameAspect * 1.2);
+  let w = innerWidth, h = innerHeight, fov = frameFov;
+  if (A > a) w = Math.round(innerHeight * a);   // wide screen: a portrait window, same vertical view as the phone
+  else fov = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(frameFov) / 2) * frameAspect / A));   // narrow: same width as the phone
+  renderer.setSize(w, h); camera.aspect = w / h; camera.fov = Math.min(110, fov); camera.updateProjectionMatrix();
+}
+addEventListener('resize', frame);
 
 // the scan, turned so the cameras' mean up is +y (scan.json quat, from scan_meta.py); the paths in scan.json are already turned
 const files = meta.parts ? meta.parts.map((p) => base + p) : null;
@@ -115,22 +128,23 @@ if (flip) mesh.quaternion.multiply(new THREE.Quaternion(1, 0, 0, 0));
 scene.add(mesh);
 
 // ---- riding the filmed path
-const paths = meta.paths.map((p) => {
-  const P = p.p.map((v) => new THREE.Vector3(...v)), F = p.f.map((v) => new THREE.Vector3(...v).normalize());
-  // ridden by frame (the phone's own timing): a clip can walk along the street or just pan from one spot
-  const s = P.map((_, i) => i);
-  return { name: p.name, P, F, s, len: Math.max(1, s.length - 1) };
+paths = meta.paths.map((p) => {
+  // the filmed frames themselves (positions, turns, lens), ridden by frame - the phone's own timing - so a clip can walk along
+  // the street or pan from one spot; the scan is only photo-real close to these (scan_meta.py)
+  const P = p.p.map((v) => new THREE.Vector3(...v)), Q = p.q.map((v) => new THREE.Quaternion(...v));
+  return { name: p.name, P, Q, fov: p.fov || 60, aspect: p.aspect || 0.5625, len: Math.max(1, P.length - 1) };
 });
-let cur = 0, t = paths[0].start ?? 0.5, tt = t, dir = 1, idle = 0, glide = 0;
-const at = (path, u, outP, outF) => {
-  const d = THREE.MathUtils.clamp(u, 0, 1) * path.len; let i = 1; while (i < path.s.length - 1 && path.s[i] < d) i++;
-  const a = path.s[i - 1], b = path.s[i], k = b > a ? (d - a) / (b - a) : 0;
-  outP.lerpVectors(path.P[i - 1], path.P[i], k); outF.lerpVectors(path.F[i - 1], path.F[i], k).normalize();
+let t = 0.5, tt = t, dir = 1, idle = 0, glide = 0;
+frame();
+const at = (path, u, outP, outQ) => {
+  const d = THREE.MathUtils.clamp(u, 0, 1) * path.len, i = Math.min(path.P.length - 2, Math.floor(d)), k = d - i;
+  if (path.P.length < 2) { outP.copy(path.P[0]); outQ.copy(path.Q[0]); return; }
+  outP.lerpVectors(path.P[i], path.P[i + 1], k); outQ.slerpQuaternions(path.Q[i], path.Q[i + 1], k);
 };
-const cp = new THREE.Vector3(), cf = new THREE.Vector3(), look = new THREE.Vector3();
+const cp = new THREE.Vector3(), cq = new THREE.Quaternion(), yq = new THREE.Quaternion(), UP = new THREE.Vector3(0, 1, 0);
 let yawOff = 0, yawT = 0;
 function choose(i) {
-  cur = i; t = tt = paths[i].start ?? 0.5; idle = 0;
+  cur = i; t = tt = 0.5; idle = 0; frame();
   for (const b of $('views').children) b.setAttribute('aria-pressed', String(+b.dataset.i === i));
 }
 if (paths.length > 1) {
@@ -139,13 +153,13 @@ if (paths.length > 1) {
   choose(0);
 }
 // drag: sideways moves along the path (about half of it per screen width), with a little turn of the head as you go
-const cv = renderer.domElement; let drag = null;
-cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); cv.classList.add('drag'); idle = 0; glide = 0; });
+const cv = document.body, view = renderer.domElement; let drag = null;   // (drag anywhere, including the dark sides on a wide screen)
+cv.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) return; drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); view.classList.add('drag'); idle = 0; glide = 0; });
 cv.addEventListener('pointermove', (e) => {
   if (!drag) return; const dx = e.clientX - drag.x; drag.x = e.clientX;
-  tt = THREE.MathUtils.clamp(tt - dx / innerWidth * 0.55 * (meta.dragScale || 1), 0, 1); yawT = THREE.MathUtils.clamp(yawT + dx * 0.0016, -0.32, 0.32); idle = 0;
+  tt = THREE.MathUtils.clamp(tt - dx / innerWidth * 0.7 * (meta.dragScale || 1), 0, 1); yawT = THREE.MathUtils.clamp(yawT + dx * 0.0008, -0.12, 0.12); idle = 0;
 });
-const end = () => { drag = null; cv.classList.remove('drag'); };
+const end = () => { drag = null; view.classList.remove('drag'); };
 cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
 cv.addEventListener('wheel', (e) => { e.preventDefault(); tt = THREE.MathUtils.clamp(tt + (e.deltaY + e.deltaX) * 0.0006, 0, 1); idle = 0; glide = 0; }, { passive: false });
 addEventListener('keydown', (e) => {
@@ -159,7 +173,7 @@ setTimeout(() => { $('hint').style.opacity = 0; }, 6000);
 const clock = new THREE.Clock();
 // for the headless check (scancheck.mjs): jump to a point on a path and hold still
 let free = null;
-window.__scan = { ready: true, go(i, u) { free = null; cur = i; t = tt = u; idle = -1e9; yawT = yawOff = 0; }, cam(p, l) { free = [p, l]; }, mesh, THREE, camera, hold() { free = 'hold'; }, paths: paths.length, path: (i) => ({ p: paths[i].P[0].toArray(), f: paths[i].F[0].toArray() }) };
+window.__scan = { ready: true, go(i, u) { free = null; cur = i; frame(); t = tt = u; idle = -1e9; yawT = yawOff = 0; }, cam(p, l) { free = [p, l]; }, mesh, THREE, camera, hold() { free = 'hold'; }, paths: paths.length };
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1), path = paths[cur];
   idle += dt;
@@ -172,9 +186,9 @@ renderer.setAnimationLoop(() => {
   }
   if (!drag) yawT *= Math.pow(0.08, dt);
   const k = 1 - Math.pow(0.004, dt); t += (tt - t) * k; yawOff += (yawT - yawOff) * k;
-  at(path, t, cp, cf);
-  cf.applyAxisAngle(THREE.Object3D.DEFAULT_UP, yawOff);
-  if (free === 'hold') {} else if (free) { camera.position.set(...free[0]); camera.lookAt(...free[1]); } else { camera.position.copy(cp); camera.lookAt(look.copy(cp).add(cf)); }
+  at(path, t, cp, cq);
+  if (free === 'hold') {} else if (free) { camera.position.set(...free[0]); camera.lookAt(...free[1]); }
+  else { camera.position.copy(cp); camera.quaternion.copy(yq.setFromAxisAngle(UP, yawOff)).multiply(cq); }
   renderer.render(scene, camera);
 });
 </script>
