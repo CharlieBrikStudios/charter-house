@@ -36,6 +36,17 @@ def build(src, dst, prefix):
     s = re.sub(r'<link rel="icon" href="data:[^"]+">', f'<link rel="icon" href="{P}logo6.webp">', s)
     # 2. light theme always
     s = rep(s, '<html lang="en">', '<html lang="en" data-theme="light">', label="html tag")
+    # 2b. remove dark mode entirely: the claude.ai preview and some browsers drop or ignore data-theme,
+    #     which let the original dark-mode colours (light text, light logos) apply on the light skin
+    js_start = s.find("<script")
+    head, tail = s[:js_start], s[js_start:]
+    n1 = head.count("(prefers-color-scheme:dark)")
+    head = head.replace("(prefers-color-scheme:dark)", "(prefers-color-scheme:dark) and (max-width:0px)")
+    n2 = head.count('[data-theme="dark"]')
+    head = head.replace('[data-theme="dark"]', '[data-theme="dark-off"]')
+    assert n1 >= 7 and n2 >= 5, (n1, n2)
+    head = head.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="color-scheme" content="light only">', 1)
+    s = head + tail
     # 3. fonts: self-hosted Bodoni Moda + Figtree, Archivo + Besley from Google
     s = re.sub(r'<link href="https://fonts.googleapis.com/css2\?[^"]+" rel="stylesheet">',
                '<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600&family=Besley:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">'

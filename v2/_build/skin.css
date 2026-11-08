@@ -8,14 +8,14 @@
 @font-face{font-family:"Figtree";src:url("{{F}}figtree-500.woff2") format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:"Figtree";src:url("{{F}}figtree-600.woff2") format("woff2");font-weight:600 700;font-display:swap}
 
-:root,:root[data-theme="light"]{
-  color-scheme:light;
+:root,:root[data-theme],:root:not([data-theme]){
+  color-scheme:light only;
   --stone:#EEE5DF; --paper:#F7F1EC; --lift:#FFFCF9; --blush:#EEE5DF; --cream:#F7F1EC; --sand:#E6DFCF;
   --ink:#221C19; --text:#3A322D; --muted:#6B6058; --hair:rgba(34,28,25,.13); --rule:rgba(107,96,88,.3);
   --brick:#A44C28; --rust:#A44C28; --gold-cta:#A44C28; --cta-ink:#FFFFFF; --forest:#22503D; --khaki:#ABA38B; --sage:#9DA38A; --leather:#C68A55;
   --char:#22503D; --dark:#22503D; --stitch:rgba(198,138,85,.8);
   --serif:"Bodoni Moda",Didot,"Bodoni 72",Georgia,serif; --display:"Bodoni Moda",Didot,Georgia,serif;
-  --clar:"Besley",Clarendon,Georgia,serif; --ital:"Bodoni Moda",Didot,Georgia,serif;
+  --clar:"Besley",Clarendon,Georgia,serif; --ital:"Besley",Georgia,serif;
   --sans:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   --wide:"Archivo","Figtree",system-ui,sans-serif;
 }
@@ -257,3 +257,13 @@ body.rep .tabs,body.rep .gtabs,.gtabs{top:var(--hdrh,72px)!important;z-index:39!
 .gtabs [role=tab][aria-selected="true"],.gtabs [role=tab][aria-selected="true"] *{color:#fff!important}
 .gtabs [role=tab][aria-selected="true"] .tn0{color:#F2C6AE!important}
 #welcome .w-top{gap:18px;flex-wrap:wrap}
+
+/* ================= pass 4: dark-mode-proof, sturdier small italics ================= */
+html,:root{color-scheme:light only!important;background:#EEE5DF}
+.ital,.intro .addr,.idband p,.idband .ital,.jcard .jtxt,.keyfig figcaption,.ptitle .addr{font-family:"Besley",Georgia,serif!important;font-style:italic;font-weight:500!important;color:var(--ink)!important;letter-spacing:0!important}
+.idband p{font-size:17px!important;line-height:1.55!important}
+.intro .addr{font-size:16px!important;line-height:1.5!important}
+/* minimap caption: never clipped */
+.minimap .mmcap{font-size:10px!important;letter-spacing:.08em!important;white-space:normal!important;flex-wrap:wrap;gap:4px 12px;color:#4F4640!important}
+.minimap .mmcap::after{margin-left:auto;color:var(--ink)}
+@media (max-width:420px){.prelaunch .wrap{flex-wrap:wrap;row-gap:6px}.prelaunch .plt{display:none}}
