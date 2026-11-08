@@ -108,6 +108,10 @@ if (files) {   // a big scan comes in 90 MB parts (GitHub's file limit): join th
   mesh = new SplatMesh({ fileBytes: all.buffer, fileName: meta.file });
 } else mesh = new SplatMesh({ url: base + (fileOverride || meta.file), onProgress });
 if (meta.quat) mesh.quaternion.set(...meta.quat);
+// the file may hold the splat turned 180 degrees about x (y and z flipped, as SPZ/SOG writers do for PLY's y-down axes):
+// scan.json "flip" (or ?flip=0/1 for testing) undoes it before the scan's own turn
+const flip = q.has('flip') ? q.get('flip') === '1' : meta.flip !== false;
+if (flip) mesh.quaternion.multiply(new THREE.Quaternion(1, 0, 0, 0));
 scene.add(mesh);
 
 // ---- riding the filmed path
