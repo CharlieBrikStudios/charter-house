@@ -79,6 +79,7 @@ addEventListener('keydown', (e) => { if (e.key === 'Escape' && inFrame) parent.p
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const base = 'assets/scans/' + id + '/';
+const fileOverride = q.get('f');   // (testing: another encoding of the same scan, e.g. t/t.spz)
 let meta;
 try { meta = await (await fetch(base + 'scan.json')).json(); }
 catch (e) { $('err').hidden = false; $('err').textContent = 'This scan isn’t ready yet.'; $('pct').hidden = true; throw e; }
@@ -105,7 +106,7 @@ if (files) {   // a big scan comes in 90 MB parts (GitHub's file limit): join th
   for (const f of files) { const r = await fetch(f); const rd = r.body.getReader(); for (;;) { const { done, value } = await rd.read(); if (done) break; bufs.push(value); got += value.length; onProgress({ lengthComputable: true, loaded: got, total }); } }
   const all = new Uint8Array(got); let o = 0; for (const b of bufs) { all.set(b, o); o += b.length; }
   mesh = new SplatMesh({ fileBytes: all.buffer, fileName: meta.file });
-} else mesh = new SplatMesh({ url: base + meta.file, onProgress });
+} else mesh = new SplatMesh({ url: base + (fileOverride || meta.file), onProgress });
 if (meta.quat) mesh.quaternion.set(...meta.quat);
 scene.add(mesh);
 
