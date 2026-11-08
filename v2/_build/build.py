@@ -12,6 +12,7 @@ Run from anywhere: python3 v2/_build/build.py
 """
 import os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 V2 = os.path.dirname(HERE) if os.path.basename(HERE) == "_build" else "/home/claude/charter-house/v2"
 REPO = os.path.dirname(V2)
 
@@ -20,6 +21,47 @@ def rep(s, old, new, count=1, label=""):
     if n < 1:
         sys.exit(f"PATCH NOT FOUND: {label or old[:80]}")
     return s.replace(old, new) if count == 0 else s.replace(old, new, count)
+
+
+PAYSTACK = ('<div class="paystack">${STOPS.map((st,i)=>`<div class="paycard ${i===ps?"on":""}" data-pc="${i}" aria-hidden="${i!==ps}">'
+  '<div class="pcl"><div class="cap">${st.when}, ${st.sub.toLowerCase()}</div><h3 class="pct">${st.title}</h3><div class="pca">${gbp(st.amt)}</div><p class="pcn">${st.note}</p></div>'
+  '<div class="pcr"><div class="rows big">${st.rows.map(([a,b])=>`<div><span>${a}</span><span>${gbp(b)}</span></div>`).join("")}</div>'
+  '<div class="run"><span>Total paid by this stage</span><b>${gbp(run[i])}</b></div>'
+  '<div class="pnav"><button class="b line sm" data-pstep="${Math.max(0,i-1)}" ${i===0?"disabled":""}>Back</button>${i<2?`<button class="b solid sm pnext" data-pstep="${i+1}">Next: ${STOPS[i+1].when}</button>`:`<button class="b solid sm" data-call>Book a video call</button>`}</div></div>'
+  '</div>`).join("")}</div>')
+
+def hpi_chart():
+    import json as _j
+    pts = _j.load(open(os.path.join(HERE, "stockport_hpi.json")))
+    W, H, L, R, T, B = 640, 300, 64, 22, 30, 42
+    lo, hi = 225000, 325000
+    n = len(pts)
+    X = lambda i: L + i * (W - L - R) / (n - 1)
+    Y = lambda v: T + (hi - v) * (H - T - B) / (hi - lo)
+    line = " ".join(f"{X(i):.1f},{Y(v):.1f}" for i, (_, v) in enumerate(pts))
+    area = f"{X(0):.1f},{Y(lo):.1f} " + line + f" {X(n-1):.1f},{Y(lo):.1f}"
+    grid = "".join(f'<line x1="{L}" x2="{W-R}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" class="hg"/><text x="{L-10}" y="{Y(v)+4:.1f}" class="hy">£{v//1000}k</text>' for v in range(lo, hi + 1, 25000))
+    xl = "".join(f'<text x="{X(i):.1f}" y="{H-14}" class="hx">{m[:4]}</text><line x1="{X(i):.1f}" x2="{X(i):.1f}" y1="{Y(lo):.1f}" y2="{Y(lo)+5:.1f}" class="ht"/>' for i, (m, _) in enumerate(pts) if m.endswith("-01"))
+    mon = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+    lab = lambda m: f"{mon[int(m[5:])-1]} {m[:4]}"
+    i5 = [k for k, (m, _) in enumerate(pts) if m == "2021-03"][0]
+    e_m, e_v = pts[-1]; s_m, s_v = pts[0]; f_m, f_v = pts[i5]
+    data = _j.dumps([[lab(m), v] for m, v in pts]).replace('"', "&quot;")
+    svg = (f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="Average house price in Stockport, all property types, from £{s_v:,} in {lab(s_m)} to £{e_v:,} in {lab(e_m)}">'
+           f'<defs><linearGradient id="hpig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A44C28" stop-opacity=".22"/><stop offset="1" stop-color="#A44C28" stop-opacity="0"/></linearGradient></defs>'
+           f'{grid}{xl}<line x1="{L}" x2="{W-R}" y1="{Y(lo):.1f}" y2="{Y(lo):.1f}" class="hax"/>'
+           f'<polygon points="{area}" class="har"/><polyline points="{line}" class="hln" pathLength="1"/>'
+           f'<circle cx="{X(0):.1f}" cy="{Y(s_v):.1f}" r="4" class="hpt"/>'
+           f'<circle cx="{X(n-1):.1f}" cy="{Y(e_v):.1f}" r="5.5" class="hpt end"/>'
+           f'<text x="{X(n-1)-10:.1f}" y="{Y(e_v)-14:.1f}" class="he">£{e_v:,}</text>'
+           f'<text x="{X(n-1)-10:.1f}" y="{Y(e_v)-32:.1f}" class="hm">{lab(e_m)}</text>'
+           f'<text x="{X(0)+8:.1f}" y="{Y(s_v)+22:.1f}" class="hs">£{s_v:,}</text>'
+           f'<g class="hhov" opacity="0"><line class="hvl" y1="{T}" y2="{Y(lo):.1f}"/><circle class="hvd" r="5"/></g>'
+           f'<rect class="hhit" x="{L}" y="{T}" width="{W-L-R}" height="{H-T-B}" fill="transparent"/></svg>')
+    return (f'<figure class="hpi" data-hpi="{data}" data-l="{L}" data-r="{R}" data-w="{W}" data-t="{T}" data-b="{B}" data-h="{H}" data-lo="{lo}" data-hi="{hi}">'
+            f'<figcaption class="hpih"><b>Average house price, Stockport</b><span>All property types, monthly</span></figcaption>'
+            f'<div class="hpic">{svg}<div class="htip" aria-hidden="true"><b></b><span></span></div></div>'
+            f'<p class="src">Source: HM Land Registry, UK House Price Index. {lab(s_m)} to {lab(e_m)}.</p></figure>')
 
 def build(src, dst, prefix):
     s = open(src, encoding="utf-8").read()
@@ -49,7 +91,7 @@ def build(src, dst, prefix):
     s = head + tail
     # 3. fonts: self-hosted Bodoni Moda + Figtree, Archivo + Besley from Google
     s = re.sub(r'<link href="https://fonts.googleapis.com/css2\?[^"]+" rel="stylesheet">',
-               '<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600&family=Besley:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">'
+               '<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600&family=Besley:ital,wght@0,500;0,600;0,800;1,500&display=swap" rel="stylesheet">'
                f'\n<link rel="preload" href="{F}bodoni-moda-opsz.woff2" as="font" type="font/woff2" crossorigin>'
                f'\n<link rel="preload" href="{F}figtree-400.woff2" as="font" type="font/woff2" crossorigin>', s)
     # 4. one continuous scroll
@@ -67,6 +109,72 @@ def build(src, dst, prefix):
     s = rep(s, 'if(d.yr){S.yr=+d.yr;renderMain();return}', 'if(d.yr){S.yr=+d.yr;rerender("returns");return}', label="yr")
     s = rep(s, 'if(d.beds){S.beds=+d.beds;renderMain();return}', 'if(d.beds){S.beds=+d.beds;rerender("returns");return}', label="beds")
     s = rep(s, 'if(d.pstep!==undefined){S.payStep=+d.pstep;renderMain();return}', 'if(d.pstep!==undefined){S.payStep=+d.pstep;rerender("next");return}', label="pstep")
+    # 4b. James's BRIK-down: one continuous quote (was a pull quote plus a separate quoted paragraph)
+    s = rep(s, '<blockquote>“With the previous Hall &amp; Co scheme next door, St Marys Gate, selling out and fully tenanting at rents 25 to 40% above forecast, the case for the Underbanks is no longer theoretical. Charter House is the chance to act on it.”</blockquote>\n  <div class="body" style="margin-top:14px"><p>“What we love about this site is how unapologetically it leans into the heritage. Conservation-led design, period brick detailing, the kind of craftsmanship that gets harder to find every year. Charter House is being built to outlast trends, not follow them.”</p></div>',
+            '<blockquote class="v2q"><p>“With the previous Hall &amp; Co scheme next door, St Marys Gate, selling out and fully tenanting at rents 25 to 40% above forecast, the case for the Underbanks is no longer theoretical. Charter House is the chance to act on it.</p><p>What we love about this site is how unapologetically it leans into the heritage. Conservation-led design, period brick detailing, the kind of craftsmanship that gets harder to find every year. Charter House is being built to outlast trends, not follow them.”</p></blockquote>', label="james quote")
+    # 4c. Stockport price chart: native SVG from HM Land Registry UK HPI (replaces the ONS screenshot)
+    s = rep(s, '${IMG("d_graph","Average price, Stockport, 2020 to 2026","pic tall2 graph")}', hpi_chart(), label="hpi chart")
+    # 4d. payment timeline: all three stages rendered, pinned while you scroll through them
+    s = rep(s, '<div class="ptl">', '<div class="ptlrun"><div class="ptl">', label="ptl open")
+    s = rep(s, 'Click each stage to see what you pay and when', 'Scroll to move through each stage, or tap one', label="ptl hint")
+    i0 = s.find('<div class="paycard" aria-live="polite">'); i1 = s.find('\n    <p class="fine">Total cash needed for ${u.name}')
+    assert 0 < i0 < i1, (i0, i1)
+    s = s[:i0] + PAYSTACK + '\n   </div></div>' + s[i1:]
+    s = rep(s, 'Please take your own tax and legal advice.</p>\n   </div></section>', 'Please take your own tax and legal advice.</p>\n   </section>', label="ptl close")
+    # 4e. essentials panel: the scout mark instead of the building silhouette
+    s = rep(s, '<div class="esspanel"><svg class="solid" viewBox="0 0 400 220" aria-hidden="true"><path d="M0 220V58L34 12L68 58L102 12L136 58L170 12L204 58V20H400V220H250V170A22 22 0 0 0 206 170V220Z"/></svg>',
+            '<div class="esspanel"><span class="mask plogo lg7 essmark" aria-hidden="true"></span>', label="essentials mark")
+    # 4f. gallery moves to the very end of the report
+    s = rep(s, r'building:()=>CH.building().replace(/<\/section>$/,"")+galleryTab()+"</section>"', 'building:CH.building', label="gallery out of building")
+    s = rep(s, '+`</div>`).join("");\n  $("#chg").style.display="";',
+            '+`</div>`).join("")+`<div class="gsec galend" id="t-gallery" data-sec="next">${galleryTab()}</div>`;\n  $("#chg").style.display="";', label="gallery at end")
+    # 4g. let the skin size this headline (inline !important forced 28px Bodoni on phones)
+    s = s.replace('<h3 class="sh" style="font-size:clamp(28px,3.2vw,38px)!important;margin:6px 0 14px">', '<h3 class="sh" style="margin:6px 0 14px">')
+    # 4h. section order: Overview, Building, Location, Why Stockport, Data, Choose, Returns, Next steps, Heritage (then Gallery)
+    s = rep(s, 'const GROUPS=[["opportunity","The opportunity",["overview","building","heritage"]],',
+               'const GROUPS=[["opportunity","The opportunity",["overview","building"]],', label="groups")
+    s = rep(s, '["invest","Your investment",["units","returns","next"]]];',
+               '["invest","Your investment",["units","returns","next"]],["more","More",["heritage"]]];', label="groups end")
+    for old_n, new_n, title in [("03","09","The building's heritage"),("05","03","Why Stockport"),("06","05","The data"),
+                                ("07","06","Choose your apartment"),("08","07","Returns"),("08","07","Return on investment"),("09","08","Next steps")]:
+        s = rep(s, f'chh("{old_n}","{title}"', f'chh("{new_n}","{title}"', label="renumber " + title)
+    tab = lambda t, n, label, sel="false": f'<button role="tab" data-tab="{t}" aria-selected="{sel}"><span class="tn0">{n}</span>{label}</button>'
+    grp = lambda g, lab, tabs, on="": f'<div class="tg{on}" data-g="{g}"><button class="tgl" data-group="{g}">{lab}</button><div class="tgb">{tabs}</div></div>'
+    nav = ('<nav class="tabs gtabs" role="tablist" aria-label="Report sections">'
+           + grp("opportunity", "The opportunity", tab("overview","01","Overview","true") + tab("building","02","The building"), " on")
+           + grp("intel", "Location and intel", tab("stockport","03","Why Stockport") + tab("location","04","Location") + tab("data","05","The data"))
+           + grp("invest", "Your investment", tab("units","06","Choose your apartment") + tab("returns","07","Returns") + tab("next","08","Next steps"))
+           + grp("more", "More", tab("heritage","09","Heritage")) + '</nav>')
+    s, k = re.subn(r'<nav class="tabs gtabs".*?</nav>', lambda m: nav, s, count=1, flags=re.S)
+    assert k == 1
+    # 4i. sticky bar button
+    s = rep(s, '<button class="b cta-s" id="ctaRes">Book a video call</button>', '<button class="b cta-s" id="ctaRes">Book a 3D virtual tour</button>', label="cta label")
+    # 4j. developer and architect: one hero image each instead of a three-image grid
+    s = rep(s, '<div class="pics3">${IMG("street","Hall &amp; Co in the Underbanks")}${IMG("stmarys","St Marys Gate, next door, by Hall &amp; Co")}${IMG("rear","Charter House, CGI")}</div>',
+            '<div class="teamhero">${IMG("stmarys","St Marys Gate, next door, by Hall &amp; Co","thero")}<p class="thcap">St Marys Gate, next door. Hall &amp; Co, completed 2025</p></div>', label="hall hero")
+    s = rep(s, '<div class="pics3">${IMG("arch1","Ollier Smurthwaite project")}${IMG("arch2","Ollier Smurthwaite interior")}${IMG("arch3","Ollier Smurthwaite project")}</div>',
+            '<div class="teamhero">${IMG("arch1","Ollier Smurthwaite project","thero")}<p class="thcap">An Ollier Smurthwaite scheme</p></div>', label="architect hero")
+    # 4k. Location: Why the Underbanks first, then map, on foot; tenant profile moves to Returns (rental market)
+    a = s.find(' <div class="sec"><div class="cap"><span>Why the Underbanks</span></div>')
+    c = s.find(' <div class="sec"><div class="cap"><span>Current tenant profile</span></div>')
+    d = s.find(' <div class="sec"><div class="cap"><span>BRIK in the Underbanks</span>')
+    assert 0 < a < c < d, (a, c, d)
+    why, ten = s[a:c], s[c:d]
+    s = s[:a] + s[d:]
+    hook = '${chh("04","Location","A minute from the Underbanks, ten from the station.")}\n'
+    assert s.count(hook) == 1
+    s = s.replace(hook, hook + why.replace('<div class="sec">', '<div class="sec locwhy">', 1))
+    ten = ten.replace('<span>Current tenant profile</span>', '<span>Who rents here</span><span>Current tenant profile</span>', 1)
+    ev = '<section class="sec"><div class="cap"><span>Rental evidence</span></div>'
+    assert s.count(ev) == 1
+    e0 = s.find(ev)
+    s = s.replace(ev, '<section class="sec"><div class="cap"><span>The rental market</span><span>Proven rents next door</span></div>', 1)
+    g = s.find('<section class="sec"><div class="cap"><span>Stockport', e0)
+    assert g > e0
+    s = s[:g] + ten.strip() + '\n  ' + s[g:]
+    # 4l. BRIK in the Underbanks as a green stitched banner
+    s = rep(s, ' <div class="sec"><div class="cap"><span>BRIK in the Underbanks</span><span>What we\'ve built on these streets</span></div>',
+            ' <div class="sec brikband"><div class="bbhead"><span class="mask plogo lg7 bbscout" aria-hidden="true"></span><div><div class="cap">Our involvement</div><h3 class="bbh">Rooted in the Underbanks.</h3><p class="bbp">We\'ve gone deep on this neighbourhood. We know the Underbanks street by street, we\'ve built businesses here ourselves, and we have the network of developers, investors and tenants that comes with that. Charter House is launching exclusively through BRIK Studios: our relationship with Hall &amp; Co goes back several years.</p></div></div><div class="cap bbsub">What we\'ve built on these streets</div>', label="brikband")
     # 5. data fixes
     s = rep(s, '${pct(v*12/EX.price)}</text>', '${pct(v*12/EX.price*100)}</text>', label="rent yield bug")
     s = rep(s, '<th>Price growth forecast</th><th>2025</th><th>2026</th><th>2027</th><th>2028</th><th>2029</th><th>5 years to 2029</th>',
@@ -79,6 +187,9 @@ def build(src, dst, prefix):
     s = rep(s, '<small>on capital deployed, 5-year exit</small>', '<small>on capital deployed, 5-year hold</small>', label="5yr exit")
     s = rep(s, '<div class="cap">Annualised</div>', '<div class="cap">Average a year</div>', label="roi annualised")
     s = rep(s, 'Annualised return is the total return divided by the years held.', 'Average annual return is the total return divided by the years held; it is not compounded.', count=0, label="annualised note")
+    # 9. the sales story and the rest of pass 9
+    import pass9
+    s = pass9.apply(s, rep)
     # 6. skin
     css = open(f"{HERE}/skin.css", encoding="utf-8").read().replace("{{F}}", F).replace("{{P}}", P)
     js = open(f"{HERE}/skin.js", encoding="utf-8").read()
