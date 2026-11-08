@@ -221,8 +221,10 @@ def build(src, dst, prefix):
     s = pass9.apply(s, rep)
     import pass10
     s = pass10.apply(s, rep)
+    import pass12
+    s, p12css = pass12.apply(s, rep)
     # 6. skin
-    css = open(f"{HERE}/skin.css", encoding="utf-8").read().replace("{{F}}", F).replace("{{P}}", P)
+    css = (open(f"{HERE}/skin.css", encoding="utf-8").read() + "\n" + p12css).replace("{{F}}", F).replace("{{P}}", P)
     js = open(f"{HERE}/skin.js", encoding="utf-8").read()
     k = s.rfind("</style>")
     s = s[:k] + "\n/* ================= V2 SKIN ================= */\n" + css + "\n" + s[k:]

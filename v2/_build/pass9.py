@@ -149,6 +149,7 @@ const EARLY=`''' + site["early_html"] + "`;"
     import re as _re
     wa = _re.search(r'encodeURIComponent\("Hi [^"]*3D video tour\?"\)', s[a:ze])
     assert wa, "whatsapp text"
+    choose = choose.replace('data-cap="Charter House, from our 3D model"', 'data-cap="' + site.get("name", "Charter House") + ', from our 3D model"')
     choose = choose.replace('encodeURIComponent("Hi Charlie, I\'ve been looking at Charter House. Could we set up a 3D video tour?")', wa.group(0))
     s = s[:a] + choose + s[ze:]
     s = rep(s, '<span class="plt">Early access to the top-floor apartments, before Charter House goes public.</span>',
