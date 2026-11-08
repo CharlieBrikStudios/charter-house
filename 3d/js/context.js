@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1794095278';
-import { groundAt, letteringTexture } from './world.js?v=1794095278';
+import { boxGeom, boxUV } from './building.js?v=1794097647';
+import { groundAt, letteringTexture } from './world.js?v=1794097647';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
