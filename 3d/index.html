@@ -332,6 +332,28 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
 #backbtn { position: absolute; left: calc(var(--gx) + 6px); top: calc(var(--gt) + 112px); }
 /* camera presets */
 .views { position: absolute; left: calc(var(--gx) + 6px); bottom: calc(var(--gb) + 18px); }
+/* "Look around the area": a row of picture buttons, one per photoreal street 360, that jump straight to the spot (Charlie, 9 Nov:
+   like the Nifty tours; before this the spots hid behind the 360 walk-around). Shown on the landing view only */
+.looks { position: absolute; left: calc(var(--gx) + 6px); bottom: calc(var(--gb) + 74px); max-width: calc(100vw - 372px - var(--gx) - var(--gr) - 40px); display: grid; gap: 8px; z-index: 2; transition: opacity .35s, transform .35s; }
+.looks.off { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.looks .lk-head { display: flex; align-items: baseline; gap: 10px; padding-left: 2px; text-shadow: 0 1px 10px rgba(0,0,0,.6); }
+.looks .lk-head b { font: 500 10.5px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: #fff; }
+.looks .lk-head span { font-size: 12px; color: rgba(255,248,236,.8); }
+.looks .lk-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; scroll-snap-type: x proximity; }
+.looks .lk-row::-webkit-scrollbar { display: none; }
+.looks button { flex: none; width: 132px; display: grid; gap: 0; padding: 0; border-radius: 12px; overflow: hidden; background: rgba(20,16,14,.82); border: 1px solid var(--line); text-align: left; scroll-snap-align: start; transition: border-color .2s, transform .2s; }
+.looks button:hover, .looks button:focus-visible { border-color: var(--brass); transform: translateY(-2px); }
+.looks button img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: #2a2420; }
+.looks button span { display: block; padding: 7px 9px 8px; font: 500 12px/1.25 var(--f-body); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.looks button span::before { content: "360°"; display: inline-block; margin-right: 6px; font: 600 9.5px/1 var(--f-label); letter-spacing: .08em; color: var(--brass); vertical-align: 1px; }
+@media (max-width: 760px) {
+  .looks { left: var(--gx); right: var(--gr); bottom: auto; top: calc(var(--gt) + 156px); max-width: none; gap: 6px; }
+  .looks .lk-head span { display: none; }
+  .looks button { width: 104px; border-radius: 10px; }
+  .looks button span { padding: 5px 7px 6px; font-size: 11px; }
+  body:has(.looks:not(.off)) #navpad { top: calc(var(--gt) + 262px); }
+}
+#tourui .tspots button img { width: 34px; height: 22px; border-radius: 5px; object-fit: cover; margin-left: -8px; }
 .views .vsep { width: 1px; align-self: stretch; margin: 4px 4px; background: var(--line-hi); }
 .views .vl { font: 500 10px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); padding: 0 6px 0 10px; display: inline-flex; align-items: center; }
 #hint { bottom: calc(var(--gb) + 70px); }
@@ -591,6 +613,7 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
     <button data-view="front" aria-pressed="true">Front corner</button><button data-view="rear">Rear entrances</button><button data-view="street">Up Churchgate</button><button data-view="above">From above</button>
     <span class="vsep" aria-hidden="true"></span><button id="btn-build" title="Scroll through the build, from groundworks to handover">Build timeline</button><button id="btn-360" class="v360" title="Stand at fixed spots around the building and look all the way round">360° walk-around</button><button id="btn-clay" aria-pressed="false" title="Turn every other building into a plain white architectural model so Charter House stands out">Highlight</button>
   </div>
+  <div class="looks off" id="looks" role="group" aria-label="Look around the area"><div class="lk-head"><b>Look around the area</b><span>Photoreal 360° views · tap to step in</span></div><div class="lk-row" id="lk-row"></div></div>
   <aside id="panel" aria-live="polite"></aside>
   <div id="navpad" role="group" aria-label="Floors and apartments">
     <button data-nav="fup" class="nfl" title="Floor up" aria-label="Floor up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg></button>
@@ -678,6 +701,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1794218551"></script>
+<script type="module" src="js/main.js?v=1794220905"></script>
 
 </body></html>
