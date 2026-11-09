@@ -36,8 +36,8 @@ PAYSTACK = ('<div class="paystack">${STOPS.map((st,i)=>`<div class="paycard ${i=
 def hpi_chart():
     import json as _j
     pts = _j.load(open(os.path.join(HERE, "stockport_hpi.json")))
-    W, H, L, R, T, B = 640, 300, 64, 22, 30, 42
-    lo, hi = 225000, 325000
+    W, H, L, R, T, B = 640, 340, 64, 22, 72, 42
+    lo, hi = 200000, 325000
     n = len(pts)
     X = lambda i: L + i * (W - L - R) / (n - 1)
     Y = lambda v: T + (hi - v) * (H - T - B) / (hi - lo)
@@ -56,9 +56,9 @@ def hpi_chart():
            f'<polygon points="{area}" class="har"/><polyline points="{line}" class="hln" pathLength="1"/>'
            f'<circle cx="{X(0):.1f}" cy="{Y(s_v):.1f}" r="4" class="hpt"/>'
            f'<circle cx="{X(n-1):.1f}" cy="{Y(e_v):.1f}" r="5.5" class="hpt end"/>'
-           f'<text x="{X(n-1)-10:.1f}" y="{Y(e_v)-14:.1f}" class="he">£{e_v:,}</text>'
-           f'<text x="{X(n-1)-10:.1f}" y="{Y(e_v)-32:.1f}" class="hm">{lab(e_m)}</text>'
-           f'<text x="{X(0)+8:.1f}" y="{Y(s_v)+22:.1f}" class="hs">£{s_v:,}</text>'
+           f'<text x="{X(n-1):.1f}" y="{T-10}" class="he">£{e_v:,}</text>'
+           f'<text x="{X(n-1):.1f}" y="{T-42}" class="hm">{lab(e_m)}</text>'
+           f'<text x="{X(0)+10:.1f}" y="{Y(lo)-15:.1f}" class="hs">£{s_v:,}</text>'
            f'<g class="hhov" opacity="0"><line class="hvl" y1="{T}" y2="{Y(lo):.1f}"/><circle class="hvd" r="5"/></g>'
            f'<rect class="hhit" x="{L}" y="{T}" width="{W-L-R}" height="{H-T-B}" fill="transparent"/></svg>')
     return (f'<figure class="hpi" data-hpi="{data}" data-l="{L}" data-r="{R}" data-w="{W}" data-t="{T}" data-b="{B}" data-h="{H}" data-lo="{lo}" data-hi="{hi}">'
@@ -197,7 +197,7 @@ def build(src, dst, prefix):
     # 8. link previews (WhatsApp, iMessage, LinkedIn): proper title, description and a picture
     import json, html as _h
     site = json.load(open(f"{HERE}/site.json", encoding="utf-8"))
-    url = site["url"] + ("andy/" if prefix else "")
+    url = site["url"] + ("andy/" if "/andy/" in dst else "")
     img = site["url"] + "assets/img/og.jpg"
     esc = lambda x: x.replace("&", "&amp;").replace('"', "&quot;")
     t, d = esc(site["title"]), esc(site["description"])
@@ -221,8 +221,14 @@ def build(src, dst, prefix):
     s = pass9.apply(s, rep)
     import pass10
     s = pass10.apply(s, rep)
+    import pass12
+    s, p12css = pass12.apply(s, rep)
+    if os.environ.get("V3"):
+        import pass_v3
+        s = pass_v3.apply(s, rep)
+        p12css += open(f"{HERE}/skin_v3.css", encoding="utf-8").read()
     # 6. skin
-    css = open(f"{HERE}/skin.css", encoding="utf-8").read().replace("{{F}}", F).replace("{{P}}", P)
+    css = (open(f"{HERE}/skin.css", encoding="utf-8").read() + "\n" + p12css).replace("{{F}}", F).replace("{{P}}", P)
     js = open(f"{HERE}/skin.js", encoding="utf-8").read()
     k = s.rfind("</style>")
     s = s[:k] + "\n/* ================= V2 SKIN ================= */\n" + css + "\n" + s[k:]
@@ -232,7 +238,9 @@ def build(src, dst, prefix):
     open(dst, "w", encoding="utf-8").write(s)
     print(dst, round(os.path.getsize(dst) / 1024), "KB")
 
-build(f"{HERE}/src/index.html", f"{V2}/index.html", "")
-build(f"{HERE}/src/andy/index.html", f"{V2}/andy/index.html", "../")
+OUT = os.environ.get("OUT", V2)          # where the pages go
+PFX = os.environ.get("PFX", "")          # extra path from the output folder to the shared assets
+build(f"{HERE}/src/index.html", f"{OUT}/index.html", PFX)
+build(f"{HERE}/src/andy/index.html", f"{OUT}/andy/index.html", "../" + PFX)
 if MISSES:
     print("MISSES:\n  " + "\n  ".join(dict.fromkeys(MISSES)))
