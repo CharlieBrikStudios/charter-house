@@ -806,7 +806,7 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 #view .case7 .c7n b,#view .bigstat .c7n b{display:grid;place-items:center;width:clamp(64px,6vw,84px);height:clamp(64px,6vw,84px);border-radius:50%;background:#F6F0E6;color:var(--accent)!important;font-size:clamp(28px,2.8vw,38px)!important;line-height:1!important;letter-spacing:-.02em!important;box-shadow:0 0 0 6px rgba(246,240,230,.16),0 14px 26px -14px rgba(0,0,0,.5)}
 #view #case-2 .c7n b,#view #case-4 .c7n b,#view #case-6 .c7n b{color:#96401F!important}
 #view .case7 .c7n i,#view .bigstat .c7n i{display:flex;flex-direction:column;gap:5px;font:600 11px/1 var(--wide)!important;letter-spacing:.2em!important;text-transform:uppercase;color:#F3ECE2!important}
-#view .case7 .c7n i::before,#view .bigstat .c7n i::before{content:"Step";font:inherit;color:inherit}
+#view .case7 .c7n i::before,#view .bigstat .c7n i::before{content:"Reason";font:inherit;color:inherit}
 
 /* ================= pass 12: film, Trustpilot, FAQ, BRIK stats ================= */
 .filmsec{margin:clamp(40px,5vw,72px) 0 0}
@@ -876,7 +876,7 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 #view .brikband .bbh{text-transform:none!important;letter-spacing:-.02em!important}
 
 /* ================= pass 13: award pennants, like hanging banners over a photo ================= */
-.team2 .awards.pennants{position:relative;grid-column:1/-1;text-align:left;margin:20px 0 10px;padding:clamp(26px,3.4vw,44px) clamp(18px,3vw,40px) clamp(30px,4vw,52px);border:0!important;overflow:hidden;
+.awards.pennants{position:relative;text-align:left;margin:clamp(40px,5vw,64px) 0 clamp(24px,3vw,36px);padding:clamp(26px,3.4vw,44px) clamp(18px,3vw,40px) clamp(30px,4vw,52px);border:0!important;overflow:hidden;
  background:linear-gradient(180deg,rgba(14,12,10,.55),rgba(14,12,10,.35) 40%,rgba(14,12,10,.7)),var(--pbg) center/cover no-repeat}
 .pennants .pnhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 24px;margin-bottom:clamp(20px,2.6vw,32px)}
 #view .pennants .pnhead .cap{color:#EADFCB!important;margin:0!important;border:0!important;padding:0!important}
@@ -897,4 +897,67 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
 #view .pennants .pnnote{margin:24px 0 0;color:#EFE8DE!important;font-size:14px}
 @media (max-width:760px){.pennants .pnrow{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:none}.pennants .pnrow::-webkit-scrollbar{display:none}.pennant{flex:0 0 58%;scroll-snap-align:start}}
 @media (prefers-reduced-motion:reduce){.pennant{opacity:1;transform:none}}
-.team2 .awards.pennants{background-color:#1C1915!important}.pennants .pnhead,.pennants .pnnote{text-shadow:0 1px 12px rgba(0,0,0,.45)}
+.awards.pennants{background-color:#1C1915!important}.pennants .pnhead,.pennants .pnnote{text-shadow:0 1px 12px rgba(0,0,0,.45)}
+/* ================= pass 14 (9 Nov): awards banner opens Meet the developer / architect; smaller review tiles ================= */
+.pennants .pnhead{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:8px}
+#view .pennants .pnh{font-size:clamp(30px,3.6vw,48px)!important;line-height:1.04!important}
+.pennant{min-height:clamp(210px,17vw,250px)!important;padding-bottom:46px!important}
+.pennant .pnproj{margin-top:2px}
+.tptrack{gap:14px}
+.tpcard{flex:0 0 clamp(232px,23%,290px);gap:9px;padding:18px 18px 16px}
+#view .tpcard h4{font-size:15.5px!important;line-height:1.3!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tpcard p{font-size:13.5px;line-height:1.55;-webkit-line-clamp:5}
+.tpcard .tpstars svg{width:15px;height:15px;padding:2px}
+.tpby{font-size:12.5px;padding-top:10px}
+.tpby a{font-size:12px}
+#view .tpscore{margin:8px 0 0;font-size:14px;color:var(--text)}
+#view .tpscore b{color:var(--ink)}
+@media (max-width:760px){.tpcard{flex-basis:74%}}
+.brikband .bbhalf.bbhead{margin:8px 0 26px;padding-top:30px}
+.bbwhy.solo{margin:clamp(36px,4vw,52px) 0 0;padding:clamp(22px,2.4vw,30px) clamp(22px,2.8vw,36px);background:var(--accent);border-left:4px solid #E4D3B2;box-shadow:0 22px 40px -30px rgba(34,28,25,.55)}
+#view .bbwhy.solo .cap{color:#E4D3B2!important;margin:0 0 10px!important;border:0!important;padding:0!important}
+#view .bbwhy.solo p{margin:0;max-width:72ch;font-size:clamp(15.5px,1.2vw,17.5px);line-height:1.6;color:#F4EEE5!important}
+.bbwhy.solo+.mapmode{margin-top:40px}
+/* house price chart: labels sit in clear space, with a halo so no line runs through them */
+.hpi .he,.hpi .hm,.hpi .hs{paint-order:stroke;stroke:var(--lift);stroke-width:6px;stroke-linejoin:round}
+.hpi .he{font-size:22px}
+.hpi .hs{font:600 15px "Besley",Georgia,serif;fill:var(--ink)}
+@media (max-width:760px){.hpi .he{font-size:28px}.hpi .hs{font-size:23px}.hpi .he,.hpi .hm,.hpi .hs{stroke-width:9px}}
+
+/* reason 7 + reserve, one band */
+.c7last .keyfig{margin:clamp(22px,3vw,34px) 0 0;align-items:flex-start;max-width:min(320px,100%)}
+.c7last .keyfig::before,.c7last .keyfig::after{display:none}
+#view .c7last .keyfig figcaption{color:#F3ECE2!important;font-size:17px}
+.c7last .c7res{margin-top:clamp(22px,2.6vw,30px);padding-top:clamp(18px,2.2vw,24px);border-top:1px solid rgba(255,255,255,.3)}
+#view .c7last .c7res .cap{color:#E4D3B2!important;margin:0 0 10px!important;border:0!important;padding:0!important}
+#view .c7last .c7res p{color:#F4EEE5!important;margin:0 0 20px}
+@media (max-width:760px){.c7last .keyfig{max-width:240px}}
+@media (max-width:760px){.hpi .he{font-size:34px}.hpi .hm{font-size:21px}.hpi .hs{font-size:27px}}
+.case7 .c7f:has(>div:only-child){grid-template-columns:1fr!important}
+/* seven reasons: a read-through list, no jump links */
+.cmlist .cmb{box-sizing:border-box;display:flex;flex-direction:row;align-items:center;gap:18px;padding:16px 8px;width:100%}
+@media (max-width:860px){.cmlist .cmb{flex-wrap:wrap;gap:4px 14px}}
+/* how to read this report */
+.howread{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,3vw,40px);align-items:start;margin:clamp(36px,4.6vw,60px) 0 0;padding:clamp(26px,3.4vw,44px) clamp(22px,3.6vw,52px);background:#221C19;color:#F2ECE3;box-shadow:0 26px 50px -34px rgba(34,28,25,.6)}
+#view .howread .cap{color:#E4D3B2!important;margin:0 0 10px!important;border:0!important;padding:0!important}
+#view .howread .hrh{font:600 clamp(28px,3.2vw,44px)/1.05 "Besley",Georgia,serif!important;color:#fff!important;margin:0 0 16px!important}
+#view .howread p{margin:0 0 12px;max-width:74ch;font-size:clamp(15.5px,1.15vw,17px);line-height:1.65;color:#ECE5DB!important}
+#view .howread p:last-child{margin:0;color:#fff!important;font-weight:500}
+.hrscroll{display:block;width:30px;height:48px;border:2px solid #E4D3B2;border-radius:16px;position:relative;margin-top:4px}
+.hrscroll b{position:absolute;left:50%;top:9px;width:4px;height:9px;margin-left:-2px;border-radius:2px;background:#E4D3B2;animation:hrs 1.8s ease-in-out infinite}
+@keyframes hrs{0%{transform:translateY(0);opacity:1}70%{transform:translateY(16px);opacity:0}100%{transform:translateY(0);opacity:0}}
+@media (prefers-reduced-motion:reduce){.hrscroll b{animation:none}}
+@media (max-width:640px){.howread{grid-template-columns:1fr}.hrscroll{width:24px;height:38px}}
+/* specification CGIs: left-to-right slider */
+.rbslider{position:relative;margin-top:clamp(36px,4.5vw,56px)}
+.rooms-big.rbtrack{display:flex!important;gap:clamp(14px,1.6vw,22px)!important;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding:6px 2px 14px;margin:0!important;outline:none}
+.rbtrack::-webkit-scrollbar{display:none}
+.rbtrack .rb,.rbtrack .rb.rev{flex:0 0 min(84%,960px);scroll-snap-align:start;display:grid!important;grid-template-columns:1.5fr 1fr!important;gap:clamp(18px,2.4vw,34px)!important;align-items:center;background:var(--lift);border:1px solid var(--hair);padding:clamp(12px,1.4vw,18px);box-shadow:0 18px 36px -30px rgba(34,28,25,.45)}
+.rbtrack .rb.rev .pic{order:0!important}
+.rbtrack .rb .pic{aspect-ratio:16/10!important;clip-path:none!important;transform:none!important}
+.rbtrack .rb .pic::after{display:none!important}
+.rbtrack .rb .rbt{opacity:1!important;transform:none!important;padding-right:clamp(4px,1vw,14px)}
+.rbnav{margin-top:8px!important}
+@media (max-width:760px){.rbtrack .rb,.rbtrack .rb.rev{flex-basis:86%;grid-template-columns:1fr!important;gap:14px!important}}
+#view .rbtrack .rbt h4{font-size:clamp(22px,2vw,30px)!important;line-height:1.1!important}
+@media (max-width:760px){#view .rbtrack .rbt h4{font-size:24px!important}}

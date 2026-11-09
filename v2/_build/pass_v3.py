@@ -24,8 +24,10 @@ def apply(s, rep):
     kpis = s[a:b]
     s = s[:a] + s[b:]
     # the seven-step map, film and reviews: map and reviews move to the brief; film stays in the deep dive
-    s = s.replace('${id==="overview"?FILM+CASEMAP+JUMP:""}', '${id==="overview"?FILM:""}')
-    s = s.replace('(id==="overview"?FILM+CASEMAP+JUMP:"")', '(id==="overview"?FILM:"")')
+    n0 = s.count('FILM+HOWREAD+CASEMAP+JUMP')
+    assert n0 >= 1, "v3 overview hook"
+    s = s.replace('${id==="overview"?FILM+HOWREAD+CASEMAP+JUMP:""}', '${id==="overview"?FILM:""}')
+    s = s.replace('(id==="overview"?FILM+HOWREAD+CASEMAP+JUMP:"")', '(id==="overview"?FILM:"")')
     s = rep(s, '+nextTab()+howBlocks()+TP+FAQ};', '+nextTab()+howBlocks()+FAQ};', label="v3 reviews out of next")
     wa = re.search(r'encodeURIComponent\("Hi [^"]*3D video tour\?"\)', s).group(0)
     stats = "".join(f'<div><b>{e(v)}</b><span>{e(l)}</span></div>' for v, l in u["stats"])
@@ -35,11 +37,12 @@ def apply(s, rep):
         f'<div class="urgent"><div class="cap">{e(u["cap"])}</div><h2 class="urh">{e(u["h"])}</h2><div class="urstats">{stats}</div>'
         f'<p>{e(u["p"])}</p><div class="row"><button class="b solid" data-call>Book a 3D virtual tour</button>'
         '<a class="b line" href="${WA_}${' + wa + '}" target="_blank" rel="noopener">WhatsApp me</a></div></div>'
+        '${HOWREAD}'
         '<div class="bknums"><div class="bkh"><div class="cap">The numbers</div><h3 class="bkt">On the example one bed.</h3></div>' + kpis + '</div>'
         '${CASEMAP}'
         '${TP}'
         '<div class="bktour"><button class="bkimg" data-img="model3d" data-cap="' + e(site["name"]) + ', from our 3D model" aria-label="View the 3D model still"></button>'
-        '<div><div class="cap">Next step</div><h3 class="bkt">See it in 3D, then choose yours.</h3><p>A 30-minute video call round our 3D model of the finished building: every floor, the apartments still available and the views from each.</p>'
+        '<div><h3 class="bkt">See it in 3D, then choose yours.</h3><p>A 30-minute video call round our 3D model of the finished building: every floor, the apartments still available and the views from each.</p>'
         '<div class="row"><button class="b solid" data-call>Book a 3D virtual tour</button></div></div></div>'
         '<div class="partlab deep" id="deepdive"><span class="pno">Part two</span><span class="pnm">The deep dive</span><span class="ptime">The full report, chapter by chapter</span></div>'
         '<div class="ddlist">${GROUPS.filter(g=>g[0]!=="brief").flatMap(g=>g[2]).map((id,k)=>`<button data-goto="${id}"><span>${String(k+1).padStart(2,"0")}</span>${TABS[id]}</button>`).join("")}</div>'
