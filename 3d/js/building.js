@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H } from './data.js?v=1794222541';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1794222541';
+import { UNITS, FLOOR_H } from './data.js?v=1794223853';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1794223853';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -374,8 +374,9 @@ export function buildCharterHouse(M, base) {
     const sp = new THREE.PlaneGeometry(1.55, 0.67); sp.rotateY(Math.PI); sp.translate(c, 2.86, dz - 0.012); fa.place(sp);
     const sign = new THREE.Mesh(sp, signMat); group.add(sign);
     const panel = boxGeom(c - 1.0, 2.55, dz - 0.01, c + 1.0, 3.18, dz + 0.05); fa.place(panel); B.add('door', panel);
-    // gilded Charter House wordmark in individual letters on the brickwork above the arch
-    {
+    // gilded Charter House wordmark in individual letters on the brickwork above the arch: taken off (Charlie, 9 Nov: it cut
+    // through the window above in the park view, and the name is already in the glass over the door)
+    if (false) {
       const gold = new THREE.MeshStandardMaterial({ map: signTex, alphaMap: signTex, alphaTest: 0.5, color: '#f0cf8a', emissive: '#3a2a10', roughness: 0.28, metalness: 1, envMapIntensity: 1.6, clippingPlanes: CUT_PLANES });
       // the PNG is black ink on transparent: use its alpha, colour it gold
       gold.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb = diffuse;').replace('#include <alphamap_fragment>', 'diffuseColor.a *= texture2D( alphaMap, vAlphaMapUv ).a;'); };
