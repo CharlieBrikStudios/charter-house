@@ -336,7 +336,8 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
    like the Nifty tours; before this the spots hid behind the 360 walk-around). Shown on the landing view only */
 .looks { position: absolute; left: calc(var(--gx) + 6px); bottom: calc(var(--gb) + 74px); max-width: calc(100vw - 372px - var(--gx) - var(--gr) - 40px); display: grid; gap: 8px; z-index: 2; transition: opacity .35s, transform .35s; }
 .looks.off { opacity: 0; transform: translateY(8px); pointer-events: none; }
-.looks .lk-head { display: flex; align-items: baseline; gap: 10px; padding-left: 2px; text-shadow: 0 1px 10px rgba(0,0,0,.6); }
+.looks .lk-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding-left: 2px; text-shadow: 0 1px 10px rgba(0,0,0,.6); }
+.looks .lk-head b { white-space: nowrap; }
 .looks .lk-head b { font: 500 10.5px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: #fff; }
 .looks .lk-head span { font-size: 12px; color: rgba(255,248,236,.8); }
 .looks .lk-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; scroll-snap-type: x proximity; }
@@ -345,7 +346,8 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
 .looks button:hover, .looks button:focus-visible { border-color: var(--brass); transform: translateY(-2px); }
 .looks button img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: #2a2420; }
 .looks button span { display: block; padding: 7px 9px 8px; font: 500 12px/1.25 var(--f-body); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.looks button span::before { content: "360°"; display: inline-block; margin-right: 6px; font: 600 9.5px/1 var(--f-label); letter-spacing: .08em; color: var(--brass); vertical-align: 1px; }
+.looks button { position: relative; }
+.looks button::before { content: "360°"; position: absolute; left: 6px; top: 6px; padding: 3px 5px; border-radius: 6px; background: rgba(20,16,14,.72); font: 600 9px/1 var(--f-label); letter-spacing: .06em; color: var(--brass); }   /* (on the picture, so the name has the whole width) */
 @media (max-width: 760px) {
   .looks { left: var(--gx); right: var(--gr); bottom: auto; top: calc(var(--gt) + 156px); max-width: none; gap: 6px; }
   .looks .lk-head span { display: none; }
@@ -701,6 +703,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1794220925"></script>
+<script type="module" src="js/main.js?v=1794222541"></script>
 
 </body></html>
