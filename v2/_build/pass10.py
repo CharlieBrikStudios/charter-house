@@ -102,4 +102,11 @@ def apply(s, rep):
            '<button class="tparr next" aria-label="Next image"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>')
     blk = s[a:z].replace('<div class="rooms-big" style="margin-top:56px">', '<div class="rooms-big rbtrack" tabindex="0" aria-label="Specification images, scroll sideways">', 1)
     s = s[:a] + '<div class="rbslider">' + blk + arr + '</div>' + s[z:]
+    # ---------- 9 Nov: Returns before Choose your apartment, then Next steps
+    s = rep(s, '["invest","Your investment",["units","returns","next"]]', '["invest","Your investment",["returns","units","next"]]', label="order groups")
+    s = rep(s, '"Next: choose your apartment"]', '"Next: the returns"]', label="order gnext")
+    s = rep(s, 'chh("07","Returns",', 'chh("06","Returns",', label="order returns no")
+    s = rep(s, 'chh("06","Choose your apartment",', 'chh("07","Choose your apartment",', label="order units no")
+    s = rep(s, '<button role="tab" data-tab="units" aria-selected="false"><span class="tn0">06</span>Choose your apartment</button><button role="tab" data-tab="returns" aria-selected="false"><span class="tn0">07</span>Returns</button>',
+            '<button role="tab" data-tab="returns" aria-selected="false"><span class="tn0">06</span>Returns</button><button role="tab" data-tab="units" aria-selected="false"><span class="tn0">07</span>Choose your apartment</button>', label="order nav tabs")
     return s
