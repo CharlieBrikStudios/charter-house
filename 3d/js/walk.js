@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1794418836';
+import { FLOOR_H as FH } from './data.js?v=1794422719';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -131,8 +131,11 @@ export function walkMaterials(tex, base) {
   m.herrSize = herr.userData.size;
   return m;
 }
-// heritage paint colours: walls and panelling in one colour, as a decorator would do it
-const PAINT = { living: '#d9cfc1', kitchen: '#d9cfc1', bedroom: '#c8b7a6', feature: '#3f4a42', hall: '#e3dccf', bath: '#e7e2da' };
+// heritage paint colours. Panelling runs to the dado only, as in the CGIs, in a slightly darker tone than the plain wall
+// above it for contrast ('<room>_lo' keys; Andy and Charlie, 11 Nov): it makes the rooms read bigger.
+const PAINT = { living: '#ddd4c7', kitchen: '#ddd4c7', bedroom: '#cdbdad', feature: '#3f4a42', hall: '#e3dccf', bath: '#e7e2da',
+  living_lo: '#c2b5a4', kitchen_lo: '#c2b5a4', bedroom_lo: '#b3a190', feature_lo: '#343d37', hall_lo: '#c9bdad', bath_lo: '#e7e2da' };
+const DADO = 0.98;             // top of the dado rail: panelling and the darker paint stop here
 function paintMat(m, key) { if (!m.paint[key]) m.paint[key] = new THREE.MeshStandardMaterial({ color: PAINT[key] || PAINT.hall, roughness: 0.8, envMapIntensity: 0.8 }); return m.paint[key]; }
 
 // ------------------------------------------------------------------ the fitted-out apartment
@@ -352,22 +355,34 @@ export function buildApartment(u, ctx) {
   };
   for (const run of [...runs, ...stubs]) { run.o0 = openEnd(run, false); run.o1 = openEnd(run, true); }
   const lights = [], arts = [];
-  for (const st of stubs) { const PK = 'paint_' + (st.room.type === 'bath' ? 'bath' : st.room.type === 'bedroom' ? 'bedroom' : st.room.type === 'hall' ? 'hall' : 'living'); place(st, -0.012, st.len + 0.012, 0, CEIL, 0.012, PK); if (st.room.type !== 'bath') { place(st, 0, st.len, 0, 0.19, 0.022, PK); place(st, 0, st.len, 0.17, 0.2, 0.032, PK); } }
+  for (const st of stubs) {
+    const PK = 'paint_' + (st.room.type === 'bath' ? 'bath' : st.room.type === 'bedroom' ? 'bedroom' : st.room.type === 'hall' ? 'hall' : 'living');
+    if (st.room.type === 'bath') { place(st, -0.012, st.len + 0.012, 0, CEIL, 0.012, PK); continue; }
+    const PL = PK + '_lo';
+    place(st, -0.012, st.len + 0.012, 0, DADO, 0.012, PL); place(st, -0.012, st.len + 0.012, DADO, CEIL, 0.012, PK);
+    place(st, 0, st.len, 0, 0.19, 0.022, PL); place(st, 0, st.len, 0.17, 0.2, 0.032, PL); place(st, 0, st.len, 0.92, DADO, 0.034, PL);
+  }
   for (const run of runs) {
     const R = run.room, pk = R.type === 'bath' ? 'bath' : feature.has(run) ? 'feature' : R.type === 'bedroom' ? 'bedroom' : R.type === 'hall' ? 'hall' : 'living';
-    const PK = 'paint_' + pk;
+    const PK = 'paint_' + pk, PL = PK + '_lo', bath = R.type === 'bath';
     // solid intervals between windows
     const solid = []; let s = 0; for (const w of run.win) { if (w.a > s) solid.push([s, Math.min(w.a, run.len)]); s = Math.max(s, w.b); } if (s < run.len) solid.push([s, run.len]);
-    // paint skin (covers brick on the inside of the external walls) incl. below/above windows
-    for (const [a, b] of solid) placeX(run, a, b, 0, CEIL, 0.012, PK);
-    for (const w of run.win) { const a = Math.max(0, w.a), b = Math.min(run.len, w.b); place(run, a, b, 0, Math.max(0.02, w.sill), 0.012, PK); place(run, a, b, Math.min(CEIL - 0.02, w.head), CEIL, 0.012, PK); }
-    if (R.type === 'bath') {
+    // paint skin (covers brick on the inside of the external walls) incl. below/above windows: the darker panel tone up to
+    // the dado, the lighter wall paint above it (one colour throughout in shower rooms)
+    const skin = (fn, a, b, y0b, y1b) => {
+      if (bath || y0b >= DADO) return fn(run, a, b, y0b, y1b, 0.012, PK);
+      if (y1b <= DADO) return fn(run, a, b, y0b, y1b, 0.012, PL);
+      fn(run, a, b, y0b, DADO, 0.012, PL); fn(run, a, b, DADO, y1b, 0.012, PK);
+    };
+    for (const [a, b] of solid) skin(placeX, a, b, 0, CEIL);
+    for (const w of run.win) { const a = Math.max(0, w.a), b = Math.min(run.len, w.b); skin(place, a, b, 0, Math.max(0.02, w.sill)); skin(place, a, b, Math.min(CEIL - 0.02, w.head), CEIL); }
+    if (bath) {
       // large-format marble to 2.2 m in 600 x 1200 tiles
       for (const [a, b] of solid) for (let t = a; t < b - 0.01; t += 0.6) for (let h = 0; h < 2.2 - 0.01; h += 1.2) place(run, t + 0.0015, Math.min(b, t + 0.6) - 0.0015, h + 0.0015, Math.min(2.2, h + 1.2) - 0.0015, 0.02, 'marble');
       continue;
     }
-    // skirting, dado rail, picture-frame panels above and below, cornice
-    placeX(run, 0, run.len, 0, 0.19, 0.022, PK); placeX(run, 0, run.len, 0.17, 0.2, 0.032, PK);
+    // skirting, dado rail and picture-frame panels below it (half height, as in the CGIs), cornice
+    placeX(run, 0, run.len, 0, 0.19, 0.022, PL); placeX(run, 0, run.len, 0.17, 0.2, 0.032, PL);
     // no dado rail or panel mouldings behind a kitchen: they stood proud of the splashback tiles and cut through them halfway
     // up (Charlie, 8 Nov). The wall above the tiles is left plain, as a real panelled kitchen wall stops at the units.
     const ks = [];
@@ -384,14 +399,14 @@ export function buildApartment(u, ctx) {
     const cutK = (iv) => { let out = [iv]; for (const [ka, kb] of ks) out = out.flatMap(([a, b]) => kb <= a || ka >= b ? [[a, b]] : [[a, ka], [kb, b]].filter(([p, q]) => q - p > 0.01)); return out; };
     for (const [a, b] of solid.flatMap(cutK)) {
       const L = b - a; if (L < 0.18) continue;
-      placeX(run, a, b, 0.92, 0.98, 0.034, PK);
+      placeX(run, a, b, 0.92, DADO, 0.034, PL);
       const nP = Math.max(1, Math.round(L / 0.72)), pw = L / nP;
       for (let k = 0; k < nP; k++) {
         const pa = a + k * pw + 0.1, pb = a + (k + 1) * pw - 0.1; if (pb - pa < 0.12) continue;
-        for (const [h0, h1] of [[0.32, 0.8], [1.12, CEIL - 0.42]]) {
+        for (const [h0, h1] of [[0.3, 0.82]]) {     // lower panels only: the wall above the dado is left plain (11 Nov)
           const t = 0.035, dpt = 0.024;
-          place(run, pa, pb, h0, h0 + t, dpt, PK); place(run, pa, pb, h1 - t, h1, dpt, PK);
-          place(run, pa, pa + t, h0 + t, h1 - t, dpt, PK); place(run, pb - t, pb, h0 + t, h1 - t, dpt, PK);   // stiles stop at the rails (no overlapping solids: they render black when path-traced)
+          place(run, pa, pb, h0, h0 + t, dpt, PL); place(run, pa, pb, h1 - t, h1, dpt, PL);
+          place(run, pa, pa + t, h0 + t, h1 - t, dpt, PL); place(run, pb - t, pb, h0 + t, h1 - t, dpt, PL);   // stiles stop at the rails (no overlapping solids: they render black when path-traced)
         }
       }
       // art on the middle panel of long walls in living rooms and bedrooms
@@ -442,7 +457,7 @@ export function buildApartment(u, ctx) {
   }
   // framed art
   arts.forEach((A, i) => {
-    const run = A.run, dirV = run.p1.clone().sub(run.p0).normalize(), h = A.w * 1.25, yc = 1.62;
+    const run = A.run, dirV = run.p1.clone().sub(run.p0).normalize(), h = A.w * 1.25, yc = Math.max(1.62, DADO + 0.2 + h / 2);
     const fg = new THREE.BoxGeometry(A.w + 0.08, h + 0.08, 0.04); fg.rotateY(Math.atan2(-run.n.x, -run.n.z) + Math.PI);
     const c = run.p0.clone().addScaledVector(dirV, A.a).addScaledVector(run.n, 0.06); fg.translate(c.x, y0 + yc, c.z); add(i === 0 ? 'giltFrame' : 'frame', fg);
     const pg = new THREE.PlaneGeometry(A.w, h); pg.rotateY(Math.atan2(run.n.x, run.n.z)); const c2 = c.clone().addScaledVector(run.n, 0.021); pg.translate(c2.x, y0 + yc, c2.z); add('art' + (i % 3), pg);
