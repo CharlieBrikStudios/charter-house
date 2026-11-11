@@ -79,10 +79,8 @@ export function createTour({ camera, fader }) {
         }
       }
     }
-    // left alone, the view turns slowly round the full circle (Charlie, 8 Nov): starts a few seconds after the last touch,
-    // about two minutes a turn, eased in so it never jolts; any drag, turn or move stops it
-    st.idle += dt;
-    if (!st.path && st.idle > 4) { st.spin = Math.min(1, st.spin + dt * 0.5); st.ty -= dt * 0.05 * st.spin; } else st.spin = 0;
+    // no auto-spin: the view only moves when you drag it (Charlie, 11 Nov; the slow idle turn from 8 Nov is off)
+    st.idle += dt; st.spin = 0;
     const k = 1 - Math.pow(0.0025, dt);
     st.yaw += angDiff(st.ty, st.yaw) * k; st.pitch += (st.tp - st.pitch) * k;
     if (Math.abs(st.tfov - st.fov) > 0.05) { st.fov += (st.tfov - st.fov) * k; camera.fov = st.fov; camera.updateProjectionMatrix(); }
