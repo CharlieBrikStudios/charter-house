@@ -5,7 +5,8 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1794422719';
+import { FLOOR_H as FH } from './data.js?v=1794431311';
+import { plankTexture, boxUV } from './finishes.js?v=1794431311';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -25,7 +26,7 @@ const KDIRS = { '+x': [1, 0], '-x': [-1, 0], '+z': [0, 1], '-z': [0, -1] };
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(Math.max(1e-3, x1 - x0), Math.max(1e-3, y1 - y0), Math.max(1e-3, z1 - z0)); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
 // ------------------------------------------------------------------ procedural finishes
-function herringboneTexture() {
+function herringboneTexture(rgb = [176, 134, 92]) {
   const N = 1024, n = 6, W = 0.085;                    // plank 85 x 510 mm
   const tileX = Math.SQRT2 * n * W, tileY = tileX;      // square tile, 6 lattice periods high
   const c = document.createElement('canvas'); c.width = c.height = N; const ctx = c.getContext('2d');
@@ -47,7 +48,7 @@ function herringboneTexture() {
     // grout: long edges and plank ends
     const eLong = Math.min(across, 1 - across), eEnd = Math.min(along, n - along);
     if (eLong < 0.035 || eEnd < 0.012) v *= 0.55;
-    const r = (176 + 18 * warm) * v, g = (134 + 10 * warm) * v, bl = (92 - 8 * warm) * v;
+    const r = (rgb[0] + 18 * warm) * v, g = (rgb[1] + 10 * warm) * v, bl = (rgb[2] - 8 * warm) * v;
     const o = (py * N + px) * 4; d[o] = r; d[o + 1] = g; d[o + 2] = bl; d[o + 3] = 255;
   }
   ctx.putImageData(img, 0, 0);
@@ -98,9 +99,12 @@ export function artCanvas(seed, style) {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 export function walkMaterials(tex, base) {
-  const herr = herringboneTexture();
+  // floors as the developer's CGIs (Charlie, 11 Nov): straight pale oak planks (premium LVT) through the kitchen-living
+  // room and hall; the bedroom CGI shows a dark walnut herringbone, so the bedrooms keep that
+  const herr = herringboneTexture([72, 50, 46]), plank = plankTexture({ base: '#d6b894', w: 0.19, len: 4.4, seed: 5 });
   const m = {
-    floor: new THREE.MeshPhysicalMaterial({ map: herr, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.32, envMapIntensity: 0.9 }),
+    floor: new THREE.MeshPhysicalMaterial({ map: plank, roughness: 0.5, clearcoat: 0.18, clearcoatRoughness: 0.4, envMapIntensity: 0.9, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }),
+    floorBed: new THREE.MeshPhysicalMaterial({ map: herr, roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.32, envMapIntensity: 0.9 }),
     ceiling: new THREE.MeshStandardMaterial({ color: '#f6f2ea', roughness: 0.92, emissive: new THREE.Color('#efe6d8'), emissiveIntensity: 0.55 }),   // bounce light off the floor and walls
     white: new THREE.MeshStandardMaterial({ color: '#f3efe7', roughness: 0.6 }),
     oak: new THREE.MeshPhysicalMaterial({ color: '#b98d5f', roughness: 0.45, clearcoat: 0.3 }),
@@ -128,7 +132,7 @@ export function walkMaterials(tex, base) {
     paint: {},
     artCache: {},
   };
-  m.herrSize = herr.userData.size;
+  m.herrSize = herr.userData.size; m.plankSize = plank.userData.size;
   return m;
 }
 // heritage paint colours. Panelling runs to the dado only, as in the CGIs, in a slightly darker tone than the plain wall
@@ -251,7 +255,22 @@ export function buildApartment(u, ctx) {
   const BPLOT = { 7: 'A', 14: 'A', 21: 'A', 8: 'B', 15: 'B', 22: 'B', 9: 'C', 16: 'C', 23: 'C', 4: 'D', 11: 'D', 18: 'D', 25: 'D', 5: 'E', 12: 'E', 19: 'E', 26: 'E', 6: 'F', 13: 'F', 20: 'F', 27: 'F' };
   let bathPlan = null;
   if (BPLOT[u.plot]) {
-    const [bx0, bz0, bx1, bz1, dx, dz] = BP[BPLOT[u.plot]];
+    let [bx0, bz0, bx1, bz1, dx, dz] = BP[BPLOT[u.plot]];
+    // snap each side to the plan's wall face where there is one within 0.45 m: types A-C were drawn 0.34 m out over the
+    // kitchen wall, and their vanity, backlit mirror and WC showed through into the kitchen (11 Nov)
+    {
+      const isWall = (x, z) => { const [i, j] = toCell(x, z); return i >= 0 && j >= 0 && i < nx && j < nz && !!wallMask[idx(i, j)]; };
+      const snap = (edge, alongX, sgn, lo, hi) => {
+        const mid = alongX ? (bx0 + bx1) / 2 : (bz0 + bz1) / 2, hits = [];
+        for (const fr of [0.2, 0.35, 0.5, 0.65, 0.8]) { const c = lo + (hi - lo) * fr;
+          for (let t = 0; t < 3.5; t += RES / 2) { const q = mid + sgn * t; if (alongX ? isWall(q, c) : isWall(c, q)) { if (Math.abs(q - edge) < 0.45) hits.push(q); break; } } }
+        if (!hits.length) return edge;
+        hits.sort((a, b) => a - b); return hits[Math.floor(hits.length / 2)];
+      };
+      const nx0 = snap(bx0, true, -1, bz0, bz1), nx1 = snap(bx1, true, 1, bz0, bz1), nz0 = snap(bz0, false, -1, bx0, bx1), nz1 = snap(bz1, false, 1, bx0, bx1);
+      if (dx === bx0) dx = nx0; else if (dx === bx1) dx = nx1; if (dz === bz0) dz = nz0; else if (dz === bz1) dz = nz1;
+      [bx0, bz0, bx1, bz1] = [nx0, nz0, nx1, nz1];
+    }
     if (bath) bath.type = null;
     bath = null;
     bathPlan = { id: -50, type: 'bath', name: 'Shower room', x0: bx0 + RES / 2, z0: bz0 + RES / 2, x1: bx1 - RES / 2, z1: bz1 - RES / 2, cx: (bx0 + bx1) / 2, cz: (bz0 + bz1) / 2, area: (bx1 - bx0) * (bz1 - bz0), windows: [], door: [dx, dz] };
@@ -268,10 +287,12 @@ export function buildApartment(u, ctx) {
   // ------------------------------------------------------------------ geometry
   const G = {};   // material key -> geometries
   const add = (k, g) => { if (!g) return; (G[k] ||= []).push(g.index ? g.toNonIndexed() : g); };
-  // floor: oak herringbone everywhere except the shower room (marble)
+  // floor: straight oak planks through the flat; the bedrooms' dark herringbone and the shower room's marble go on top (below)
   {
     const g = new THREE.PlaneGeometry(fx1 - fx0 + 0.2, fz1 - fz0 + 0.2); g.rotateX(-Math.PI / 2); g.translate((fx0 + fx1) / 2, y0 + 0.004, (fz0 + fz1) / 2);
-    const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / mats.herrSize, p.getZ(i) / mats.herrSize); add('floor', g);
+    const main = live.filter(R => R.type === 'living').sort((a, b) => b.area - a.area)[0];
+    const alongX = main ? (main.x1 - main.x0) >= (main.z1 - main.z0) : (fx1 - fx0) >= (fz1 - fz0);
+    add('floor', boxUV(g, mats.plankSize[0], mats.plankSize[1], alongX));
     const c = new THREE.PlaneGeometry(fx1 - fx0 + 0.2, fz1 - fz0 + 0.2); c.rotateX(Math.PI / 2); c.translate((fx0 + fx1) / 2, yC, (fz0 + fz1) / 2); add('ceiling', c);
   }
   // wall runs: boundary edges between a room cell and a solid cell, merged into straight runs
@@ -395,6 +416,15 @@ export function buildApartment(u, ctx) {
         if (Math.abs((bx - run.p0.x) * run.n.x + (bz - run.p0.z) * run.n.z) > 0.35) continue;
         const t = (o.x - run.p0.x) * dirV.x + (o.z - run.p0.z) * dirV.z, h = (o.len || 1.8) / 2 + 0.06;
         if (t + h > 0 && t - h < run.len) ks.push([Math.max(0, t - h), Math.min(run.len, t + h)]);
+        // the splashback, laid on the real wall face: white vertical metro tiles (75 x 300 mm, stack bond) from the worktop to
+        // the underside of the wall units, as the CGIs. The units' own tiles sat a few cm inside the wall and never showed (11 Nov)
+        const ta = Math.max(0, t - (o.len || 1.8) / 2), tb = Math.min(run.len, t + (o.len || 1.8) / 2);
+        for (const [sa, sb] of solid) {
+          const a = Math.max(ta, sa), b = Math.min(tb, sb); if (b - a < 0.05) continue;
+          place(run, a, b, 0.905, 1.495, 0.016, 'grout');
+          const nT = Math.max(1, Math.round((b - a) / 0.075)), tw = (b - a) / nT;
+          for (let r = 0; r < 2; r++) for (let q = 0; q < nT; q++) place(run, a + q * tw + 0.0015, a + (q + 1) * tw - 0.0015, 0.905 + r * 0.295 + 0.0015, 0.905 + (r + 1) * 0.295 - 0.0015, 0.022, 'ceramic');
+        }
       } }
     const cutK = (iv) => { let out = [iv]; for (const [ka, kb] of ks) out = out.flatMap(([a, b]) => kb <= a || ka >= b ? [[a, b]] : [[a, ka], [kb, b]].filter(([p, q]) => q - p > 0.01)); return out; };
     for (const [a, b] of solid.flatMap(cutK)) {
@@ -570,6 +600,42 @@ export function buildApartment(u, ctx) {
       const reach = (L, step) => { let n = 0; while (n < 30 && isF(...at2(L + step * n, mid))) n++; return n; };
       if (reach(g.L0 - 1, -1) < 16 || reach(g.L1 + 1, 1) < 16) continue;
       doorAt(g.di, pos, a0, a1); globalThis.__planDoors = (globalThis.__planDoors || 0) + 1;
+    }
+  }
+  // bedroom floors: dark herringbone, filled out from the bed to the walls and stopping on a straight line under each door
+  // (the room finder's own boundary wanders through the doorway and left a saw-tooth of planks, 11 Nov)
+  {
+    const stop = new Uint8Array(N);
+    for (const d of doorsMade) {   // the threshold: the one row of cells on the door's plane, across the opening
+      const line = Math.floor(((d.di ? d.pos - gx0 : d.pos - gz0) / RES) - 0.5);
+      for (let t = Math.floor(((d.di ? d.a0 - gz0 : d.a0 - gx0) / RES)) - 2; t <= Math.ceil(((d.di ? d.a1 - gz0 : d.a1 - gx0) / RES)) + 2; t++) {
+        const i = d.di ? line : t, j = d.di ? t : line; if (i >= 0 && j >= 0 && i < nx && j < nz) stop[idx(i, j)] = 1; }
+    }
+    const bathIds = new Set(live.filter(R => R.type === 'bath').map(R => R.id));
+    const inBP = (x, z) => bathPlan && x > bathPlan.x0 - RES && x < bathPlan.x1 + RES && z > bathPlan.z0 - RES && z < bathPlan.z1 + RES;
+    const ok = (k) => free[k] && !stop[k] && !bathIds.has(room[k]) && !inBP(cx(k % nx), cz(Math.floor(k / nx)));
+    const patch = new Uint8Array(N);
+    for (const R of bedrooms) {
+      let sk = -1, best = -1; for (let k = 0; k < N; k++) if (room[k] === R.id && dist[k] > best && ok(k)) { best = dist[k]; sk = k; }
+      if (sk < 0) continue;
+      const m = new Uint8Array(N), st = [sk]; m[sk] = 1; let n = 1;
+      while (st.length) { const k = st.pop(), i = k % nx;
+        for (const kk of [i + 1 < nx ? k + 1 : -1, i > 0 ? k - 1 : -1, k + nx < N ? k + nx : -1, k - nx]) if (kk >= 0 && !m[kk] && ok(kk)) { m[kk] = 1; n++; st.push(kk); } }
+      if (n * RES * RES > R.area * 1.5 + 2) {   // an opening with no door: keep to the room finder's cells rather than flood the flat
+        globalThis.__bedFloorFallback = (globalThis.__bedFloorFallback || 0) + 1;
+        for (let k = 0; k < N; k++) if (room[k] === R.id && ok(k)) patch[k] = 1;
+      } else for (let k = 0; k < N; k++) if (m[k]) patch[k] = 1;
+    }
+    // row runs of patch cells, merged down the rows where they repeat
+    const open = new Map();
+    const flush = (key, zs, ze) => { const [i0, i1] = key.split(',').map(Number); const xa = cx(i0) - RES / 2, xb = cx(i1) + RES / 2;
+      const q = new THREE.PlaneGeometry(xb - xa, ze - zs); q.rotateX(-Math.PI / 2); q.translate((xa + xb) / 2, y0 + 0.006, (zs + ze) / 2);
+      const pq = q.attributes.position, uq = q.attributes.uv; for (let t = 0; t < pq.count; t++) uq.setXY(t, pq.getX(t) / mats.herrSize, pq.getZ(t) / mats.herrSize); add('floorBed', q); };
+    for (let j = 0; j <= nz; j++) {
+      const runsJ = new Set();
+      if (j < nz) { let i = 0; while (i < nx) { if (!patch[idx(i, j)]) { i++; continue; } let e = i; while (e + 1 < nx && patch[idx(e + 1, j)]) e++; runsJ.add(i + ',' + e); i = e + 1; } }
+      for (const [key, zs] of [...open]) if (!runsJ.has(key)) { flush(key, zs, cz(j) - RES / 2); open.delete(key); }
+      for (const key of runsJ) if (!open.has(key)) open.set(key, cz(j) - RES / 2);
     }
   }
   // shower room: walk-in shower with fluted glass screen, wall-hung WC, basin on an oak vanity, backlit mirror
