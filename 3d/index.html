@@ -336,6 +336,20 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
    like the Nifty tours; before this the spots hid behind the 360 walk-around). Shown on the landing view only */
 .looks { position: absolute; left: calc(var(--gx) + 6px); bottom: calc(var(--gb) + 74px); max-width: calc(100vw - 372px - var(--gx) - var(--gr) - 40px); display: grid; gap: 8px; z-index: 2; transition: opacity .35s, transform .35s; }
 .looks.off { opacity: 0; transform: translateY(8px); pointer-events: none; }
+/* the arrow tucks the strip away to a small pill, so it doesn't cover the building (Charlie, 11 Nov) */
+.looks .lk-head { cursor: pointer; align-items: center; }
+/* a drag that starts on a label turns the building (tapOrTurn in main.js), so the browser mustn't take the touch for panning */
+#labels .tag, #labels .winpin, #labels .ltag { touch-action: none; }
+.looks .lk-min { display: inline-grid; place-items: center; width: 26px; height: 26px; padding: 0; border-radius: 50%; background: rgba(20,16,14,.82); border: 1px solid var(--line); color: var(--ink); transition: transform .25s, border-color .2s; }
+.looks .lk-min:hover, .looks .lk-min:focus-visible { border-color: var(--brass); }
+.looks .lk-min svg { width: 15px; height: 15px; }
+.looks .lk-min::before { content: none; }   /* (not one of the picture buttons: no 360° badge) */
+.looks .lk-min:hover { transform: none; }
+.looks.min .lk-min:hover { transform: rotate(180deg); }
+.looks.min .lk-row { display: none; }
+.looks.min .lk-head { justify-self: start; padding: 7px 7px 7px 14px; border-radius: 999px; background: rgba(20,16,14,.82); border: 1px solid var(--line); text-shadow: none; }
+.looks.min .lk-head span { display: none; }
+.looks.min .lk-min { transform: rotate(180deg); background: transparent; border-color: transparent; }
 .looks .lk-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding-left: 2px; text-shadow: 0 1px 10px rgba(0,0,0,.6); }
 .looks .lk-head b { white-space: nowrap; }
 .looks .lk-head b { font: 500 10.5px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: #fff; }
@@ -615,7 +629,7 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
     <button data-view="front" aria-pressed="true">Front corner</button><button data-view="rear">Rear entrances</button><button data-view="street">Up Churchgate</button><button data-view="above">From above</button>
     <span class="vsep" aria-hidden="true"></span><button id="btn-build" title="Scroll through the build, from groundworks to handover">Build timeline</button><button id="btn-360" class="v360" title="Stand at fixed spots around the building and look all the way round">360° walk-around</button><button id="btn-clay" aria-pressed="false" title="Turn every other building into a plain white architectural model so Charter House stands out">Highlight</button>
   </div>
-  <div class="looks off" id="looks" role="group" aria-label="Look around the area"><div class="lk-head"><b>Look around the area</b><span>Photoreal 360° views · tap to step in</span></div><div class="lk-row" id="lk-row"></div></div>
+  <div class="looks off" id="looks" role="group" aria-label="Look around the area"><div class="lk-head"><b>Look around the area</b><span>Photoreal 360° views · tap to step in</span><button type="button" class="lk-min" id="lk-min" aria-controls="lk-row" aria-expanded="true" aria-label="Hide the 360° views"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div><div class="lk-row" id="lk-row"></div></div>
   <aside id="panel" aria-live="polite"></aside>
   <div id="navpad" role="group" aria-label="Floors and apartments">
     <button data-nav="fup" class="nfl" title="Floor up" aria-label="Floor up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg></button>
@@ -703,6 +717,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1794402109"></script>
+<script type="module" src="js/main.js?v=1794409100"></script>
 
 </body></html>

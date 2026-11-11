@@ -9,30 +9,30 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794402109';
-import { buildUBL } from './ublbuild.js?v=1794402109';
-import { buildUBLFitout } from './ublfit.js?v=1794402109';
-import { UBL_LEVELS } from './ubl_data.js?v=1794402109';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794402109';
-import { buildOSL } from './oslbuild.js?v=1794402109';
-import { buildOSLFitout } from './oslfit.js?v=1794402109';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794402109';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794402109';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1794402109';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794402109';
-import { buildFar, hazeUniforms } from './far.js?v=1794402109';
-import { buildRailway } from './railway.js?v=1794402109';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794402109';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794409100';
+import { buildUBL } from './ublbuild.js?v=1794409100';
+import { buildUBLFitout } from './ublfit.js?v=1794409100';
+import { UBL_LEVELS } from './ubl_data.js?v=1794409100';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1794409100';
+import { buildOSL } from './oslbuild.js?v=1794409100';
+import { buildOSLFitout } from './oslfit.js?v=1794409100';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1794409100';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1794409100';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1794409100';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1794409100';
+import { buildFar, hazeUniforms } from './far.js?v=1794409100';
+import { buildRailway } from './railway.js?v=1794409100';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1794409100';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1794402109';
-import { Interior } from './interior.js?v=1794402109';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794402109';
-import { buildPHFitout } from './phfit.js?v=1794402109';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794402109';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794402109';
-import { createTour } from './tour.js?v=1794402109';
-import { buildCrowd } from './crowd.js?v=1794402109';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794402109';
+import { Forest, windUniforms } from './trees.js?v=1794409100';
+import { Interior } from './interior.js?v=1794409100';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794409100';
+import { buildPHFitout } from './phfit.js?v=1794409100';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794409100';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794409100';
+import { createTour } from './tour.js?v=1794409100';
+import { buildCrowd } from './crowd.js?v=1794409100';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794409100';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -1320,7 +1320,7 @@ function buildWinPins(u) {
   CH.windows.filter(w => w.plot === u.plot && !(u.house && !/[gr]$/.test(w.id))).forEach((w) => {
     const el = document.createElement('button'); el.className = 'winpin'; el.setAttribute('aria-label', 'View from this window');
     el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M12 3v18M5 12h14"/></svg><span>View</span>';
-    el.onclick = (e) => { e.stopPropagation(); seeView(u.plot, 0, w); };
+    tapOrTurn(el, () => seeView(u.plot, 0, w));
     $('#labels').appendChild(el);
     const p = w.pos.clone().addScaledVector(w.normal, -0.25); p.y = PLANF ? Math.min(w.pos.y, SY() + (IS_UBL ? u.level : u.floor * FH) + 1.0 + (u.house ? CH.houseFloors[Math.floor((u.plot - 1) / 3)] : 0)) : SY() + u.floor * FH + 1.0;
     winPins.push({ el, p });
@@ -1380,7 +1380,7 @@ function buildUnitTags(f) {
     }
     const el = document.createElement('div'); el.className = 'tag ' + st(u).key + (has360(u.plot) ? ' has360' : '');
     el.innerHTML = `${P360_BADGE}<div class="b"><strong class="num">${u.plot}</strong><em>${u.beds} bed · ${u.status === 'Available' ? fmtGBP(u.price) : st(u).label}</em></div><div class="stem"></div><div class="pin"></div>`;
-    el.onclick = () => { if (!openOwnPano(u.plot)) toUnit(u.plot); };   /* plots with photoreal rooms open straight into the kitchen/living */
+    tapOrTurn(el, () => { if (!openOwnPano(u.plot)) toUnit(u.plot); });   /* plots with photoreal rooms open straight into the kitchen/living; a drag that starts on the tag turns the building */
     el.onpointerenter = () => { S.hoverPlot = u.plot; }; el.onpointerleave = () => { S.hoverPlot = null; };
     $('#labels').appendChild(el);
     const tp = new THREE.Vector3((x0 + x1) / 2, y + 0.2, (z0 + z1) / 2); if (PLANF) tp.applyMatrix4(CH.group.matrixWorld);
@@ -1419,7 +1419,7 @@ for (const c of [...AREA_CARDS.map(c => ({ ...c, group: c.kind })), ...(IS_OSL ?
   el.setAttribute('aria-label', `${c.name}: ${c.tag}`);
   const l = { el, name: c.name, p: new THREE.Vector3(...(c.pos || [0, 0, 0])), card: c, rel: c.pos ? c.pos[1] : 0 };
   el.onpointerenter = () => showCard(l, false); el.onpointerleave = () => hideCardSoon();
-  el.onclick = (e) => { e.stopPropagation(); showCard(l, true); if (c.cam) flyToCard(c); };
+  tapOrTurn(el, () => { showCard(l, true); if (c.cam) flyToCard(c); });
   $('#labels').appendChild(el); lmEls.push(l); CARD_BY_ID.set(c.id, l);
 }
 function placeLandmarks() {
@@ -1478,6 +1478,25 @@ canvas.addEventListener('pointerleave', () => { pointerIn = false; if (S.mode ==
 canvas.addEventListener('pointerdown', (e) => { downAt = { x: e.clientX, y: e.clientY, t: performance.now() }; S.idle = 0; controls.autoRotate = false; });
 for (const ev of ['pointerup', 'pointercancel']) addEventListener(ev, (e) => { if (e.target !== canvas) downAt = null; });
 addEventListener('blur', () => { downAt = null; });
+// the labels over the model (homes on a floor, window pins, area cards) sit on top of the canvas, so a drag that began on one never
+// turned the building, and letting go on the same label counted as a click: on a floor that opened a home's photoreal 360 (Charlie,
+// 11 Nov: dragging from the Churchgate corner). Now a press on a label starts the same drag as the canvas, and only a tap opens it.
+function tapOrTurn(el, act) {
+  el.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    const sx = e.clientX, sy = e.clientY, t0 = performance.now();
+    e.preventDefault(); e.stopPropagation();
+    try { canvas.dispatchEvent(new PointerEvent('pointerdown', e)); } catch (err) { /* old browsers: no drag-through, the tap still works */ }
+    downAt = null;   // the canvas's own tap-to-pick stays out of it
+    let far = 0;   // the furthest the pointer got from where it went down: a drag that comes back to the label is still a drag
+    const mv = (m) => { if (m.pointerId === e.pointerId) far = Math.max(far, Math.hypot(m.clientX - sx, m.clientY - sy)); };
+    const up = (u) => { if (u.pointerId !== e.pointerId) return; removeEventListener('pointerup', up, true); removeEventListener('pointercancel', up, true); removeEventListener('pointermove', mv, true);
+      if (u.type === 'pointerup' && Math.max(far, Math.hypot(u.clientX - sx, u.clientY - sy)) <= 7 && performance.now() - t0 < 700) act(); };
+    addEventListener('pointermove', mv, true); addEventListener('pointerup', up, true); addEventListener('pointercancel', up, true);
+  });
+  el.addEventListener('click', (e) => { e.stopPropagation(); });
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+}
 canvas.addEventListener('pointerup', (e) => {
   const d = downAt; downAt = null; if (!d) return;
   if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 7 || performance.now() - d.t > 600) return;
@@ -2063,8 +2082,8 @@ function buildSpots() {
   }
   // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
   for (const p of PANO_INDEX) {
-    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794402109`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
-    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794402109`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794409100`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
+    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794409100`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner", "brewery"], "brewery": ["harvey"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2080,6 +2099,11 @@ function buildSpots() {
   LOOKS_ON = looks.length >= 3;
 }
 let LOOKS_ON = false, looksShown = null, looksTick = 0;
+// the strip can be tucked away so it doesn't cover the building (Charlie, 11 Nov); the choice is remembered on this device
+let looksMin = false; try { looksMin = localStorage.getItem('ch3d.looksMin') === '1'; } catch (e) {}
+function setLooksMin(m) { looksMin = m; $('#looks').classList.toggle('min', m); const b = $('#lk-min'); b.setAttribute('aria-expanded', String(!m)); b.setAttribute('aria-label', m ? 'Show the 360° views' : 'Hide the 360° views'); try { localStorage.setItem('ch3d.looksMin', m ? '1' : '0'); } catch (e) {} }
+setLooksMin(looksMin);
+$('#looks .lk-head').addEventListener('click', () => setLooksMin(!looksMin));
 $('#lk-row').addEventListener('click', (e) => { const b = e.target.closest('[data-spot]'); if (b) goSpot(+b.dataset.spot); });
 function updateLooks() {   // the strip shows on the landing view (orbiting the building), not over floors, apartments, tours or films
   const want = LOOKS_ON && S.mode === 'explore' && S.floor == null && S.plot == null && !filmOn && $('#ui').style.visibility !== 'hidden' && !document.body.classList.contains('intro');
@@ -2452,7 +2476,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1794402109').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1794409100').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
