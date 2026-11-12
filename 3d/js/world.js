@@ -3,7 +3,7 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1794501520';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1794502120';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;

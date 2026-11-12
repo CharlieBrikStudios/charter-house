@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1794501520';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1794501520';
+import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1794502120';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1794502120';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -119,7 +119,7 @@ export function buildCharterHouse(M, base) {
       // panel runs from the pavement up under each first-floor window, and those windows come down close to the pavement
       // in clear glass (architect's NE elevation A839_P_300H and the developer's CGIs, 12 Nov)
       if (f === 0) open.cwC.push({ id, c, v0: CG_PAVE(x) + 0.04, v1: 1.52, w: GW, type: 'blind', floor: f });
-      else if (f === 1) open.cwC.push({ id, c, v0: 2.03, v1: y + Gh, w: GW, type: 'win2', floor: f, panelTo: y + 0.06 });
+      else if (f === 1) open.cwC.push({ id, c, v0: 2.03, v1: y + Gh, w: GW, type: 'win2', floor: f, panelTo: y + 0.06, rows: 3 });
       else if (f === 3) open.cwC.push({ id, c, v0: 8.8, v1: 10.72, w: 0.95 * 1.03, type: 'win1', floor: f });   // gable windows 3% wider (Charlie, 12 Nov)
       else open.cwC.push({ id, c, v0: y + Gs, v1: y + Gh, w: GW, type: 'win2', floor: f });
     });
@@ -274,6 +274,11 @@ export function buildCharterHouse(M, base) {
     add(x0, o.v0, x1, o.v0 + fw); add(x0, o.v1 - fw, x1, o.v1);
     add(x0, o.v0, x0 + fw, o.v1); add(x1 - fw, o.v0, x1, o.v1);
     if (cols === 2) add(o.c - 0.035, o.v0, o.c + 0.035, o.v1);
+    // the tall Churchgate wing first-floor windows are six panes: two columns, three equal rows, no extra glazing bars
+    // (as the developer's Churchgate CGI; Charlie, 12 Nov)
+    if (o.rows === 3) {
+      for (const t of [1 / 3, 2 / 3]) { const tv3 = o.v0 + (o.v1 - o.v0) * t; add(x0, tv3 - 0.035, x1, tv3 + 0.035); }
+    } else {
     const tv = o.v0 + (o.v1 - o.v0) * rowsSplit;
     add(x0, tv - 0.035, x1, tv + 0.035);
     // slim glazing bars in the upper lights
@@ -282,6 +287,7 @@ export function buildCharterHouse(M, base) {
       for (const cx of [(x0 + o.c) / 2, (o.c + x1) / 2]) gb(cx - 0.012, tv, cx + 0.012, o.v1 - fw);
     } else {
       gb(o.c - 0.012, tv, o.c + 0.012, o.v1 - fw);
+    }
     }
     // glass
     const gl = new THREE.PlaneGeometry(o.w - 0.06, o.v1 - o.v0 - 0.06);
@@ -324,7 +330,7 @@ export function buildCharterHouse(M, base) {
         // rooms only see the glazed part above a floor-zone panel
         const gv0 = o.panelTo || o.v0;
         const centre = fa.point(o.c, (gv0 + o.v1) / 2, 0.15);
-        windows.push({ id: o.id, floor: o.floor, facade: key, plot: unit ? unit.plot : null, pos: centre, normal: fa.n.clone(), w: o.w, h: o.v1 - gv0 });
+        windows.push({ id: o.id, floor: o.floor, facade: key, plot: unit ? unit.plot : null, pos: centre, normal: fa.n.clone(), w: o.w, h: o.v1 - gv0, yb: fa.point(o.c, o.v0, 0.15).y });   // yb: foot of the glass (the floor glow reaches down to it)
       }
       // sills and heads
       if (o.type !== 'door') {
