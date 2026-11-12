@@ -37,6 +37,12 @@ export const STATUS = {
   'Sold': { key: 'sold', label: 'Sold', color: '#e3242b' },
 };
 
+// Churchgate pavement level along Charter House, metres relative to the ground floor (61.77 m AOD), x = metres along
+// Churchgate from the Harvey Street corner. From the architect's NE elevation A839_P_300H: the pavement is about 0.6 m below
+// the ground floor at the corner, level with it at the arched entrance and about 1.0 m above it at the far end of the
+// Churchgate wing, so the wing's ground floor sits below the street there (Charlie, 12 Nov).
+export const CG_PAVE = (x) => -0.62 + 0.073 * x;
+
 // Window ids refer to the façade bays defined in building.js
 //   CG1..CG6 = Churchgate bays from the Harvey St corner; HV1..HV6 = Harvey St bays from the corner
 //   RC1..RC3 = courtyard windows on the Churchgate wing; RH1..RH2 = courtyard windows on the Harvey wing

@@ -5,8 +5,8 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1794499470';
-import { plankTexture, boxUV } from './finishes.js?v=1794499470';
+import { FLOOR_H as FH } from './data.js?v=1794503411';
+import { plankTexture, boxUV } from './finishes.js?v=1794503411';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
@@ -452,12 +452,15 @@ export function buildApartment(u, ctx) {
       }
       if (w.sill > 0.15) { const g = new THREE.BoxGeometry(w.b - w.a + 0.12, 0.035, depth + 0.07); g.rotateY(Math.atan2(-run.n.x, -run.n.z) + Math.PI); const c = run.p0.clone().addScaledVector(dirV, (w.a + w.b) / 2).addScaledVector(run.n, -depth / 2 + 0.035); g.translate(c.x, y0 + w.sill, c.z); add('oak', g); }
       if (R.type !== 'bath') {
-        const pa = w.a - 0.32, pb = w.b + 0.32, py = Math.min(CEIL - 0.12, w.head + 0.22);
+        // drapes stack on the wall beside the window, clear of the glass, so the whole window shows (Charlie, 12 Nov:
+        // the top-floor windows looked narrow). The pole stops short of a corner if the wall runs out.
+        const runL = run.p1.distanceTo(run.p0);
+        const pa = Math.max(0.06, w.a - 0.42), pb = Math.min(runL - 0.06, w.b + 0.42), py = Math.min(CEIL - 0.12, w.head + 0.22);
         const pole = new THREE.CylinderGeometry(0.014, 0.014, pb - pa, 10); pole.rotateZ(Math.PI / 2); pole.rotateY(Math.atan2(-run.n.x, -run.n.z) + Math.PI / 2 + Math.PI / 2);
         const pc = run.p0.clone().addScaledVector(dirV, (pa + pb) / 2).addScaledVector(run.n, 0.11); pole.translate(pc.x, y0 + py, pc.z); add('brass', pole);
         for (const e of [pa, pb]) { const fin = new THREE.SphereGeometry(0.03, 10, 8); const q = run.p0.clone().addScaledVector(dirV, e).addScaledVector(run.n, 0.11); fin.translate(q.x, y0 + py, q.z); add('brass', fin); }
         // two linen drapes gathered at the sides, with soft folds
-        for (const [da, db] of [[pa + 0.02, w.a + 0.1], [w.b - 0.1, pb - 0.02]]) {
+        for (const [da, db] of [[pa + 0.02, Math.max(w.a - 0.03, pa + 0.17)], [Math.min(w.b + 0.03, pb - 0.17), pb - 0.02]]) {
           const wd = db - da, hh = py - 0.02, seg = 24;
           const g = new THREE.PlaneGeometry(wd, hh, seg, 1); const p = g.attributes.position;
           for (let i = 0; i < p.count; i++) { const u = (p.getX(i) / wd) + 0.5; p.setZ(i, Math.sin(u * Math.PI * 7) * 0.035 + 0.035); }
