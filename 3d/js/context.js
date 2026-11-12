@@ -4,8 +4,29 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1794502120';
-import { groundAt, letteringTexture } from './world.js?v=1794502120';
+import { boxGeom, boxUV } from './building.js?v=1794509320';
+import { groundAt, letteringTexture } from './world.js?v=1794509320';
+// split a flat shape into a fine even mesh (no edge longer than about L), so it can follow sloping ground: Churchgate climbs
+// past the play park, and a four-corner quad would cut through the slope and the grass under it would vanish into the
+// terrain. Every triangle is cut into the same n x n pattern, so shared edges split at the same points (no cracks).
+function fineFlat(g, L = 1.5) {
+  const src = (g.index ? g.toNonIndexed() : g).attributes.position.array;
+  let maxE = 0;
+  for (let t = 0; t < src.length; t += 9) for (let k = 0; k < 3; k++) {
+    const a = t + k * 3, b = t + ((k + 1) % 3) * 3;
+    maxE = Math.max(maxE, Math.hypot(src[a] - src[b], src[a + 1] - src[b + 1], src[a + 2] - src[b + 2]));
+  }
+  const n = Math.max(1, Math.min(64, Math.ceil(maxE / L))), out = [];
+  for (let t = 0; t < src.length; t += 9) {
+    const A = [src[t], src[t + 1], src[t + 2]], AB = [src[t + 3] - A[0], src[t + 4] - A[1], src[t + 5] - A[2]], AC = [src[t + 6] - A[0], src[t + 7] - A[1], src[t + 8] - A[2]];
+    const P = (i, j) => [A[0] + (AB[0] * i + AC[0] * j) / n, A[1] + (AB[1] * i + AC[1] * j) / n, A[2] + (AB[2] * i + AC[2] * j) / n];
+    for (let j = 0; j < n; j++) for (let i = 0; i < n - j; i++) {
+      out.push(...P(i, j), ...P(i + 1, j), ...P(i, j + 1));
+      if (i + j < n - 1) out.push(...P(i + 1, j), ...P(i + 1, j + 1), ...P(i, j + 1));
+    }
+  }
+  const r = new THREE.BufferGeometry(); r.setAttribute('position', new THREE.Float32BufferAttribute(out, 3)); return r;
+}
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -530,8 +551,8 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     // slides (one spiralling round a tower), on terracotta bonded rubber crumb with planted islands, logs and boulders, a long
     // sinuous concrete seat, flush trampolines, an inclusive roundabout and a red-arched basket swing, inside black railings
     const PX0 = 1, PX1 = 34, PZ0 = -14.6, PZ1 = -44;
-    const flat = (pts, k, lift, tile = 3) => { const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z))); const g = new THREE.ShapeGeometry(sh, 24); g.rotateX(-Math.PI / 2); const q = g.attributes.position; for (let i = 0; i < q.count; i++) q.setY(i, groundY(q.getX(i), q.getZ(i)) + lift); g.computeVertexNormals(); boxUV(g, tile); B.add(k, g); };
-    flat([[-2, -12.4], [40, -12.4], [40, -14.5], [-2, -14.5]], 'paving', 0.14);   // the pavement widened right up to the railings
+    const flat = (pts, k, lift, tile = 3) => { const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z))); const g0 = new THREE.ShapeGeometry(sh, 24); g0.rotateX(-Math.PI / 2); const g = fineFlat(g0); const q = g.attributes.position; for (let i = 0; i < q.count; i++) q.setY(i, groundY(q.getX(i), q.getZ(i)) + lift); g.computeVertexNormals(); boxUV(g, tile); B.add(k, g); };
+    flat([[-2, -12.4], [40, -12.4], [40, -14.5], [-2, -14.5]], 'paving', 0.152);   // the pavement widened right up to the railings (just above the street's own pavement, so the two never flicker)
     const disc = (cx, cz, r, k, lift = 0.06, seg = 48) => { const c = new THREE.CircleGeometry(r, seg); c.rotateX(-Math.PI / 2); c.translate(cx, groundY(cx, cz) + lift, cz); B.add(k, c); };
     const PR = rng(4242);
     const crumbTex = (() => {
@@ -602,7 +623,12 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     const railLine = (x0, z0, x1, z1) => {
       const len = Math.hypot(x1 - x0, z1 - z0), n = Math.floor(len / 0.12);
       for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, z = z0 + (z1 - z0) * i / n; const g = boxGeom(x - 0.011, 0, z - 0.011, x + 0.011, 1.2, z + 0.011); g.translate(0, groundY(x, z), 0); B.add('timberBlack', g); }
-      for (const hh of [0.1, 1.08]) { const g = boxGeom(Math.min(x0, x1) - 0.02, hh, Math.min(z0, z1) - 0.02, Math.max(x0, x1) + 0.02, hh + 0.05, Math.max(z0, z1) + 0.02); g.translate(0, groundY((x0 + x1) / 2, (z0 + z1) / 2), 0); B.add('timberBlack', g); }
+      // rails panel by panel, each sheared to the ground under it, so they run with Churchgate's climb instead of floating
+      const np = Math.max(1, Math.ceil(len / 2.4));
+      for (let s = 0; s < np; s++) {
+        const ax = x0 + (x1 - x0) * s / np, az = z0 + (z1 - z0) * s / np, bx = x0 + (x1 - x0) * (s + 1) / np, bz = z0 + (z1 - z0) * (s + 1) / np;
+        for (const hh of [0.1, 1.08]) { const g = boxGeom(Math.min(ax, bx) - 0.02, hh, Math.min(az, bz) - 0.02, Math.max(ax, bx) + 0.02, hh + 0.05, Math.max(az, bz) + 0.02); const q = g.attributes.position; for (let i = 0; i < q.count; i++) q.setY(i, q.getY(i) + groundY(q.getX(i), q.getZ(i))); B.add('timberBlack', g); }
+      }
       for (let i = 0; i <= Math.floor(len / 2.4); i++) { const f = Math.min(1, i * 2.4 / len), x = x0 + (x1 - x0) * f, z = z0 + (z1 - z0) * f; const g = boxGeom(x - 0.035, 0, z - 0.035, x + 0.035, 1.28, z + 0.035); g.translate(0, groundY(x, z), 0); B.add('timberBlack', g); }
     };
     railLine(PX0, PZ0, 12, PZ0); railLine(14, PZ0, PX1, PZ0); railLine(PX1, PZ0, PX1, PZ1); railLine(PX0, PZ1, PX1, PZ1); railLine(PX0, PZ0, PX0, PZ1);
@@ -678,7 +704,7 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     for (const [x, z, h] of [[32, -16.5, 7], [9.0, -43.0, 7.5], [33.0, -42.6, 6.5]]) forest.add(x, z, { kind: 'birch', h, r: 2.6, y: groundY(x, z), seed: Math.floor(x * 13 + z) });
     // grass around the play park
     const gr = new THREE.Shape([[-1.2, -13.6], [36, -13.6], [36, -48], [-1.2, -48]].map(([x, z]) => new THREE.Vector2(x, -z)));
-    const gg = new THREE.ShapeGeometry(gr); gg.rotateX(-Math.PI / 2); const gp = gg.attributes.position;
+    const gg0 = new THREE.ShapeGeometry(gr); gg0.rotateX(-Math.PI / 2); const gg = fineFlat(gg0); const gp = gg.attributes.position;
     for (let i = 0; i < gp.count; i++) gp.setY(i, groundY(gp.getX(i), gp.getZ(i)) + 0.03); gg.computeVertexNormals(); boxUV(gg, 4); B.add('grassCtx', gg);
   }
 
