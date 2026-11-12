@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H } from './data.js?v=1794431311';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1794431311';
+import { UNITS, FLOOR_H } from './data.js?v=1794499470';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1794499470';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
