@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1794503411';
-import { groundAt, letteringTexture } from './world.js?v=1794503411';
+import { boxGeom, boxUV } from './building.js?v=1794501520';
+import { groundAt, letteringTexture } from './world.js?v=1794501520';
 
 // street level comes from the terrain model (world.js): estimated levels relative to Charter House's ground floor
 export function groundY(x, z) { return groundAt(x, z); }
@@ -310,8 +310,9 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
   const line = (curve, o) => B.add(o.yellow ? 'lineYellow' : 'lineWhite', o.dash ? dashed(curve, { y: 0.045, ...o }) : ribbon(curve, { y: 0.045, step: 0.6, ...o }));
   line(C, { off: 0, width: 0.1, dash: [3, 6], t0: Cx(-40), t1: Cx(44) });
   line(H, { off: 0, width: 0.1, dash: [3, 6], t0: at(H, 9), t1: 0.5 });
-  // no double yellows along the Charter House side of Churchgate, from Harvey Street to the end of the building (Charlie, 11 Nov)
-  for (const o of [CW - 0.3, CW - 0.45]) for (const [t0, t1] of [[0.015, tHw], [Cx(23.4), Cx(40)]]) line(C, { off: o, width: 0.075, yellow: true, t0, t1 });
+  // double yellows wrap the whole development again: along the Charter House side of Churchgate from the Harvey Street corner
+  // past the end of the building, and down Harvey Street (Charlie, 12 Nov; this undoes the 11 Nov gap)
+  for (const o of [CW - 0.3, CW - 0.45]) for (const [t0, t1] of [[0.015, tHw], [tHe, Cx(40)]]) line(C, { off: o, width: 0.075, yellow: true, t0, t1 });
   for (const o of [-(CW - 0.3), -(CW - 0.45)]) line(C, { off: o, width: 0.075, yellow: true, t0: 0.015, t1: Cx(40) });
   for (const o of [3.2 - 0.32, 3.2 - 0.47, -(3.2 - 0.32), -(3.2 - 0.47)]) line(H, { off: o, width: 0.075, yellow: true, t0: at(H, 4), t1: at(H, 30) });
   // give-way lines at the mouth of Harvey St

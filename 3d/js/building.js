@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1794503411';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1794503411';
+import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1794501520';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1794501520';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -117,15 +117,15 @@ export function buildCharterHouse(M, base) {
       const id = 'CG' + (i + 4), c = x - 10.9;
       // the wing's ground floor is below the climbing Churchgate pavement (bins and plant behind, no windows): a recessed brick
       // panel runs from the pavement up under each first-floor window, and those windows come down close to the pavement
-      // with a solid panel across the floor zone (architect's NE elevation A839_P_300H and the developer's CGIs, 12 Nov)
+      // in clear glass (architect's NE elevation A839_P_300H and the developer's CGIs, 12 Nov)
       if (f === 0) open.cwC.push({ id, c, v0: CG_PAVE(x) + 0.04, v1: 1.52, w: GW, type: 'blind', floor: f });
       else if (f === 1) open.cwC.push({ id, c, v0: 2.03, v1: y + Gh, w: GW, type: 'win2', floor: f, panelTo: y + 0.06 });
-      else if (f === 3) open.cwC.push({ id, c, v0: 8.8, v1: 10.72, w: 0.95, type: 'win1', floor: f });
+      else if (f === 3) open.cwC.push({ id, c, v0: 8.8, v1: 10.72, w: 0.95 * 1.03, type: 'win1', floor: f });   // gable windows 3% wider (Charlie, 12 Nov)
       else open.cwC.push({ id, c, v0: y + Gs, v1: y + Gh, w: GW, type: 'win2', floor: f });
     });
     hvW.forEach((z, i) => {
       const id = 'HV' + (i + 4), c = 21.27 - z;
-      if (f === 3) open.hwH.push({ id, c, v0: 8.8, v1: 10.72, w: 0.95, type: 'win1', floor: f });
+      if (f === 3) open.hwH.push({ id, c, v0: 8.8, v1: 10.72, w: 0.95 * 1.03, type: 'win1', floor: f });   // gable windows 3% wider (Charlie, 12 Nov)
       else open.hwH.push({ id, c, v0: y + Gs, v1: y + Gh, w: GW, type: 'win2', floor: f });
     });
     // courtyard faces
@@ -211,14 +211,14 @@ export function buildCharterHouse(M, base) {
     band(F[k], -0.06, len, 12.05, 0.24, 0.07);            // frieze
     band(F[k], -0.08, len, 12.42, 0.1, 0.1);              // corbel
     band(F[k], -0.1, len, PARAPET - 0.1, 0.12, 0.12, 'stone'); // coping
-    seg(-1.5, (a, b) => band(F[k], a, b, -1.5, 1.95, 0.03));   // plinth (engineering brick)
+    seg(-1.5, (a, b) => band(F[k], a, b, -2.4, 2.85, 0.03));   // plinth (engineering brick), down past the falling Harvey St pavement
   }
   for (const k of ['cbIx', 'cbIz']) band(F[k], -0.05, k === 'cbIx' ? 9.2 : 10.9, PARAPET - 0.1, 0.12, 0.1, 'stone');
   const wingBands = [2.58, 5.43, 8.28];
   for (const [k, len] of [['cwC', 11.71], ['hwH', 12.07], ['cwE', 11.37], ['hwS', 11.36]]) {
     // on Churchgate the first-floor windows now come down through the 2.58 m course, so it is left off there
     wingBands.forEach(v => { if (!(k === 'cwC' && v < 3)) band(F[k], 0, len, v, 0.15, 0.04); });
-    band(F[k], 0, len, -1.5, 1.7, 0.03);
+    band(F[k], 0, len, k === 'hwH' || k === 'hwS' ? -3.0 : -1.5, k === 'hwH' || k === 'hwS' ? 3.2 : 1.7, 0.03);   // Harvey St falls ~2.3 m by the SW end
     if (k === 'cwE' || k === 'hwS') band(F[k], 0, len, EAVES - 0.22, 0.22, 0.06);
   }
   // courtyard plinth
@@ -304,16 +304,13 @@ export function buildCharterHouse(M, base) {
         const gl = new THREE.PlaneGeometry(0.22, 1.4); gl.rotateY(Math.PI); gl.translate(o.c, o.v0 + 1.2, 0.135); fa.place(gl); B.add('glass', gl);
       } else {
         frameSet(fa, o, o.type === 'win1' ? 1 : 2, 0.56);
-        // a solid grey panel behind the glass across the floor zone, with a transom at its top (the lower lights in the elevation)
-        if (o.panelTo) {
-          const pg = boxGeom(x0 + 0.07, o.v0 + 0.07, 0.17, x1 - 0.07, o.panelTo, 0.19); fa.place(pg); B.add('frame', pg);
-          const tr = boxGeom(x0, o.panelTo - 0.04, 0.1, x1, o.panelTo + 0.04, 0.2); fa.place(tr); B.add('frame', tr);
-        }
+        // windows that run down past the floor (Churchgate wing, first floor): clear glass all the way down, no panel (Charlie,
+        // 12 Nov: no privacy-glass look); the lit room behind runs down to the sill so the lower panes don't read as blanked
         // room behind
         const unit = unitFor(o.floor, o.id);
         if (unit || key === 'cwR' || key === 'hwR') {
           const fy = fl(o.floor);
-          const ry0 = fy + 0.02, ry1 = fy + (o.floor === 3 && o.type === 'win1' ? 2.75 : 2.62);
+          const ry0 = o.panelTo ? o.v0 - 0.02 : fy + 0.02, ry1 = fy + (o.floor === 3 && o.type === 'win1' ? 2.75 : 2.62);
           const L = FACADE_LEN[key] || 99;
           const rx0 = Math.max(0.45, o.c - o.w / 2 - 0.95), rx1 = Math.min(L - 0.45, o.c + o.w / 2 + 0.95), depth = 3.4;
           // top floor under the sloping roof (rear and end walls): the room box stops at the eaves, or its top showed through the

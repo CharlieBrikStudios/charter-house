@@ -42,6 +42,10 @@ export const STATUS = {
 // the ground floor at the corner, level with it at the arched entrance and about 1.0 m above it at the far end of the
 // Churchgate wing, so the wing's ground floor sits below the street there (Charlie, 12 Nov).
 export const CG_PAVE = (x) => -0.62 + 0.073 * x;
+// Harvey Street pavement along the building, z = metres from the Churchgate corner towards the SW end (architect's front
+// elevation [Harvey Street], A839_P_300H): about 0.7 m below the ground floor at the corner, falling to about 2.3 m below it
+// at the SW end of the Harvey wing, so that wing's ground-floor windows stand well above the street (as the Harvey St CGI).
+export const HV_PAVE = (z) => -0.72 - 0.075 * z;
 
 // Window ids refer to the façade bays defined in building.js
 //   CG1..CG6 = Churchgate bays from the Harvey St corner; HV1..HV6 = Harvey St bays from the corner

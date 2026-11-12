@@ -3,7 +3,7 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE } from './data.js?v=1794503411';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1794501520';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
@@ -31,6 +31,15 @@ export function setTerrain(t, raw = false) {
     const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
     const w4 = sm((x + 4) / 4) * (1 - sm((x - 30) / 25)) * sm((z + 20) / 5) * (1 - sm((z - 0.5) / 2.5));
     if (w4 > 0) { const T = CG_PAVE(Math.min(x, 30)) - 0.14 - G0; TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w4) + T * w4; }
+  }
+  // Harvey Street falls past Charter House (architect's front elevation, Charlie 12 Nov): the road follows HV_PAVE (less the
+  // kerb) from the Churchgate corner to the SW end of the building, the garden frontage beyond the SW end follows it, and
+  // it eases back into the street levels beyond by the Apsley Street bend. The far side stops short of St Mary's Gate.
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const xe = 0.5 + 11.5 * sm((z - 20.6) / 1.4);
+    const w5 = sm((x + 13.5) / 2) * (1 - sm((x - xe) / 2.5)) * sm((z + 3) / 2.5) * (1 - sm((z - 24) / 12));
+    if (w5 > 0) { const T = HV_PAVE(Math.max(0, Math.min(z, 21.3))) - 0.14 - G0; TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w5) + T * w5; }
   }
   // the play park sits level with Churchgate (no grass bank between the pavement and its railings)
   const jr = Math.round((-6.6 - t.z0) / t.cell);
