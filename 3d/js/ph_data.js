@@ -72,7 +72,9 @@ export const PH_UNITS = SF.map(([plot, fl, beds, sqft, price, status]) => {
     : s.side ? 'Faces Fletcher Street over a hedge and cobbled wall; bedroom and front door over the residents’ garden'
     : s.type === '1C' ? 'Corner one bed looking out to St Joseph’s and along Fletcher Street'
     : 'Kitchen-living looks out to St Joseph’s Church; bedroom and front door over the residents’ garden';
-  return { plot, apt: `${PH_FLOORS[floor].short}.${String(k + 1).padStart(2, '0')}`, floor, type: s.type, beds, sqft: Math.round(sqft), price, status, note, view, fp: s.fp.slice(), fpS: s.fpS ? s.fpS.slice() : null, slot: k, side: !!s.side };
+  return { plot, apt: `${PH_FLOORS[floor].short}.${String(k + 1).padStart(2, '0')}`, floor, type: s.type, beds, sqft: Math.round(sqft), price, status, note, view, fp: s.fp.slice(), fpS: s.fpS ? s.fpS.slice() : null, slot: k, side: !!s.side,
+    // the side block's flats are turned to the main block: their outline in model x, z (x = u, z = -v) for the floor tags and glow
+    ...(s.fpS ? { poly: [[s.fpS[0], s.fpS[1]], [s.fpS[2], s.fpS[1]], [s.fpS[2], s.fpS[3]], [s.fpS[0], s.fpS[3]]].map(([a, b]) => { const [uu, vv] = phSide(a, b); return [uu, -vv]; }) } : {}) };
 });
 
 // The top floor sits in a slate mansard (A817_T_302A / T_301A elevations, T_400F section): brick 1.5 m above the third floor to the
