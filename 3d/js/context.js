@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1794509320';
-import { groundAt, letteringTexture } from './world.js?v=1794509320';
+import { boxGeom, boxUV } from './building.js?v=1794535000';
+import { groundAt, letteringTexture } from './world.js?v=1794535000';
 // split a flat shape into a fine even mesh (no edge longer than about L), so it can follow sloping ground: Churchgate climbs
 // past the play park, and a four-corner quad would cut through the slope and the grass under it would vanish into the
 // terrain. Every triangle is cut into the same n x n pattern, so shared edges split at the same points (no cracks).

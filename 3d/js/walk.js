@@ -5,8 +5,8 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1794509320';
-import { plankTexture, boxUV } from './finishes.js?v=1794509320';
+import { FLOOR_H as FH } from './data.js?v=1794535000';
+import { plankTexture, boxUV } from './finishes.js?v=1794535000';
 
 const RES = 0.05;              // occupancy grid resolution (m)
 const EYE = 1.52;              // eye height (a touch low, as interior photographers shoot: rooms read taller)
