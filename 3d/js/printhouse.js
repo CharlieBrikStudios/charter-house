@@ -26,7 +26,10 @@ export function buildPrintHouse(M, opts = {}) {
   const B = phBasis();
   const group = new THREE.Group(); group.name = 'PrintHouse';
   // base level: the lowest corner of the blocks (the lower ground floor opens at the rear)
-  let y0 = 1e9; for (const [u, v] of [[0, 3.6], [5.02, 0], [28.5, 0], [0, 11.57], [28.5, 11.57], phSide(0, 0), phSide(0, 9.69), phSide(9.88, 9.69)]) y0 = Math.min(y0, groundAt(...B.toWorld(u, v)));
+  // base level: the lower ground floor (+59.50) stands about 1.85 m above Fletcher Street along the long face (road +57.78 to
+  // +57.25 on A817_T_302A / T_310A), behind the retained stone boundary wall: so the floor is set from the road, not the plot
+  let yr = 0, nr = 0; for (const u of [6, 12, 18, 24]) { yr += groundAt(...B.toWorld(u, -3.2)); nr++; }
+  let y0 = yr / nr + 1.85; for (const [u, v] of [[0, 3.6], [5.02, 0], [28.5, 0], phSide(0, 0), phSide(0, 9.69)]) y0 = Math.max(y0, groundAt(...B.toWorld(u, v)) + 0.15);
   group.position.set(PH_SITE.origin[0], y0, PH_SITE.origin[1]); group.rotation.y = B.theta;
   group.userData.y0 = y0;
   const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
@@ -279,6 +282,24 @@ export function buildPrintHouse(M, opts = {}) {
     const e = edgeOf([a, b, 0]), n = Math.max(1, Math.round(e.len / 4.5));
     for (let i = 0; i <= n; i++) ebox(e, i * e.len / n - 0.09, i * e.len / n + 0.09, 0.02, 0.2, 0, (NF - 1) * FH + 1.1, 'steel');
   }
+  // ---- the plot (A817_T_310A, C_204B): it stands on the lower ground floor's level behind the retained stone boundary wall
+  // along Fletcher Street, a planted strip and a metal railing on top of the wall; the courtyard garden at the same level
+  {
+    const outer = (pts, d) => { const E = pts.map((p, i) => edgeOf([p, pts[(i + 1) % pts.length], 0])); const off = E.map(e => [e.p0[0] + e.n[0] * d, e.p0[1] + e.n[1] * d]); return E.map((e, i) => { const j = (i + E.length - 1) % E.length; return isect(off[j], E[j].d, off[i], e.d); }); };
+    const ring = [...MAINE.map(e => e.p0), [P.CORE.u1, D], phSide(S.S, 0), phSide(S.S, S.T), phSide(0, S.T), phSide(0, 0), COREE[0].p0, COREE[1].p0, COREE[2].p0];
+    const site = outer(ring, 0.8), court = [[P.CORE.u1, D], [P.UW + 2.6, D], [P.UW + 2.6, D + 5.0], [21.9, 14.8], [16.0, 16.2], [17.1, 21.1], [17.6, 23.4], [8.1, 25.3], phSide(S.S + 1.6, S.T), phSide(S.S + 1.6, 0)];
+    const slab = (Q) => { const g = new THREE.ExtrudeGeometry(new THREE.Shape(Q.map(([u, v]) => V2(u, v))), { depth: 6, bevelEnabled: false, curveSegments: 1 }); g.rotateX(-Math.PI / 2); g.translate(0, -6, 0); return g; };
+    for (const Q of [site, court]) { const [side, top] = splitBy(slab(Q), (nv) => nv.y > 0.7); add('path', top); add('wallStone', side); }
+    // the stone wall's coping and the railing along the street edges (main block, core and the side block's Fletcher face)
+    const streetEdges = [...MAINE.filter(e => e.sl), COREE[0], SIDEE[0]];
+    for (const e of streetEdges) {
+      const q0 = [e.p0[0] + e.n[0] * 0.8, e.p0[1] + e.n[1] * 0.8], f = { ...e, p0: q0 };
+      ebox(f, -0.4, e.len + 0.4, -0.05, 0.3, -0.02, 0.08, 'sill');                                     // stone coping
+      for (let x = -0.3; x <= e.len + 0.3; x += 0.13) ebox(f, x - 0.01, x + 0.01, 0.09, 0.11, 0.08, 1.05, 'steel');
+      ebox(f, -0.4, e.len + 0.4, 0.08, 0.12, 1.0, 1.06, 'steel'); ebox(f, -0.4, e.len + 0.4, 0.08, 0.12, 0.12, 0.16, 'steel');
+      ebox(f, -0.4, e.len + 0.4, -0.78, -0.05, 0.0, 0.05, 'lawn');                                     // the planted strip behind it
+    }
+  }
   // ---- residents' garden (as in the CGI): between the walkways and the back of Seaton House, gravel paths and a gravel
   // clearing, loose naturalistic planting, a low brick wall, chunky timber benches, birches
   {
@@ -317,6 +338,7 @@ export function buildPrintHouse(M, opts = {}) {
     slate: M.slate || M.cSlate, lead: new THREE.MeshStandardMaterial({ color: '#3c4043', roughness: 0.55, metalness: 0.35, clippingPlanes: M.brick?.clippingPlanes }),
     sash: new THREE.MeshStandardMaterial({ color: '#f2f1ec', roughness: 0.45, clippingPlanes: M.brick?.clippingPlanes }),
     alu: new THREE.MeshStandardMaterial({ color: '#2a2d30', roughness: 0.4, metalness: 0.5, clippingPlanes: M.brick?.clippingPlanes }), soldier: M.brick || M.cBrick,
+    wallStone: (() => { const m = (M.stone || M.paving).clone(); m.color = new THREE.Color('#9a958b'); m.roughness = 0.95; return m; })(),
     soil: new THREE.MeshStandardMaterial({ color: '#3b2c22', roughness: 1 }), oak: new THREE.MeshStandardMaterial({ color: '#a5774a', roughness: 0.6 }),
   };
   const meshes = {};
