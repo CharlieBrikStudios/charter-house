@@ -3039,8 +3039,7 @@ html,:root{color-scheme:light only!important;background:#EEE5DF}
    Light, warm palette from V3's own tokens; one gold line accent.
    ===================================================================== */
 :root{
-  --pz_sky:url("assets/img/pz_sky.webp");--pz_viaduct:url("assets/img/pz_viaduct.webp");
-  --pz_underbank:url("assets/img/pz_underbank.webp");--pz_churchgate:url("assets/img/pz_churchgate.webp");
+  --pz_town:url("assets/img/pz_town.webp");--pz_brewery:url("assets/img/pz_brewery.webp");--pz_street:url("assets/img/pz_street.webp");--ch_plan_201:url("assets/img/ch_plan_201.webp");
   --v4warm:#F3ECE2;      /* warm off-white for the technical pages */
   --v4plan:#FCFAF6;      /* plan paper */
   --v4gold:#B08654;      /* the thin line motif */
@@ -3674,15 +3673,15 @@ const BRIEF=()=>`<section class="brief"><div class="partlab"><span class="pno">P
 /* V4 C2: full-bleed pause images between chapters, no text. Brik's own Stockport footage. */
 const PZ=(cls,v,label,pos)=>`<figure class="pause ${cls}" role="img" aria-label="${label}"><i class="pz" style="background-image:var(--${v});background-position:${pos}"></i></figure>`;
 const PAUSE={
- brief:PZ("pz-sky","pz_sky","Stockport from the air at golden hour, with the viaduct","center 62%"),
- opportunity:PZ("pz-via","pz_viaduct","The viaduct at golden hour, from the Interchange rooftop park","center 42%"),
- intel:`<figure class="pause pzduo" role="img" aria-label="Evening light on the Underbanks, and Churchgate at golden hour"><i class="pz" style="background-image:var(--pz_underbank);background-position:center 45%"></i><i class="pz" style="background-image:var(--pz_churchgate);background-position:center 55%"><span class="ccap">Churchgate · with CGI</span></i></figure>`};
+ brief:PZ("pz-sky","pz_town","Stockport's Old Town from the air at dusk, with St Mary's Church","65% 40%"),
+ opportunity:PZ("pz-sky","pz_brewery","Robinsons' Unicorn Brewery in the evening light","50% 50%"),
+ intel:PZ("pz-sky","pz_street","Little Underbank from the air, with Winter's clock","40% 50%")};
 /* V4 C8: your amenities, on the doorstep */
 const AMEN=`<div class="amen"><div class="amen-head"><div><span class="v4lab">Your amenities</span><h3 class="big-h">Everything you need, a short walk away.</h3></div><p class="lead">Your amenities are already built: the Underbanks' independents, the Market Hall next door and the station, all within a ten-minute walk.</p></div>
  <div class="amen-grid">${[["skunderbanks","The Underbanks","Under 1 min walk"],["skmarket","Stockport Market Hall","Next door"],["t_inter","Interchange and rooftop park","10 min walk"],["skviaduct","Station, by the viaduct","10 min walk"]].map(([v,t,m])=>`<button style="background-image:var(--${v})" data-img="${v}" data-cap="${t}" aria-label="View ${t}"><span class="at"><b>${t}</b><span>${m}</span></span></button>`).join("")}</div></div>`;
 /* V4 C4 + C5: technical pages on warm off-white, floor plans and the grouped specification */
 function TECH(){
- const P=[["p21_fb","One bedroom apartment","Example shown: 412 sq ft",[["Layout","Open-plan kitchen and living, bedroom and bathroom"],["Outlook","In the example shown, the kitchen, living room and bedroom all face outwards. Only a few do."],["Front door","On the gallery walkway over the courtyard"],["In the numbers","Our returns use an example one bed of 400 sq ft at £189,000"]]],
+ const P=[["ch_plan_201","One bedroom apartment","Example shown: 412 sq ft",[["Layout", "Open-plan kitchen and living, bedroom and bathroom"], ["Floor", "Second floor"], ["Light", "A big window across the end of the living space"], ["Front door", "On the gallery walkway over the courtyard"], ["In the numbers", "Our returns use an example one bed of 400 sq ft at £189,000"]]],
   ["p24_fb","Two bedroom, two bathroom corner apartment","Example shown: 658 sq ft",[["Layout","Open-plan kitchen and living, two bedrooms and two bathrooms"],["Light","From two directions"],["Views","Only the four corner apartments look onto St Mary's Church and the Market Hall"],["Front door","On the gallery walkway over the courtyard"]]]];
  const G=[["Kitchen",[["Units","Fully fitted, with an integrated dishwasher"],["Appliances","Built-in electric oven, ceramic hob and extractor fan"],["Worktop","Marble-effect quartz with a tiled splashback"],["Lighting","LED lighting behind the cabinets"],["Laundry","Washer-dryer plinth, plumbed and wired, in the service cupboard"]]],
   ["Interiors and finishes",[["Flooring","Premium LVT"],["Doors","Wooden internal doors"],["Joinery","Skirting and architraves in dark heritage colours"],["Electrics","Matt sockets and fixtures"]]],
