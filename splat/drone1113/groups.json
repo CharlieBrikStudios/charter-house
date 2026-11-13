@@ -1,0 +1,13 @@
+{
+ "g1": {
+  "lat": null,
+  "lon": null,
+  "imgs": "5-6",
+  "clips": 2,
+  "stills": 0,
+  "files": [
+   "/workspace/drone1113/raw/5.mov",
+   "/workspace/drone1113/raw/6.mov"
+  ]
+ }
+}
