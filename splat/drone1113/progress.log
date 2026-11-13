@@ -8,3 +8,4 @@
 2026-11-13T12:17:16Z g1: ... I20261113 12:15:00.150764 134139956782208 global_mapper.cc:614] === Running iterative retriangulation and refinement ===
 2026-11-13T12:27:17Z g1: ... I20261113 12:22:53.291913 134139956782208 global_positioning.cc:59] Solving the global positioner problem
 2026-11-13T12:37:19Z g1: ... I20261113 12:36:32.793200 134139956782208 global_mapper.cc:424] Filtering tracks by reprojection ...
+2026-11-13T12:41:51Z g1: camera solve: SFM global free: 739 of 739 frames placed (100%), 260101 points, 3277 s; by folder c01:170/170 c02:569/569
