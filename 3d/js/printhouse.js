@@ -133,7 +133,7 @@ export function buildPrintHouse(M, opts = {}) {
     win(sFletch, S.T - 2.326, 1, 'F1'); win(sFletch, S.T - 6.488, 0, 'F0');
     // the stair core: the lower ground entrance door, then a narrow casement on each floor (W-x-03), arched on the second
     if (f === 0) op(cStreet, { a: 2.74, b: 3.74, y0: 0.02, y1: 2.3, kind: 'door', floor: f, plot: 0 });
-    else if (!top) narrow(cStreet, 2.78, 0, 'C' + f, { stair: true, arch: f === 3, plot: 0 });
+    else if (!top) narrow(cStreet, 3.0, 0, 'C' + f, { stair: true, arch: f === 3, plot: 0 });   // W-G-03 sits just past the 562 step (A817_C_204B)
     // garden faces: each flat's front door off the walkway (the lower ground opens to the garden) and a bedroom window
     for (let k = 2; k <= 6; k++) {
       const [ua, , ub] = slot(k), A = (u) => P.UW - u;                    // the garden face runs from the gable (u = UW) back to u = 0
