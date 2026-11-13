@@ -28,6 +28,7 @@ import { Forest, windUniforms } from './trees.js?v=1794535000';
 import { Interior } from './interior.js?v=1794535000';
 import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1794535000';
 import { buildPHFitout } from './phfit.js?v=1794535000';
+import { PH_PLAN, phSide } from './ph_data.js?v=1794535000';
 import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794535000';
 import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794535000';
 import { createTour } from './tour.js?v=1794535000';
@@ -346,8 +347,8 @@ async function build() {
     exclude: [[-50, -44, 0.5, -11], [-1, -38, 32, -11], [-4, -2, 46, 36], [-66, -2, -8, 40], [-110, -3, -74, 13]],
     keepOut: [PLACES.churchKeep, (x, z) => Math.hypot(x + 156, z - 105) < 24,   // Underbank Lofts' garden is planted by the building itself
       (x, z) => {   // no stray trees inside The Print House plot or Seaton House
-      const dx = x + 55.3, dz = z - 187.5, u = -0.447 * dx + 0.894 * dz, v = 0.894 * dx + 0.447 * dz;
-      if (u > -2 && u < 29.5 && v > -2.5 && v < 24) return true;
+      const dx = x + 61.99, dz = z - 195.59, u = -0.0993 * dx + 0.9951 * dz, v = 0.9951 * dx + 0.0993 * dz;   // the Print House frame (ph_data.js PH_SITE)
+      if (u > -5 && u < 31.5 && v > -2.5 && v < 27) return true;
       if (!seaton) return false; let inside = false; const P = seaton.p;
       for (let i = 0, j = P.length - 1; i < P.length; j = i++) if ((P[i][1] > z) !== (P[j][1] > z) && x < (P[j][0] - P[i][0]) * (z - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) inside = !inside;
       return inside;
@@ -371,8 +372,8 @@ async function build() {
     const xp = [];
     if (IS_PH) {
       const L = (u, y, v) => { const p = CH.local(u, y, v); return [p.x, p.y, p.z]; };
-      xp.push({ pts: [L(12.4, 0.06, 12.5), L(25.6, 0.06, 12.5)], kind: 'stroll' }, { pts: [L(12.5, 0.06, 12.6), L(12.5, 0.06, 20)], kind: 'stroll' });
-      for (const f of [1, 2, 3]) xp.push({ pts: [L(5.5, f * CH.FH + 0.06, 10.95), L(26.6, f * CH.FH + 0.06, 10.95)], kind: 'walk' });
+      xp.push({ pts: [L(8.8, 0.06, 13.5), L(22.4, 0.06, 13.5)], kind: 'stroll' }, { pts: [L(12.0, 0.06, 13.6), L(12.0, 0.06, 21.5)], kind: 'stroll' });
+      for (const f of [1, 2, 3]) xp.push({ pts: [L(7.4, f * CH.FH + 0.06, 12.3), L(22.6, f * CH.FH + 0.06, 12.3)], kind: 'walk' });
     } else {
       xp.push({ pts: [[12.4, -0.04, 15.2], [21.6, -0.04, 15.2]], kind: 'stroll' });
       for (const f of [1, 2]) xp.push({ pts: [[12.4, f * FLOOR_H + 0.02, 11.75], [20.3, f * FLOOR_H + 0.02, 11.75]], kind: 'walk' });
@@ -2057,12 +2058,12 @@ function buildSpots() {
     const L = (u, y, v) => CH.local(u, y, v), F = FLOOR_H;
     SPOTS = [
       { id: 'wellington', name: 'Wellington Street', at: eyeAt(-9.5, 205), look: V3(-26.5, groundAt(-26.5, 213) + 5, 213), note: 'Seaton House, Brik Studios’ new home, with The Print House behind it.' },
-      { id: 'garden', name: 'Residents’ garden', at: L(24.6, 1.65, 17.0), look: L(8, 4.5, 11), note: 'The private garden, with the walkways and front doors wrapped round it.' },
-      { id: 'garden2', name: 'By the side block', at: L(14.0, 1.65, 19.8), look: L(24, 5, 11), note: 'Gravel paths, birch trees and loose planting, as in the 21 Living CGIs.' },
-      { id: 'walk1', name: 'First-floor walkway', at: L(25.6, F * 2 + 1.65, 10.95), look: L(4.5, F * 2 + 1.4, 10.95), note: 'Your own front door off an open steel walkway, looking down into the garden.', glide: false },
-      { id: 'walktop', name: 'Top-floor walkway', at: L(5.2, F * 4 + 1.65, 10.95), look: L(26, F * 4 + 1.0, 13), note: 'The top floor, under the canopy: 2.65 m ceilings and a big twin roof window in every apartment.', glide: false },
-      { id: 'stjoseph', name: 'St Joseph’s side', at: L(14, 1.65, -13), look: L(14, 7, 0), note: 'Every apartment’s big 8 ft window faces this way: St Joseph’s Church and the primary school.' },
-      { id: 'fletcher', name: 'Fletcher Street', at: L(-7, 1.65, 13), look: L(1, 6, 15), note: 'The side block sits back behind a hedge and a cobbled wall.' },
+      { id: 'garden', name: 'Residents’ garden', at: L(13.6, 1.65, 21.4), look: L(14, 4.5, 11.6), note: 'The private garden, with the walkways and front doors wrapped round it.' },
+      { id: 'garden2', name: 'By the side block', at: L(10.4, 1.65, 15.2), look: L(21, 5, 12), note: 'Gravel paths, birch trees and loose planting, as in the 21 Living CGIs.' },
+      { id: 'walk1', name: 'First-floor walkway', at: L(22.2, F * 2 + 1.65, 12.3), look: L(6.5, F * 2 + 1.4, 12.3), note: 'Your own front door off an open steel walkway, looking down into the garden.', glide: false },
+      { id: 'walktop', name: 'Top-floor walkway', at: L(7.4, F * 4 + 1.65, 12.3), look: L(22, F * 4 + 1.0, 13.4), note: 'The top floor: 2.65 m ceilings and twin roof windows in every apartment.', glide: false },
+      { id: 'stjoseph', name: 'St Joseph’s side', at: L(16, 1.65, -10), look: L(16, 7, 0), note: 'Every apartment’s big 8 ft window faces this way: St Joseph’s Church and the primary school.' },
+      { id: 'fletcher', name: 'Fletcher Street', at: L(-9.5, 1.65, 19), look: L(-1, 6, 21), note: 'The side block sits back behind a hedge and a cobbled wall.' },
       { id: 'roof', name: 'Above the roof', at: L(14, F * 5 + 12, 8), look: L(-60, 10, -40), note: 'Drag round: the viaduct, the town centre and the hills beyond.', glide: false },
     ];
     for (const sp of SPOTS) if (!['walk1', 'walktop', 'roof'].includes(sp.id) && ['stjoseph', 'fletcher'].includes(sp.id)) sp.at.y = groundAt(sp.at.x, sp.at.z) + 1.65;
@@ -2180,25 +2181,25 @@ function doorRoute(u) {
     const L = (uu, y, v) => CH.local(uu, y, v), y = u.floor * F + 1.65;
     legs.push({ to: eyeAt(-12.5, 211), cut: true, look: V3(-27, groundAt(-27, 214) + 5.5, 214), say: say('Wellington Street, outside Seaton House'), pause: 0.6 });
     legs.push({ to: eyeAt(-21, 223), look: V3(-34, groundAt(-34, 227) + 2, 227), say: say('In beside Seaton House, through the courtyard entrance') });
-    legs.push({ to: L(24.6, 1.65, 16.8), cut: true, look: L(8, 4.5, 11), say: say('The residents’ garden'), pause: 0.5 });
-    const coreLanding = L(5.2, 1.65, 11.4);
+    legs.push({ to: L(13.6, 1.65, 21.0), cut: true, look: L(14, 4.5, 11.6), say: say('The residents’ garden'), pause: 0.5 });
+    const coreLanding = L(7.0, 1.65, 13.0);
     const isCore = (u.floor === 0 && u.slot === 7);
     if (u.floor === 0 && !isCore) {
-      legs.push({ to: L(20, 1.65, 12.6), say: say('Along the garden to your front door') });
+      legs.push({ to: L(u.type === '2A' ? 19 : u.fp[2] - 3.4, 1.65, 12.6), say: say('Along the garden to your front door') });
     } else {
-      legs.push({ to: L(12.5, 1.65, 12.6), say: say('Across the garden to the lift and stairs') });
-      legs.push({ to: coreLanding, look: L(2, 1.6, 11.6) });
-      if (u.floor > 0) legs.push({ to: L(5.2, y, 11.0), cut: true, look: L(12, y - 0.1, 11), say: say(`Lift to the ${FLOORS[u.floor].name.toLowerCase()}`), pause: 0.3 });
+      legs.push({ to: L(10.2, 1.65, 13.4), say: say('Across the garden to the lift and stairs') });
+      legs.push({ to: coreLanding, look: L(4, 1.6, 12.8) });
+      if (u.floor > 0) legs.push({ to: L(6.7, y, 12.4), cut: true, look: L(14, y - 0.1, 12.3), say: say(`Lift to the ${FLOORS[u.floor].name.toLowerCase()}`), pause: 0.3 });
     }
     if (u.side) {
-      const vd = u.fp[3] - 0.925;
-      legs.push({ to: L(10.95, y, 12.4), say: say('Round onto the side-block landing: just two front doors here') });
-      legs.push({ to: L(11.3, y, vd - 2.3), look: L(10.2, y - 0.5, vd), say: say(`Plot ${u.plot} · your front door`), pause: 0.2 });
+      const S = PH_PLAN.SIDE, td = u.fpS[3] - 0.925, at = (s, t, h) => L(...(([a, b]) => [a, h, b])(phSide(s, t)));   // the side block's walkway, in its own turned frame
+      legs.push({ to: at(S.S + 0.7, 0.6, y), say: say('Round onto the side-block landing: just two front doors here') });
+      legs.push({ to: at(S.S + 0.7, Math.max(0.4, td - 2.3), y), look: at(S.S, td, y - 0.5), say: say(`Plot ${u.plot} · your front door`), pause: 0.2 });
     } else if (isCore) {
-      legs.push({ to: L(6.9, y, 11.25), look: L(4.2, y - 0.5, 10.2), say: say(`Plot ${u.plot} · your front door, right by the lift`) });
+      legs.push({ to: L(7.4, y, 12.4), look: L(6.1, y - 0.5, 12.95), say: say(`Plot ${u.plot} · your front door, right by the lift`) });
     } else {
-      const ud = u.fp[2] - 0.975;
-      legs.push({ to: L(ud - 2.4, y, 11.3), look: L(ud, y - 0.5, 10.2), say: say(`Plot ${u.plot} · your front door`), pause: 0.2 });
+      const ud = u.type === '2A' ? u.fp[0] + 0.78 : u.fp[2] - 0.975;
+      legs.push({ to: L(ud - 2.4, y, 12.3), look: L(ud, y - 0.5, 11.57), say: say(`Plot ${u.plot} · your front door`), pause: 0.2 });
     }
   } else {
     const y = u.floor * F + 1.65;
