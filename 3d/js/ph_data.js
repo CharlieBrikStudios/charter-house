@@ -21,13 +21,13 @@ export const PH_SITE = {
   // placement in the town model: origin and the block's long axis (from the OSM parcel behind Seaton House)
   origin: [-55.3, 187.5], u: [-0.447, 0.894], v: [0.894, 0.447],
 };
-export const PH_FH = 3.05;
+export const PH_FH = 2.85;                 // floor to floor, every floor (Ollier Smurthwaite elevations and sections: 2850)
 export const PH_FLOORS = [
   { id: 0, name: 'Lower ground', short: 'LG', level: 0 },
   { id: 1, name: 'Ground floor', short: 'G', level: 1 },
   { id: 2, name: 'First floor', short: '1', level: 2 },
   { id: 3, name: 'Second floor', short: '2', level: 3 },
-  { id: 4, name: 'Third floor', short: '3', level: 4, note: 'Top floor in the slate mansard: 2.65 m ceilings, big twin roof windows' },
+  { id: 4, name: 'Third floor', short: '3', level: 4, note: 'Top floor in the slate mansard: 2.65 m ceilings, twin roof windows' },
 ];
 // footprints [u0, v0, u1, v1] in the local frame; facing = which way the big 8 ft window looks
 const SLOTS = [
@@ -56,11 +56,12 @@ export const PH_UNITS = SF.map(([plot, fl, beds, sqft, price, status]) => {
   return { plot, apt: `${PH_FLOORS[floor].short}.${String(k + 1).padStart(2, '0')}`, floor, type: s.type, beds, sqft: Math.round(sqft), price, status, note, view, fp: s.fp.slice(), slot: k, side: !!s.side };
 });
 
-// The top floor sits in a slate mansard (as the Position-in-Build CGI): brick to a knee wall, then a steep slate slope
-// with big twin roof windows over every flat, 2.65 m ceilings inside. Faces are façade lines in the plan frame with the
-// outward normal; a hip meets the next slope at that end, otherwise the slope stops against a brick end wall.
+// The top floor sits in a slate mansard (A817_T_302A / T_301A elevations, T_400F section): brick 1.5 m above the third floor to the
+// wall plate (+72.40), then a 58° slate slope 1.69 m high to the flat roof (+74.09), Velux-style twin rooflights in the slope over
+// every window bay (RL-01..12), 2.685 m ceilings inside. Faces are façade lines in the plan frame with the outward normal; a hip
+// meets the next slope at that end, otherwise the slope stops against a brick end wall.
 export const PH_ROOF = {
-  TF: 4 * PH_FH, KNEE: 4 * PH_FH + 0.85, TOP: 4 * PH_FH + 3.0, CEIL: 4 * PH_FH + 0.02 + 2.65, TH: 0.3, PITCH: 63 * Math.PI / 180,
+  TF: 4 * PH_FH, KNEE: 4 * PH_FH + 1.5, TOP: 4 * PH_FH + 3.19, CEIL: 4 * PH_FH + 2.685, TH: 0.3, PITCH: 58 * Math.PI / 180,
   faces: [
     { id: 'W', p0: [0, 0], p1: [27.2, 0], n: [0, -1], hip: [true, true] },
     { id: 'S', p0: [27.2, 0], p1: [27.2, 10.2], n: [1, 0], hip: [true, false] },

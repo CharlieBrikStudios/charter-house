@@ -1,7 +1,10 @@
 // The Print House new-build blocks behind Seaton House (61 Wellington Street): the main rear block (2A, four 1Bs,
 // 1C per floor) facing St Joseph's, the side block on Fletcher Street (two 1As per floor), the lift and stair core,
-// black steel-and-glass access galleries round the residents' garden, 8 ft square picture windows, the top storey in a
-// slate mansard with big twin roof windows (2.65 m ceilings, as the Apt 37 unit selection pack), and the garden itself. Built in the plan's own frame: local x = u (south along the block),
+// steel-and-glass access walkways round the residents' garden, and the garden itself. Façades as the Ollier Smurthwaite
+// elevations A817_T_300A-307B: 2.85 m floor to floor, twin timber casements 2372 x 2035 (two leaves, two panes across,
+// three rows) in 25 mm recessed brick bays, soldier-course lintels, pressed aluminium sills, a precast stone band and a
+// recessed brick band under the eaves, aluminium gutters and downpipes, and the top storey in a 58° slate mansard lit by
+// twin rooflights (no windows in the wall). Built in the plan's own frame: local x = u (south along the block),
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -14,6 +17,7 @@ const MAIN = [0, 0, 27.2, 10.2];      // u0 v0 u1 v1
 const SIDE = [0.6, 11.9, 10.2, 20.5];
 const CORE = [0, 10.2, 4.0, 13.4];
 const GAL = 1.5;                       // gallery depth
+const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
 
 export function phBasis() {
   const [ux, uz] = PH_SITE.u, [vx, vz] = PH_SITE.v;
@@ -42,7 +46,7 @@ export function buildPrintHouse(M, opts = {}) {
   // box in plan coords: u0..u1 along x, v0..v1 -> z = -v
   const box = (u0, v0, u1, v1, ya, yb) => { const g = new THREE.BoxGeometry(Math.max(0.01, u1 - u0), Math.max(0.01, yb - ya), Math.max(0.01, v1 - v0)); g.translate((u0 + u1) / 2, (ya + yb) / 2, -(v0 + v1) / 2); return g; };
   const TOPB = (NF - 1) * FH;            // top of the brick storeys (zinc top floor above)
-  const EAV = NF * FH + 0.3;
+  const EAV = PH_ROOF.TOP + 0.12;         // the garden faces rise to the flat roof (rev B: parapet removed), an aluminium fascia on top
   const windows = [], roomGeo = {};
   // the slate mansard over the top floor: brick to the knee wall, a 63° slope up to the flat roof (PH_ROOF in ph_data.js)
   const R = PH_ROOF, SA = Math.sin(R.PITCH), CA = Math.cos(R.PITCH), RISE = R.TOP - R.KNEE, SL = RISE / SA, RUN = RISE / Math.tan(R.PITCH);
@@ -79,9 +83,20 @@ export function buildPrintHouse(M, opts = {}) {
       if (o.kind !== 'door') {
         piece(o.a, o.a + fr, o.y0, o.y1, dIn - 0.06, dIn + 0.02, 'frame'); piece(o.b - fr, o.b, o.y0, o.y1, dIn - 0.06, dIn + 0.02, 'frame');
         piece(o.a, o.b, o.y0, o.y0 + fr, dIn - 0.06, dIn + 0.02, 'frame'); piece(o.a, o.b, o.y1 - fr, o.y1, dIn - 0.06, dIn + 0.02, 'frame');
-        if (w > 1.6) piece(c - 0.035, c + 0.035, o.y0, o.y1, dIn - 0.06, dIn + 0.02, 'frame');
+        // timber casements as the elevations: twin leaves meeting on a double mullion, each leaf two panes across and three rows,
+        // the bottom row fixed and a little taller (transom), the upper two opening
+        const leaves = w > 1.6 ? [[o.a + fr, c - 0.045], [c + 0.045, o.b - fr]] : [[o.a + fr, o.b - fr]];
+        if (w > 1.6) piece(c - 0.045, c + 0.045, o.y0, o.y1, dIn - 0.06, dIn + 0.02, 'frame');
+        const hi = h - 2 * fr, yT = o.y0 + fr + 0.37 * hi, yM = yT + 0.315 * hi;
+        for (const [la, lb] of leaves) {
+          const lc = (la + lb) / 2;
+          if (lb - la > 0.45) piece(lc - 0.018, lc + 0.018, o.y0 + fr, o.y1 - fr, dIn - 0.045, dIn + 0.005, 'frame');
+          if (h > 1.2) { piece(la, lb, yT - 0.03, yT + 0.03, dIn - 0.055, dIn + 0.01, 'frame'); piece(la, lb, yM - 0.018, yM + 0.018, dIn - 0.045, dIn + 0.005, 'frame'); }
+        }
         piece(o.a + 0.02, o.b - 0.02, o.y0 + 0.02, o.y1 - 0.02, dIn - 0.03, dIn - 0.02, 'glass');
-        piece(o.a - 0.06, o.b + 0.06, o.y0 - 0.06, o.y0, -0.02, 0.07, 'sill');
+        piece(o.a - 0.04, o.b + 0.04, o.y0 - 0.05, o.y0, -0.03, 0.055, 'alu');                 // pressed aluminium sill
+        if (o.y1 + 0.3 <= yTop + 0.01) piece(o.a - 0.05, o.b + 0.05, o.y1, o.y1 + 0.3, -0.005, 0.012, 'soldier');   // soldier-course lintel
+        if (o.stair) continue;
         const wp = at(c, o.y0 + h / 2, 0); windows.push({ id: o.id, plot: o.plot, floor: o.floor, local: new THREE.Vector3(wp[0], wp[1], -wp[2]), n: [n[0], n[1]], w, h });
         // the lit room behind the glass (same shader as Charter House: lights up when the floor is hovered)
         const fy = o.floor * FH, rg = roomBox(o.a - 0.5, fy + 0.02, 0.38, o.b + 0.5, fy + FH - 0.28, 3.6, (o.y1 - o.y0) > 2 ? 0 : 1, (o.plot * 7.3) % 1);
@@ -102,21 +117,24 @@ export function buildPrintHouse(M, opts = {}) {
     const plotOf = (k) => f * 8 + k + 1;
     // main block west face (u 0 -> 27.2 at v = 0, normal -v): one 8 ft window per apartment, two on the 2A
     for (const [a, b, k] of slotsMain) {
-      const mid = (a + b) / 2, ww = top ? 2.0 : 2.37;
-      if (k === 2) { op.mainW.push({ a: a + 0.7, b: a + 0.7 + ww, y0: y + 0.42, y1: y + 0.42 + (top ? 2.0 : 2.44), plot: plotOf(k), floor: f, id: 'W' + k }); op.mainW.push({ a: b - 0.7 - ww * 0.62, b: b - 0.7, y0: y + 0.42, y1: y + 0.42 + (top ? 2.0 : 2.44), plot: plotOf(k), floor: f, id: 'W' + k + 'b' }); }
-      else op.mainW.push({ a: mid - ww / 2, b: mid + ww / 2, y0: y + 0.42, y1: y + 0.42 + (top ? 2.0 : 2.44), plot: plotOf(k), floor: f, id: 'W' + k });
+      const mid = (a + b) / 2, win = (cc, id) => op.mainW.push({ a: cc - WW / 2, b: cc + WW / 2, y0: y + WS, y1: y + WS + WH, plot: plotOf(k), floor: f, id });
+      // the 2A has two full windows (W-x-10 and W-x-11 on the elevation); on the top floor every window bay becomes a rooflight
+      if (k === 2) { win(a + (b - a) / 4, 'W' + k); win(b - (b - a) / 4, 'W' + k + 'b'); }
+      else win(mid, 'W' + k);
       // garden side: bedroom window + front door off the gallery
       op.mainE.push({ a: a + 0.55, b: a + 1.75, y0: y + 0.85, y1: y + 2.3, plot: plotOf(k), floor: f, id: 'E' + k });
       if (!(f === 0 && k === 7)) op.mainE.push({ a: b - 1.45, b: b - 0.5, y0: y + 0.02, y1: y + 2.15, kind: 'door', plot: plotOf(k), floor: f });
     }
-    // 2A end wall (south, u = 27.2): a second big window for the dual aspect
-    op.mainS.push({ a: 2.2, b: 2.2 + 2.37, y0: y + 0.42, y1: y + 0.42 + (top ? 2.0 : 2.44), plot: plotOf(2), floor: f, id: 'S2' });
-    // 1C corner (north end, u = 0): a window onto Fletcher Street
-    op.mainN.push({ a: 3.0, b: 5.4, y0: y + 0.42, y1: y + 0.42 + (top ? 2.0 : 2.44), plot: plotOf(7), floor: f, id: 'N7' });
+    // the south gable (u = 27.2) is blank brick with two big 25 mm recessed panels (A817_T_300A): no window
+    // 1C end wall (north end, u = 0): one narrow 910 casement towards the garden end (W-x-04 on A817_T_301A / C_204B)
+    op.mainN.push({ a: 7.9, b: 8.81, y0: y + WS, y1: y + WS + WH, plot: plotOf(7), floor: f, id: 'N7' });
+    // the stair core's street face: a narrow 910 casement on each floor above the lower ground entrance door (W-x-03, ED-LG-04)
+    if (f === 0) op.coreE.push({ a: 11.3, b: 12.3, y0: 0.02, y1: 2.3, kind: 'door', floor: f, plot: 0 });
+    else if (!top) op.coreE.push({ a: 11.35, b: 12.26, y0: y + WS, y1: y + WS + WH, floor: f, plot: 0, id: 'C' + f, stair: true });
     // side block: two 1As, each with an 8 ft window onto Fletcher Street (u = 0.6, normal -u) and bedroom + door on the gallery
     for (const [k, va, vb] of [[0, 16.2, 20.5], [1, 11.9, 16.2]]) {
       const mid = (va + vb) / 2;
-      op.sideN.push({ a: mid - 1.18, b: mid + 1.18, y0: y + 0.42, y1: y + 0.42 + (top ? 2.0 : 2.44), plot: plotOf(k), floor: f, id: 'F' + k });
+      op.sideN.push({ a: mid - WW / 2, b: mid + WW / 2, y0: y + WS, y1: y + WS + WH, plot: plotOf(k), floor: f, id: 'F' + k });
       op.sideS.push({ a: va + 0.5, b: va + 1.7, y0: y + 0.85, y1: y + 2.3, plot: plotOf(k), floor: f, id: 'G' + k });
       op.sideS.push({ a: vb - 1.4, b: vb - 0.45, y0: y + 0.02, y1: y + 2.15, kind: 'door', plot: plotOf(k), floor: f });
     }
@@ -133,14 +151,53 @@ export function buildPrintHouse(M, opts = {}) {
   both([27.2, 0], [27.2, 10.2], [1, 0], op.mainS, 'S');
   both([0, 10.2], [0, 0], [-1, 0], op.mainN.map(o => ({ ...o, a: 10.2 - o.b, b: 10.2 - o.a })), 'N');
   both([0.6, 20.5], [0.6, 11.9], [-1, 0], op.sideN.map(o => ({ ...o, a: 20.5 - o.b, b: 20.5 - o.a })), 'F');
+  facade([0, 13.4], [0, 10.2], [-1, 0], op.coreE.map(o => ({ ...o, a: 13.4 - o.b, b: 13.4 - o.a })), R.TOP + 0.12, 'brick');   // the stair core's street face
   both([10.2, 11.9], [10.2, 20.5], [1, 0], op.sideS.map(o => ({ ...o, a: o.a - 11.9, b: o.b - 11.9 })));
   both([10.2, 20.5], [0.6, 20.5], [0, 1], []);     // (each facade runs so that dir x up = outward normal)
   both([4.0, 11.9], [10.2, 11.9], [0, -1], []);   // the side block's flank on the landing beside the core
   // floor slabs edges (string courses in dark brick) + parapet/eaves
-  for (let f = 1; f < NF; f++) { add('band', box(MAIN[0] - 0.06, MAIN[1] - 0.06, MAIN[2] + 0.06, MAIN[1] + 0.02, f * FH - 0.12, f * FH + 0.02)); add('band', box(SIDE[0] - 0.06, SIDE[1], SIDE[0] + 0.02, SIDE[3], f * FH - 0.12, f * FH + 0.02)); }
-  // ---- core (lift + stairs) and the solid gable walls of the core
-  add('brick', box(CORE[0], CORE[1], CORE[2], CORE[3], 0, NF * FH + 1.2));
-  add('zinc', box(CORE[0] - 0.05, CORE[1] - 0.05, CORE[2] + 0.05, CORE[3] + 0.05, NF * FH + 1.2, NF * FH + 1.5));
+  // ---- the brickwork detail of the street faces and the south gable (A817_T_301A / 302A / 300A): each window bay sits in a
+  // 25 mm recessed panel from the ground to the third floor, the piers between stand proud; above, a precast stone band at
+  // +450, a recessed brick band per bay, then a projecting brick course under the aluminium gutter at the wall plate
+  const skin = (p0, p1, n, holes, yA, yB, d = 0.025) => {
+    const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), dir = [(p1[0] - p0[0]) / len, (p1[1] - p0[1]) / len];
+    const sh = new THREE.Shape([new THREE.Vector2(0, yA), new THREE.Vector2(len, yA), new THREE.Vector2(len, yB), new THREE.Vector2(0, yB)]);
+    for (const [a, b, ya, yb] of holes) { const h = new THREE.Path(); h.moveTo(Math.max(0.01, a), ya); h.lineTo(Math.min(len - 0.01, b), ya); h.lineTo(Math.min(len - 0.01, b), yb); h.lineTo(Math.max(0.01, a), yb); h.lineTo(Math.max(0.01, a), ya); sh.holes.push(h); }
+    const g = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: false, curveSegments: 1 });
+    g.applyMatrix4(new THREE.Matrix4().makeBasis(new THREE.Vector3(dir[0], 0, -dir[1]), new THREE.Vector3(0, 1, 0), new THREE.Vector3(n[0], 0, -n[1])).setPosition(p0[0], 0, -p0[1]));
+    const pp = g.attributes.position, uv = new Float32Array(pp.count * 2);
+    for (let i = 0; i < pp.count; i++) { uv[2 * i] = (pp.getX(i) + pp.getZ(i)) / 2.2; uv[2 * i + 1] = pp.getY(i) / 2.2; }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.userData.brickUV = true; add('brick', g);
+  };
+  const TF = R.TF;
+  const bays = (ops) => [...new Set(ops.filter(o => o.floor === 0 && o.kind !== 'door').map(o => +((o.a + o.b) / 2).toFixed(3)))].map(c => [c - WW / 2 - 0.45, c + WW / 2 + 0.45]);
+  const streetFace = (p0, p1, n, ops) => {
+    const bb = bays(ops), holes = [];
+    for (const [a, b] of bb) { holes.push([a, b, 0.02, TF - 0.01]); holes.push([a + 0.12, b - 0.12, TF + 0.675, TF + 1.06]); }
+    skin(p0, p1, n, holes, 0, R.KNEE - 0.16);
+    const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), dir = [(p1[0] - p0[0]) / len, (p1[1] - p0[1]) / len];
+    const P2 = (s, l) => [p0[0] + dir[0] * s + n[0] * l, p0[1] + dir[1] * s + n[1] * l];
+    const strip = (yA, yB, out, key) => { const a = P2(-0.03, 0), b = P2(len + 0.03, out); add(key, box(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1]), yA, yB)); };
+    strip(TF + 0.45, TF + 0.525, 0.045, 'sill');                  // precast stone band
+    strip(R.KNEE - 0.16, R.KNEE - 0.07, 0.07, 'brick');           // projecting brick course
+    // aluminium downpipes on every other pier, from the gutter to the ground
+    const piers = [bb[0] ? bb[0][0] - 0.276 : null, ...bb.slice(1).map((q, i) => (bb[i][1] + q[0]) / 2), bb.length ? bb[bb.length - 1][1] + 0.276 : null].filter(x => x != null && x > 0.15 && x < len - 0.15);
+    piers.forEach((x, i) => { if (i % 2) return; const a = P2(x - 0.05, 0.03), b = P2(x + 0.05, 0.13); add('alu', box(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1]), 0, R.KNEE - 0.05)); });
+  };
+  streetFace([0, 0], [27.2, 0], [0, -1], op.mainW);
+  streetFace([0.6, 20.5], [0.6, 11.9], [-1, 0], op.sideN.map(o => ({ ...o, a: 20.5 - o.b, b: 20.5 - o.a })));
+  { // the south gable: two tall recessed panels either side of a central pier and downpipe
+    const L = 10.2, pw = (L - 2.2 - 0.55) / 2;
+    skin([27.2, 0], [27.2, 10.2], [1, 0], [[1.1, 1.1 + pw, 0.02, TF - 0.01], [L - 1.1 - pw, L - 1.1, 0.02, TF - 0.01], [1.22, L - 1.22, TF + 0.675, TF + 1.06]], 0, R.KNEE - 0.16);
+    add('sill', box(27.2, -0.03, 27.2 + 0.045, 10.23, TF + 0.45, TF + 0.525)); add('brick', box(27.2, -0.03, 27.27, 10.23, R.KNEE - 0.16, R.KNEE - 0.07));
+    add('alu', box(27.2 + 0.03, L / 2 - 0.05, 27.2 + 0.13, L / 2 + 0.05, 0, R.KNEE - 0.05));
+  }
+  // ---- core (lift + stairs): brick to the flat roof behind its street face, with the lift overrun and the 1 m² smoke vent (AOV) on top
+  add('brick', box(CORE[0] + 0.35, CORE[1], CORE[2], CORE[3], 0, R.TOP + 0.12));
+  add('alu', box(CORE[0] - 0.02, CORE[1] - 0.02, CORE[2] + 0.02, CORE[3] + 0.02, R.TOP + 0.12, R.TOP + 0.2));
+  add('brick', box(CORE[0] + 1.2, CORE[1] + 0.6, CORE[0] + 3.53, CORE[1] + 2.6, R.TOP + 0.2, R.TOP + 1.25));
+  add('alu', box(CORE[0] + 1.15, CORE[1] + 0.55, CORE[0] + 3.58, CORE[1] + 2.65, R.TOP + 1.25, R.TOP + 1.33));
+  add('frame', box(CORE[0] + 0.5, CORE[1] + 0.9, CORE[0] + 1.0, CORE[1] + 1.9, R.TOP + 0.2, R.TOP + 0.45));
   // ---- the mansard: per street face a slate slope (hipped at the outside corners, stopped against brick end walls), a stone
   // coping and a dark brick course at the knee, lead hips and a lead roll at the top, and a big twin roof window over every flat
   for (const f of R.faces) {
@@ -150,7 +207,7 @@ export function buildPrintHouse(M, opts = {}) {
     const Mx = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(f.p0[0], R.KNEE, -f.p0[1]);   // local: s along, t up the slope, -d into it
     const [h0, h1] = f.hip, s0 = h0 ? 0 : 0.02, s1 = h1 ? len : len - 0.02;
     const V = (a, b) => new THREE.Vector2(a, b);
-    const rw = (roofOps[f.id] || []).map(o => { const c = (o.a + o.b) / 2, w = Math.min(1.6, o.b - o.a - 0.1); return { o, c, w, t0: 0.14, t1: 1.62 }; });
+    const rw = (roofOps[f.id] || []).map(o => ({ o, c: (o.a + o.b) / 2, w: 1.33, t0: 0.24, t1: 1.22 }));   // RL-01..12: twin rooflights, 1.33 x 0.98 m
     const sh = new THREE.Shape([V(s0, 0), V(s1, 0), V(h1 ? len - RUN : s1, SL), V(h0 ? RUN : s0, SL)]);
     for (const r of rw) { const h = new THREE.Path(); h.moveTo(r.c - r.w / 2, r.t0); h.lineTo(r.c + r.w / 2, r.t0); h.lineTo(r.c + r.w / 2, r.t1); h.lineTo(r.c - r.w / 2, r.t1); h.lineTo(r.c - r.w / 2, r.t0); sh.holes.push(h); }
     const g = new THREE.ExtrudeGeometry(sh, { depth: R.TH, bevelEnabled: false, curveSegments: 1 }); g.translate(0, 0, -R.TH);
@@ -161,8 +218,7 @@ export function buildPrintHouse(M, opts = {}) {
     const lbox = (sA, sB, tA, tB, dA, dB, key) => { const b = new THREE.BoxGeometry(Math.max(0.005, sB - sA), Math.max(0.005, tB - tA), Math.max(0.005, dB - dA)); b.translate((sA + sB) / 2, (tA + tB) / 2, -(dA + dB) / 2); b.applyMatrix4(Mx); add(key, b); };
     const P = (s, l) => [f.p0[0] + dir[0] * s - n[0] * l, f.p0[1] + dir[1] * s - n[1] * l];
     const ab = (sA, sB, lA, lB, yA, yB, key) => { const a = P(sA, lA), b = P(sB, lB); add(key, box(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1]), yA, yB)); };
-    ab(h0 ? -0.12 : 0, h1 ? len + 0.12 : len, -0.12, 0.3, R.KNEE - 0.07, R.KNEE + 0.02, 'sill');
-    ab(h0 ? -0.06 : 0, h1 ? len + 0.06 : len, -0.06, 0.1, R.KNEE - 0.5, R.KNEE - 0.32, 'band');
+    ab(h0 ? -0.18 : 0, h1 ? len + 0.18 : len, -0.17, 0.02, R.KNEE - 0.08, R.KNEE + 0.05, 'alu');   // aluminium gutter at the wall plate
     ab(h0 ? RUN : s0, h1 ? len - RUN : s1, RUN - 0.1, RUN + 0.12, R.TOP - 0.03, R.TOP + 0.06, 'lead');
     // lead hips (built once, from the long St Joseph's face, at both its corners)
     if (f.id === 'W') for (const [end, on] of [[0, [-1, 0]], [1, [1, 0]]]) {
@@ -208,9 +264,9 @@ export function buildPrintHouse(M, opts = {}) {
     [SIDE[2] - 0.38, SIDE[1], SIDE[2] + 0.03, SIDE[3], SIDE[2] - 0.41, SIDE[1] + 0.35, SIDE[2] - 0.35, SIDE[3] - 0.35],   // side block, garden side
     [SIDE[0], SIDE[3] - 0.38, SIDE[2], SIDE[3] + 0.03, SIDE[0] + RUN, SIDE[3] - 0.41, SIDE[2] - 0.35, SIDE[3] - 0.35],     // side block, north end
     [4.0, SIDE[1] - 0.03, SIDE[2], SIDE[1] + 0.38, 4.0, SIDE[1] + 0.35, SIDE[2] - 0.35, SIDE[1] + 0.41]]) {               // side block flank by the core
-    add('sill', box(u0, v0, u1, v1, EAV, EAV + 0.08)); add('brick', box(lu0, lv0, lu1, lv1, R.TOP - 0.05, EAV));
+    add('alu', box(u0, v0, u1, v1, EAV, EAV + 0.1)); add('brick', box(lu0, lv0, lu1, lv1, R.TOP - 0.05, EAV));
   }
-  // ---- galleries: black steel decks, posts, glass balustrades, a canopy over the top deck
+  // ---- walkways (A817_T_304B / 306A): 1.5 m steel decks, steel posts and a top rail with glass infill panels
   const galleries = [];
   const deckRun = (u0, v0, u1, v1) => galleries.push([u0, v0, u1, v1]);
   deckRun(4.6, 10.2, 27.2, 10.2 + GAL);       // along the main block's garden face
@@ -230,22 +286,16 @@ export function buildPrintHouse(M, opts = {}) {
       }
       if (alongU) { add('steel', box(u0, v1 - 0.07, u1, v1, y + 1.06, y + 1.12)); add('steel', box(u0, v1 - 0.05, u1, v1, y + 0.1, y + 0.15)); }
       else { add('steel', box(u1 - 0.07, v0, u1, v1, y + 1.06, y + 1.12)); add('steel', box(u1 - 0.05, v0, u1, v1, y + 0.1, y + 0.15)); }
-      // the X-pattern panels of the CGI's black steel balustrade
-      for (let i = 0; i < n; i++) {
-        const t0 = (alongU ? u0 : v0) + i * L / n, t1 = t0 + L / n, span = t1 - t0, hgt = 0.9, len = Math.hypot(span, hgt), ang = Math.atan2(hgt, span);
-        for (const sg of [1, -1]) {
-          const g = new THREE.BoxGeometry(len, 0.025, 0.025); g.rotateZ(sg * ang);
-          if (alongU) g.translate((t0 + t1) / 2, y + 0.6, -(v1 - 0.03)); else { g.rotateY(Math.PI / 2); g.translate(u1 - 0.03, y + 0.6, -(t0 + t1) / 2); }
-          add('steel', g);
-        }
+      for (let i = 0; i < n; i++) {   // glass infill between the posts
+        const t0 = (alongU ? u0 : v0) + i * L / n + 0.05, t1 = t0 + L / n - 0.1;
+        if (alongU) add('balGlass', box(t0, v1 - 0.045, t1, v1 - 0.03, y + 0.18, y + 1.02)); else add('balGlass', box(u1 - 0.045, t0, u1 - 0.03, t1, y + 0.18, y + 1.02));
       }
     }
   }
   for (const [u0, v0, u1, v1] of galleries) {
-    add('steel', box(u0, v0, u1, v1, NF * FH - 0.05, NF * FH + 0.1));   // canopy over the top deck
     // columns to the ground every 4.5 m on the open edge
     const alongU = (u1 - u0) > (v1 - v0), L = alongU ? u1 - u0 : v1 - v0, n = Math.max(1, Math.round(L / 4.5));
-    for (let i = 0; i <= n; i++) { const t = (alongU ? u0 : v0) + i * L / n; if (alongU) add('steel', box(t - 0.09, v1 - 0.2, t + 0.09, v1 - 0.02, 0, NF * FH)); else add('steel', box(u1 - 0.2, t - 0.09, u1 - 0.02, t + 0.09, 0, NF * FH)); }
+    for (let i = 0; i <= n; i++) { const t = (alongU ? u0 : v0) + i * L / n; if (alongU) add('steel', box(t - 0.09, v1 - 0.2, t + 0.09, v1 - 0.02, 0, (NF - 1) * FH + 1.1)); else add('steel', box(u1 - 0.2, t - 0.09, u1 - 0.02, t + 0.09, 0, (NF - 1) * FH + 1.1)); }
   }
   // ---- residents' garden (as in the CGI): everything between the walkways and the back of Seaton House, with
   // gravel paths and a gravel clearing, loose naturalistic planting, a low brick wall, chunky timber benches, birches
@@ -284,11 +334,17 @@ export function buildPrintHouse(M, opts = {}) {
     plasterIn: new THREE.MeshStandardMaterial({ color: '#ebe7e1', roughness: 0.92, clippingPlanes: M.brick?.clippingPlanes }),
     slate: M.slate || M.cSlate, lead: new THREE.MeshStandardMaterial({ color: '#3c4043', roughness: 0.55, metalness: 0.35, clippingPlanes: M.brick?.clippingPlanes }),
     sash: new THREE.MeshStandardMaterial({ color: '#f2f1ec', roughness: 0.45, clippingPlanes: M.brick?.clippingPlanes }),
+    alu: new THREE.MeshStandardMaterial({ color: '#2a2d30', roughness: 0.4, metalness: 0.5, clippingPlanes: M.brick?.clippingPlanes }), soldier: M.brick || M.cBrick,
     soil: new THREE.MeshStandardMaterial({ color: '#3b2c22', roughness: 1 }), oak: new THREE.MeshStandardMaterial({ color: '#a5774a', roughness: 0.6 }),
   };
   const meshes = {};
   for (const [k, list] of Object.entries(G)) {
     // every box gets the same UVs; the facade walls already carry brick-scaled ones, so map the plain boxes per face
+    if (k === 'soldier') for (const gg of list) {   // bricks on end: the course pattern turned through 90°
+      const p = gg.attributes.position, uv = new Float32Array(p.count * 2);
+      for (let i = 0; i < p.count; i++) { uv[2 * i] = p.getY(i) / 2.2; uv[2 * i + 1] = (p.getX(i) + p.getZ(i)) / 2.2; }
+      gg.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    }
     for (const gg of list) if (!gg.userData.brickUV && (k === 'brick' || k === 'band')) {
       gg.computeVertexNormals(); const p = gg.attributes.position, nn = gg.attributes.normal, uv = new Float32Array(p.count * 2);
       for (let i = 0; i < p.count; i++) { const ax = Math.abs(nn.getX(i)), ay = Math.abs(nn.getY(i)); uv[2 * i] = (ay > 0.7 ? p.getX(i) : ax > 0.7 ? p.getZ(i) : p.getX(i)) / 2.2; uv[2 * i + 1] = (ay > 0.7 ? p.getZ(i) : p.getY(i)) / 2.2; }
