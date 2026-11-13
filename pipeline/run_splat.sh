@@ -1,7 +1,7 @@
 #!/bin/bash
 # Charter House: Gaussian-splat 3D photo scans of Stockport streets from Charlie's iPhone footage, on a RunPod GPU pod.
 # The pod runs this on boot (image ghcr.io/nerfstudio-project/nerfstudio). For each job it pulls the clips and stills from a shared
-# Google Drive folder, sorts them into places by their GPS (one scan per place: a folder can hold the Underbank, the Print House
+# Google Drive folder (or a list of Drive file ids: DRIVE_URL="ids:<id>,<id>"), sorts them into places by their GPS (one scan per place: a folder can hold the Underbank, the Print House
 # and Underbank Lofts at once), takes frames, solves the camera path (COLMAP), trains the splat (nerfstudio splatfacto), compresses
 # it (PlayCanvas splat-transform) and pushes the result plus a running progress log to this branch (splat-job) with the
 # github_token RunPod secret, so Claude can fetch it from GitHub. Then it watches splat/queue.txt on the branch ("<job> <drive url>"
@@ -213,7 +213,11 @@ run_job() {
   local J=$1 URL=$2 W=$WS/$1
   mkdir -p $W/raw; say $J "pod up on $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null | head -1); $(nproc) cpus; job $J; torch: $CUDAOK"
   case "$CUDAOK" in ok*) ;; *) say $J "FAILED: the GPU isn't usable from this container (needs another host)"; return ;; esac
-  python3 -m gdown -q --folder "$URL" -O $W/raw --remaining-ok > $W/gdown.log 2>&1
+  if [ "${URL#ids:}" != "$URL" ]; then   # "ids:<drive file id>,<id>": only these files (13 Nov: the drone folder holds bad clips too)
+    for fid in $(echo "${URL#ids:}" | tr ',' ' '); do python3 -m gdown -q "https://drive.google.com/uc?id=$fid" -O $W/raw/ >> $W/gdown.log 2>&1; done
+  else
+    python3 -m gdown -q --folder "$URL" -O $W/raw --remaining-ok > $W/gdown.log 2>&1
+  fi
   local NV=$(find $W/raw -type f \( -iname '*.mov' -o -iname '*.mp4' -o -iname '*.m4v' \) | wc -l) NP=$(find $W/raw -type f \( -iname '*.heic' -o -iname '*.jpg' -o -iname '*.jpeg' \) | wc -l)
   [ $((NV + NP)) -gt 0 ] || { tail -20 $W/gdown.log > io/splat/$J/gdown_tail.log; say $J "FAILED: could not download the Drive folder (shared as anyone with the link?)"; touch io/splat/$J/DONE; push "splat $J: gave up"; return; }
   say $J "DOWNLOADED $NV clips and $NP stills, $(du -sh $W/raw | cut -f1): the Drive copies can go now"
