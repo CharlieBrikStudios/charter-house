@@ -339,7 +339,7 @@ export function buildPrintHouse(M, opts = {}) {
     group.add(m); meshes[k] = m;
   }
   // per-apartment rooms behind the glass
-  const roomTex = new THREE.TextureLoader().load((opts.base || 'assets/') + 'tex/room_atlas.jpg'); roomTex.colorSpace = THREE.SRGBColorSpace;
+  const roomTex = new THREE.TextureLoader().load((opts.base || 'assets/') + 'tex/room_atlas_ph.jpg');   // behind the glass: slices of the 21 Living Print House CGIs roomTex.colorSpace = THREE.SRGBColorSpace;
   const unitRooms = new Map();
   if (opts.context) {   // a backdrop copy (Charter House edition): one draw call for every room
     const mat = roomMaterial(roomTex); mat.side = THREE.DoubleSide; mat.uniforms.uBright.value = 0.1;
