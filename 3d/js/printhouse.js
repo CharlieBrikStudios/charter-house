@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1794535000';
 import { roomBox } from './building.js?v=1794535000';
-import { roomMaterial } from './materials.js?v=1794535000';
+import { roomMaterial, tex } from './materials.js?v=1794535000';
 
 const FH = PH_FH, NF = 5;
 const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
@@ -289,7 +289,7 @@ export function buildPrintHouse(M, opts = {}) {
     const ring = [...MAINE.map(e => e.p0), [P.CORE.u1, D], phSide(S.S, 0), phSide(S.S, S.T), phSide(0, S.T), phSide(0, 0), COREE[0].p0, COREE[1].p0, COREE[2].p0];
     const site = outer(ring, 0.8), court = [[P.CORE.u1, D], [P.UW + 2.6, D], [P.UW + 2.6, D + 5.0], [21.9, 14.8], [16.0, 16.2], [17.1, 21.1], [17.6, 23.4], [8.1, 25.3], phSide(S.S + 1.6, S.T), phSide(S.S + 1.6, 0)];
     const slab = (Q) => { const g = new THREE.ExtrudeGeometry(new THREE.Shape(Q.map(([u, v]) => V2(u, v))), { depth: 6, bevelEnabled: false, curveSegments: 1 }); g.rotateX(-Math.PI / 2); g.translate(0, -6, 0); return g; };
-    for (const Q of [site, court]) { const [side, top] = splitBy(slab(Q), (nv) => nv.y > 0.7); add('path', top); add('wallStone', side); }
+    for (const Q of [site, court]) { const [side, top] = splitBy(slab(Q), (nv) => nv.y > 0.7); add('path', top); const uv = side.attributes.uv; if (uv) { for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / 2.4, uv.getY(i) / 2.4); } add('wallStone', side); }
     // the stone wall's coping and the railing along the street edges (main block, core and the side block's Fletcher face)
     const streetEdges = [...MAINE.filter(e => e.sl), COREE[0], SIDEE[0]];
     for (const e of streetEdges) {
@@ -338,7 +338,7 @@ export function buildPrintHouse(M, opts = {}) {
     slate: M.slate || M.cSlate, lead: new THREE.MeshStandardMaterial({ color: '#3c4043', roughness: 0.55, metalness: 0.35, clippingPlanes: M.brick?.clippingPlanes }),
     sash: new THREE.MeshStandardMaterial({ color: '#f2f1ec', roughness: 0.45, clippingPlanes: M.brick?.clippingPlanes }),
     alu: new THREE.MeshStandardMaterial({ color: '#2a2d30', roughness: 0.4, metalness: 0.5, clippingPlanes: M.brick?.clippingPlanes }), soldier: M.brick || M.cBrick,
-    wallStone: (() => { const m = (M.stone || M.paving).clone(); m.color = new THREE.Color('#9a958b'); m.roughness = 0.95; return m; })(),
+    wallStone: (() => { const T = (n, o) => tex((opts.base || 'assets/') + 'tex/' + n, o); return new THREE.MeshStandardMaterial({ map: T('sandstone_w.jpg'), normalMap: T('sandstone_normal.jpg', { srgb: false }), normalScale: new THREE.Vector2(1.3, 1.3), roughness: 0.92, color: new THREE.Color(0.62, 0.64, 0.7), clippingPlanes: M.brick?.clippingPlanes }); })(),   // the retained stone boundary wall: weathered coursed sandstone
     soil: new THREE.MeshStandardMaterial({ color: '#3b2c22', roughness: 1 }), oak: new THREE.MeshStandardMaterial({ color: '#a5774a', roughness: 0.6 }),
   };
   const meshes = {};
@@ -361,7 +361,8 @@ export function buildPrintHouse(M, opts = {}) {
     group.add(m); meshes[k] = m;
   }
   // per-apartment rooms behind the glass
-  const roomTex = new THREE.TextureLoader().load((opts.base || 'assets/') + 'tex/room_atlas_ph.jpg');   // behind the glass: slices of the 21 Living Print House CGIs roomTex.colorSpace = THREE.SRGBColorSpace;
+  // behind the glass: slices of the 21 Living Print House CGIs
+  const roomTex = new THREE.TextureLoader().load((opts.base || 'assets/') + 'tex/room_atlas_ph.jpg'); roomTex.colorSpace = THREE.SRGBColorSpace;
   const unitRooms = new Map();
   if (opts.context) {   // a backdrop copy (Charter House edition): one draw call for every room
     const mat = roomMaterial(roomTex); mat.side = THREE.DoubleSide; mat.uniforms.uBright.value = 0.1;
