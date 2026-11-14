@@ -378,7 +378,8 @@ async function build() {
       xp.push({ pts: [[12.4, -0.04, 15.2], [21.6, -0.04, 15.2]], kind: 'stroll' });
       for (const f of [1, 2]) xp.push({ pts: [[12.4, f * FLOOR_H + 0.02, 11.75], [20.3, f * FLOOR_H + 0.02, 11.75]], kind: 'walk' });
     }
-    crowd = buildCrowd(THREE, { roads: IS_PH ? RJ.roads.filter(r => !(r.k === 'service' && r.c.some(([x, z]) => { const dx = x + 61.99, dz = z - 195.59, u = -0.0993 * dx + 0.9951 * dz, v = 0.9951 * dx + 0.0993 * dz; return u > -5 && u < 31.5 && v > -2.5 && v < 27; }))) : RJ.roads,   // the old service lane across the Print House site is built over groundAt, focus: IS_PH ? [-40, 205] : [8, 4], radius: 230, extraPaths: xp, blds: W.bld, seed: IS_PH ? 7 : 3, quality: Q === 'high' ? 'high' : 'low', pavementLift: IS_PH ? 0.05 : 0.14 });
+    // Print House: drop the old service lane across the site (it is built over)
+    crowd = buildCrowd(THREE, { roads: IS_PH ? RJ.roads.filter(r => !(r.k === 'service' && r.c.some(([x, z]) => { const dx = x + 61.99, dz = z - 195.59, u = -0.0993 * dx + 0.9951 * dz, v = 0.9951 * dx + 0.0993 * dz; return u > -5 && u < 31.5 && v > -2.5 && v < 27; }))) : RJ.roads, groundAt, focus: IS_PH ? [-40, 205] : [8, 4], radius: 230, extraPaths: xp, blds: W.bld, seed: IS_PH ? 7 : 3, quality: Q === 'high' ? 'high' : 'low', pavementLift: IS_PH ? 0.05 : 0.14 });
     scene.add(crowd.group);
     crowd.group.visible = false; crowd = null;   // no people for now (demo)
   } catch (e) { console.warn('crowd', e); }
