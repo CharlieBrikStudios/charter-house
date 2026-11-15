@@ -20,3 +20,4 @@
 2026-11-15T14:14:20Z g2: camera solve: SFM global free: 227 of 227 frames placed (100%), 105240 points, 1779 s; by folder c01:227/227
 2026-11-15T14:14:42Z g2: ... Disabled comet/tensorboard/wandb event writers
 2026-11-15T14:24:44Z g2: ... [14A[1K
+2026-11-15T14:34:46Z g2: ... 16170 (53.90%)      107.870 ms           24 m, 51 s           13.41 M                                [0m
