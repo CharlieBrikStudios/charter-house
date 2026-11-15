@@ -457,7 +457,8 @@ const MAPLB = [['Charter House', 14, 9, 'ch'], ['Churchgate', -62, -3], ['Harvey
   ['St Mary’s', -95, -40], ['St Mary’s Gate', -38, 10], ['Robinsons Brewery', -6, 55], ['Rostron Brow', -100, 32]];
 // extra links between the street 360s, so you can walk the whole set (main.js links only the spots round the building)
 const XLINK = { smg: ['church'], church: ['smg', 'market'], market: ['church'], arch: ['courtyard'], courtyard: ['arch'] };
-const SHORT = { church: 'St Mary’s', smg: 'St Mary’s Gate', park: 'Play park', arch: 'The entrance', brewery: 'The brewery', courtyard: 'Courtyard', market: 'Market Place', corner: 'Churchgate corner', harvey: 'Harvey Street' };
+const SHORT = { church: 'St Mary’s', smg: 'St Mary’s Gate', park: 'Play park', arch: 'The entrance', brewery: 'The brewery', courtyard: 'Courtyard', walkway: 'Top-floor walkway', market: 'Market Place', corner: 'Churchgate corner', harvey: 'Harvey Street' };
+const MAPNUDGE = { walkway: [6, -7] };   // the walkway 360 is upstairs, 4 m from the courtyard one: its pin moves aside so both can be tapped
 const streetPano = (sp) => !!(sp && sp.pano && sp.plot == null && !sp.type);
 const thumbOf = (sp) => `${BASE}spots/${sp.id}.jpg`;
 let spotsRef = null, mapEl = null, mapInner = null, arrowsEl = null, mapBig = false, mapCur = -2, mapShade = null;
@@ -532,7 +533,7 @@ function buildMap(S) {
   for (const [t, x, z, c] of MAPLB) { const [l, tp] = mapPct(x, z); mapInner.appendChild(el(`<span class="lb ${c || ''}" style="left:${l}%;top:${tp}%">${t}</span>`)); }
   S.forEach((sp, i) => {
     if (!streetPano(sp)) return;
-    const [l, tp] = mapPct(sp.at.x, sp.at.z);
+    const nd = MAPNUDGE[sp.id] || [0, 0], [l, tp] = mapPct(sp.at.x + nd[0], sp.at.z + nd[1]);
     mapInner.appendChild(el(`<button class="nd${['harvey', 'corner'].includes(sp.id) ? ' up' : ''}" type="button" data-i="${i}" style="left:${l}%;top:${tp}%;background-image:url(${thumbOf(sp)})" aria-label="Go to the 360° view: ${sp.name}"><span>${sp.name}</span></button>`));
   });
   mapCur = -2;
@@ -552,7 +553,7 @@ function updateMap(cur, S) {
   if (i !== mapCur || mapInner.dataset.k !== String(k)) {
     mapCur = i; mapInner.dataset.k = String(k);
     mapInner.style.width = iw + 'px'; mapInner.style.height = ih + 'px';
-    const [l, tp] = mapPct(cur.at.x, cur.at.z), H = mw.clientHeight;
+    const nd = MAPNUDGE[cur.id] || [0, 0], [l, tp] = mapPct(cur.at.x + nd[0], cur.at.z + nd[1]), H = mw.clientHeight;
     const ox = mapBig ? 0 : Math.min(0, Math.max(W - iw, W / 2 - l / 100 * iw)), oy = mapBig ? 0 : Math.min(0, Math.max(H - ih, H / 2 - tp / 100 * ih));
     mapInner.style.transform = `translate(${ox}px, ${oy}px)`;
     mapInner.querySelectorAll('.nd').forEach(n => n.classList.toggle('cur', +n.dataset.i === i));
