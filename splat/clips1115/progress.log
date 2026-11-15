@@ -24,3 +24,4 @@
 2026-11-15T14:44:47Z g2: ... 21780 (72.60%)      103.135 ms           14 m, 7 s            14.04 M                                [0m
 2026-11-15T14:54:49Z g2: ... Step (% Done)       Train Iter (time)    ETA (time)           Train Rays / Sec                       [0m
 2026-11-15T15:01:14Z g2: trained (30000 steps), exported 700M
+2026-11-15T15:02:16Z g2: DONE g2.sog 33M
