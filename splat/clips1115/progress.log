@@ -1,3 +1,4 @@
 2026-11-15T12:17:16Z pod up on NVIDIA A40, 46068 MiB; 96 cpus; job clips1115; torch: ok 11.8 NVIDIA A40 64.0
 2026-11-15T12:17:37Z DOWNLOADED 2 clips and 0 stills, 1.7G: the Drive copies can go now
 2026-11-15T12:17:39Z places: g1 IMG_368-368 1 clips 0 stills @ 53.4103,-2.1544; g2 IMG_369-369 1 clips 0 stills @ 53.4114,-2.1562
+2026-11-15T12:22:11Z g1: 291 frames (0 stills) in 1 folders
