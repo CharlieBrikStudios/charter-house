@@ -32,7 +32,7 @@ const LAND = [
   { id: 'carpark', name: 'Council car park', p: [[-48, -11], [0, -11], [0, -38], [-35, -45], [-48, -44]] },
   { id: 'kids', name: 'Children’s park', p: [[22, -30], [33, -24], [33, -11], [1, -10], [0, -16], [0, -37]] },
 ];
-const BOLLARDS = { pos: [-6, 0, 30], big: 'No through traffic', small: 'This was a cut-through to Asda. No traffic now.' };   // Charlie's words; spot to confirm
+const BOLLARDS = { pos: [-136, 0, -12], big: 'No through traffic', small: 'This was a cut-through to Asda. No traffic now.' };   // Charlie, 15 Nov: between St Mary's Church and the Market Hall
 // Market and Underbanks Conservation Area (designated 1974, extended 2005): the boundary from planning.data.gov.uk
 // (Historic England / Stockport Council, entity 44014592), fitted to the model on three listed buildings' grid references
 // (the Arden Arms, St Mary's Church, the Old Rectory; within 2 m)
@@ -48,7 +48,7 @@ const STOPS = [
   { k: 'The old town', t: 'Down to the Market Hall, between the churches', s: 'St Mary’s and the 1861 Market Hall, at the top of Churchgate. St Mary’s Gate is see-through here so you can find them.', cam: [30, 30, -24], at: [-150, 2, -18], bb: ['church', 'hall', 'lofts'], xray: true },
   { k: 'The Underbanks', t: 'The last site to be developed in the Underbanks', s: 'A conservation area since 1974. Nothing over four storeys can be built here.', cam: [230, 250, 330], at: [-40, 0, 10], bb: ['ca', 'last'], ca: true },
   { k: 'The views', t: 'St Mary’s Gate, the car park and the children’s park', s: 'The car park and the park are council-owned. The view stays.', cam: [6, 13.5, -3.5], at: [-30, 1, -30], bb: ['smg'], land: true },
-  { k: 'A quiet street', t: 'The bollards', s: 'This was a cut-through to Asda. No traffic now.', cam: [-2, 14, -16], at: [-6, 0, 30], bollards: true },
+  { k: 'A quiet street', t: 'The bollards', s: 'This was a cut-through to Asda. No traffic now.', cam: [-108, 16, 24], at: [-138, 0, -12], bollards: true },
   { k: 'The apartments', t: 'One bed or two bed', s: 'The plan, the price, the rent and the yield, side by side.', units: true },
   { k: 'Round the back', t: 'The courtyard and the walkways', s: 'The residents’ entrances, off the street.', cam: [36, 9.5, 37], at: [14, 5.5, 13] },
   { k: 'Your shortlist', t: 'The flats you looked at', s: 'I’ll send you a link with the plans and the numbers on WhatsApp.', shortlist: true },
