@@ -256,18 +256,28 @@ export function buildPrintHouse(M, opts = {}) {
     add('brick', box(u0, v0, u1, v1, R.TOP, R.TOP + 0.6)); add('alu', box(u0 - 0.05, v0 - 0.05, u1 + 0.05, v1 + 0.05, R.TOP + 0.6, R.TOP + 0.68));
     add('frame', box(1.0, P.D + 1.2, 2.0, P.D + 2.2, R.TOP, R.TOP + 0.3)); }
   // ---- walkways (A817_T_304B / 306A): 1.45 m steel decks on the garden faces of the main and side blocks, joined at a landing
-  // by the core; steel posts and a top rail with glass infill panels; columns down to the garden
+  // by the core; steel posts and rails with X panels (CGI); columns down to the garden
   const GU1 = 23.0, sW0 = phSide(S.S, 0), sW1 = phSide(S.S + GAL, 0);
   const decks = [
     { k: 'main', b: (y) => box(P.CORE.u1, D, GU1, D + GAL, y - 0.12, y + 0.02), rail: [[P.CORE.u1 + 1.5, D + GAL], [GU1, D + GAL]], end: [[GU1, D + GAL], [GU1, D]] },
     { k: 'land', b: (y) => box(P.CORE.u1, D + GAL - 0.01, Math.max(sW1[0], P.CORE.u1 + GAL), sW0[1] + 0.05, y - 0.12, y + 0.02), rail: [] },
     { k: 'side', b: (y) => sbox(S.S, 0, S.S + GAL, S.T, y - 0.12, y + 0.02), rail: [phSide(S.S + GAL, S.T), phSide(S.S + GAL, 0.4)], end: [phSide(S.S, S.T), phSide(S.S + GAL, S.T)] },
   ];
-  const railRun = (a, b, y) => {   // posts, top and bottom rails, glass between, along a plan line
+  // Charlie, 15 Nov: the walkways as the 21 Living CGI, not the drawings: black steel X panels in the balustrade and a canopy
+  // over the top walkway (the drawings show glass infill and no canopy)
+  const exbar = (e, s0, s1, l, ya, yb) => {   // the two diagonals of one balustrade bay, in the edge's own frame
+    const span = s1 - s0, h = yb - ya, len = Math.hypot(span, h), ang = Math.atan2(h, span);
+    for (const sg of [1, -1]) {
+      const g = new THREE.BoxGeometry(len, 0.025, 0.025); g.rotateZ(sg * ang); g.translate((s0 + s1) / 2, (ya + yb) / 2, l);
+      g.applyMatrix4(new THREE.Matrix4().makeBasis(new THREE.Vector3(e.d[0], 0, -e.d[1]), new THREE.Vector3(0, 1, 0), new THREE.Vector3(e.n[0], 0, -e.n[1])).setPosition(e.p0[0], 0, -e.p0[1]));
+      add('steel', g);
+    }
+  };
+  const railRun = (a, b, y) => {   // posts, top and bottom rails, X panels between, along a plan line
     const e = edgeOf([a, b, 0]), n = Math.max(2, Math.round(e.len / 1.5));
     for (let i = 0; i <= n; i++) ebox(e, i * e.len / n - 0.03, i * e.len / n + 0.03, 0.0, 0.06, y, y + 1.1, 'steel');
     ebox(e, 0, e.len, 0, 0.07, y + 1.06, y + 1.12, 'steel'); ebox(e, 0, e.len, 0, 0.05, y + 0.1, y + 0.15, 'steel');
-    for (let i = 0; i < n; i++) ebox(e, i * e.len / n + 0.05, (i + 1) * e.len / n - 0.05, 0.03, 0.045, y + 0.18, y + 1.02, 'balGlass');
+    for (let i = 0; i < n; i++) exbar(e, i * e.len / n + 0.03, (i + 1) * e.len / n - 0.03, 0.035, y + 0.15, y + 1.06);
   };
   for (let f = 1; f < NF; f++) {
     const y = f * FH;
@@ -278,9 +288,10 @@ export function buildPrintHouse(M, opts = {}) {
       if (dk.end) railRun(dk.end[0], dk.end[1], y);
     }
   }
+  for (const dk of decks) add('steel', dk.b(NF * FH + 0.1));   // the canopy over the top walkway (CGI)
   for (const [a, b] of [[[P.CORE.u1 + 1.5, D + GAL], [GU1, D + GAL]], [phSide(S.S + GAL, S.T), phSide(S.S + GAL, 0.4)]]) {
     const e = edgeOf([a, b, 0]), n = Math.max(1, Math.round(e.len / 4.5));
-    for (let i = 0; i <= n; i++) ebox(e, i * e.len / n - 0.09, i * e.len / n + 0.09, 0.02, 0.2, 0, (NF - 1) * FH + 1.1, 'steel');
+    for (let i = 0; i <= n; i++) ebox(e, i * e.len / n - 0.09, i * e.len / n + 0.09, 0.02, 0.2, 0, NF * FH, 'steel');   // columns up to the canopy
   }
   // ---- the plot (A817_T_310A, C_204B): it stands on the lower ground floor's level behind the retained stone boundary wall
   // along Fletcher Street, a planted strip and a metal railing on top of the wall; the courtyard garden at the same level

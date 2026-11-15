@@ -117,7 +117,7 @@ export function phPitch(u) {
     ];
   }
   if (top && u.type !== '2A') p.points.push('Top floor in the slate mansard: the only floor with 2.65 m ceilings, and nobody above you.');
-  if (lg) p.points.push('Lower ground floor, at garden level: the most affordable way in.');
+  if (lg) p.points.push('Ground floor, at garden level: the most affordable way in.');
   p.points.push('Six and a half to eight minutes’ walk straight down to the station, and 30 seconds to the Underbanks.');
   return p;
 }
@@ -238,7 +238,7 @@ export function rentFor(u, ph) {
   if (ph) {
     r = lo;
     if (u.floor === 4) { r += 50; why.push('top floor'); }
-    if (u.floor === 0) { r -= 50; why.push('lower ground'); }
+    if (u.floor === 0) { r -= 50; why.push('ground floor'); }
     if (u.plot === 37) { r += 25; why.push('viaduct views'); }
     if (u.side) { r += 25; why.push('private side-block landing'); }
     if (u.type === '1C') { r += 25; why.push('corner, two aspects'); }

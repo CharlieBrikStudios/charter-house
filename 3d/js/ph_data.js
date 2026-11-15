@@ -27,11 +27,12 @@ export const PH_SITE = {
 };
 export const PH_FH = 2.85;                 // floor to floor, every floor (Ollier Smurthwaite elevations and sections: 2850)
 export const PH_FLOORS = [
-  { id: 0, name: 'Lower ground', short: 'LG', level: 0 },
-  { id: 1, name: 'Ground floor', short: 'G', level: 1 },
-  { id: 2, name: 'First floor', short: '1', level: 2 },
-  { id: 3, name: 'Second floor', short: '2', level: 3 },
-  { id: 4, name: 'Third floor', short: '3', level: 4, note: 'Top floor in the slate mansard: 2.65 m ceilings, twin roof windows' },
+  // names as the sales decks and the unit table (Charlie, 15 Nov): Ground to 4th. The architect calls the same floors LG, G, 1, 2, 3
+  { id: 0, name: 'Ground floor', short: 'G', level: 0 },
+  { id: 1, name: 'First floor', short: '1', level: 1 },
+  { id: 2, name: 'Second floor', short: '2', level: 2 },
+  { id: 3, name: 'Third floor', short: '3', level: 3 },
+  { id: 4, name: 'Fourth floor', short: '4', level: 4, note: 'Top floor in the slate mansard: 2.65 m ceilings, twin roof windows' },
 ];
 // The plan, from A817_C_204B (GA plan, ground floor, rev B 26/03/26): the main street face runs 23.496 m between its end
 // piers (window bays 2372 at a 3.824 m pitch, piers 450 + 552 + 450), the 1C is set back 2.474 m behind it with a 45°
