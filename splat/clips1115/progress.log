@@ -18,3 +18,4 @@
 2026-11-15T13:54:39Z g2: ... I20261115 13:54:31.615019 131828107179584 pairing.cc:214] Processing block [5/5, 2/5]
 2026-11-15T14:04:41Z g2: ... I20261115 14:04:05.939375 131831068320896 global_mapper.cc:614] === Running iterative retriangulation and refinement ===
 2026-11-15T14:14:20Z g2: camera solve: SFM global free: 227 of 227 frames placed (100%), 105240 points, 1779 s; by folder c01:227/227
+2026-11-15T14:14:42Z g2: ... Disabled comet/tensorboard/wandb event writers
