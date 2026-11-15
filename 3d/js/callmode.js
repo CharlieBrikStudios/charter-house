@@ -55,6 +55,7 @@ const STOPS = [
 ];
 
 let CH, THREE, on = false, idx = -1, raf = 0;
+const ALWAYS = ['smg', 'lofts', 'print'];   // the proof billboards, always up on the town view in the /call version
 const seen = new Set();
 const bbEls = new Map();
 let landGroup = null, bollPin = null, xrayBox = null, xrayLine = null, xrayMats = [];
@@ -66,7 +67,7 @@ function css() {
   body.callmode #ui .tools, body.callmode #views, body.callmode #looks, body.callmode #hint, body.callmode #ui .credit,
   body.callmode #navpad, body.callmode #labels .ltag, body.callmode #disclaimer, body.callmode #acard, body.callmode #btn-fs { display: none !important; }
   body.callmode:not(.cm-units) #panel { display: none !important; }
-  #cm-go { position: fixed; left: 16px; bottom: 16px; z-index: 60; padding: 11px 16px; border-radius: 999px; border: 1px solid rgba(214,176,106,.6); background: rgba(24,19,16,.88); color: #f3ead9; font: 600 14px/1 var(--f-body); cursor: pointer; }
+  #cm-go { position: fixed; left: 16px; top: 128px; z-index: 60; padding: 11px 16px; border-radius: 999px; border: 1px solid rgba(214,176,106,.6); background: rgba(24,19,16,.88); color: #f3ead9; font: 600 14px/1 var(--f-body); cursor: pointer; }
   body.callmode #cm-go { display: none; }
   #cm-bar { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 70; display: none; align-items: center; gap: 6px; padding: 6px; border-radius: 999px; background: rgba(24,19,16,.9); border: 1px solid rgba(255,255,255,.12); color: #f3ead9; font: 500 13px/1 var(--f-body); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
   body.callmode #cm-bar { display: flex; }
@@ -144,7 +145,7 @@ function worldOf(spec) {
 
 function buildUI() {
   css();
-  document.body.appendChild(el(`<button id="cm-go" type="button" title="Start call mode (C)">Start call mode</button>`));
+  document.body.appendChild(el(`<button id="cm-go" type="button" title="Start call mode (C)">▶ Start call mode (press C)</button>`));
   document.body.appendChild(el(`<div id="cm-bar" role="group" aria-label="Call mode">
     <button type="button" data-cm="prev" aria-label="Previous stop">‹</button><span class="n" id="cm-n"></span><span class="dots" id="cm-dots"></span>
     <button type="button" data-cm="next" aria-label="Next stop">›</button><button type="button" data-cm="cmp">Compare</button><button type="button" data-cm="short">Shortlist</button><button type="button" data-cm="exit" aria-label="Leave call mode">✕</button></div>`));
@@ -355,14 +356,13 @@ function start() {
   if (on) return; on = true; window.__CALL_ON = true;
   document.body.classList.add('callmode');
   window.__noClamp = true; CH.controls.maxDistance = 600; CH.controls.minDistance = 2; CH.controls.autoRotate = false;
-  live(); go(0); loop();
+  live(); go(0);
 }
 function stop() {
   on = false; window.__CALL_ON = false; document.body.classList.remove('callmode', 'cm-units');
   setXray(false); landGroup.visible = false; bollPin.visible = false; caGroup.visible = false;
   if (clayOn) { clayOn = false; try { CH.setClay(false); } catch { } }
-  for (const b of bbEls.values()) { b.show = false; b.e.style.display = 'none'; }
-  cancelAnimationFrame(raf);
+  for (const [id, b] of bbEls) { b.show = ALWAYS.includes(id); if (!b.show) b.e.style.display = 'none'; }   // the proof billboards stay up outside call mode
   window.__noClamp = false; CH.controls.maxDistance = 190; CH.controls.minDistance = 9;
   { const P = $('#panel'); if (P && P.classList.contains('hide')) { P.classList.remove('hide'); dispatchEvent(new Event('resize')); } }
   $('#cm-cmp').classList.remove('on'); $('#cm-short').classList.remove('on');
@@ -373,9 +373,10 @@ function loop() {
   raf = requestAnimationFrame(loop);
   if (!T0) T0 = tmp();
   const cam = CH.camera, w = innerWidth, h = innerHeight;
-  if (CH.S) CH.S.idle = -1e9;   // no idle spin while Charlie talks
+  if (on && CH.S) CH.S.idle = -1e9;   // no idle spin while Charlie talks
+  const idleBB = !on && CH.S && CH.S.mode !== 'explore' && CH.S.mode !== 'intro';   // outside call mode the billboards show on the town view only
   for (const b of bbEls.values()) {
-    if (!b.show) { if (b.e.style.display !== 'none') b.e.style.display = 'none'; continue; }
+    if (!b.show || idleBB) { if (b.e.style.display !== 'none') b.e.style.display = 'none'; b.sx = null; continue; }
     if (!b.p) b.p = worldOf(b.spec);
     if (!b.p) continue;
     T0.copy(b.p).project(cam);
@@ -394,7 +395,8 @@ function placeBillboards(w, h) {
   const list = [...bbEls.values()].filter(b => b.show && b.sx != null).sort((a, c) => a.d - c.d), placed = [];
   for (const b of list) {
     const bw = b.e.offsetWidth || 220, bh = b.e.offsetHeight || 90;
-    let x = Math.min(Math.max(b.sx, bw / 2 + 12), w - bw / 2 - 12), y = Math.max(b.sy, bh + 66);
+    const right = !on && innerWidth > 760 && !document.getElementById('panel')?.classList.contains('hide') ? 410 : 0;   // keep clear of the panel outside call mode
+    let x = Math.min(Math.max(b.sx, bw / 2 + 12), w - right - bw / 2 - 12), y = Math.max(b.sy, bh + 66);
     for (let k = 0; k < 6; k++) {
       const hit = placed.find(r => Math.abs(r.x - x) < (r.w + bw) / 2 + 8 && y > r.y - r.h - 8 && y - bh < r.y + 8);
       if (!hit) break; y = hit.y - hit.h - 10; if (y - bh < 60) { y = hit.y + bh + 10; }
@@ -437,7 +439,7 @@ function openShort() {
 function makeLink() {
   const ps = [...$('#cm-sl').querySelectorAll('input:checked')].map(i => i.value);
   if (!ps.length) return;
-  const u = new URL('shortlist.html', location.href); u.search = ''; u.hash = ''; u.searchParams.set('p', ps.join('.'));
+  const u = new URL('shortlist.html', document.baseURI); u.search = ''; u.hash = ''; u.searchParams.set('p', ps.join('.'));
   $('#cm-url').value = u.href; $('#cm-open').href = u.href; $('#cm-lk').hidden = false;
 }
 
@@ -463,6 +465,8 @@ export function init(api) {
     if (!ready()) return setTimeout(boot, 400);
     buildUI(); buildLand(); buildCA(); buildBollards(); buildXray(); enhancePanel();
     window.__CALL = { start, stop, go, STOPS, seen, openCompare, openShort };
+    for (const [id, b] of bbEls) b.show = ALWAYS.includes(id);
+    loop();
     if (/[?&]call=go\b/.test(location.search)) start();
   };
   boot();
