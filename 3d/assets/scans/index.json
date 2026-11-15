@@ -1,5 +1,6 @@
 [
   {"id": "churchgate", "name": "Up Churchgate to Market Place", "sub": "Past St Mary’s to the Market Place bollards", "home": "ch", "editions": ["ch"], "preview": true},
+  {"id": "hillgate", "name": "Down to Lower Hillgate", "sub": "Past Robinsons Brewery", "home": "ch", "editions": ["ch"], "preview": true},
   {"id": "underbank", "name": "The Underbank", "sub": "Down the street past the Underbank Lofts site", "home": "ubl", "editions": ["ch", "ubl"], "preview": true},
   {"id": "littleunderbank", "name": "Little Underbank", "sub": "From St Petersgate Bridge, then down on the street", "home": "ubl", "editions": ["ch", "ubl"], "preview": true},
   {"id": "printhouse", "name": "Outside The Print House", "sub": "The lane beside the site, towards the church", "home": "ph", "editions": ["ch", "ph"], "preview": true}
