@@ -7,7 +7,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CUT } from './materials.js?v=1794535000';
 import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1794535000';
 import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug, pot } from './furniture.js?v=1794535000';
-import { phTopY } from './ph_data.js?v=1794535000';
+import { phTopY, phSide, PH_SIDE } from './ph_data.js?v=1794535000';
 
 // which side of each main-block slot its kitchen runs along (kitchens pair back to back across the party walls)
 const KSIDE = { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1 };
@@ -91,16 +91,20 @@ function tripod(K) {
 
 export function buildPHFitout(units, F, FH, FM) {
   const M = mats();
-  const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
-  const K = new Kit();
-  const pieces = [];   // where the photoreal renders swap in designer pieces (model frame)
+  const G = {}, G2 = {}; const addM = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g), addS = (k, g) => (G2[k] ||= []).push(g.index ? g.toNonIndexed() : g);
+  const KM = new Kit(), KS = new Kit();
+  const pieces = [], piecesS = [];   // where the photoreal renders swap in designer pieces (model frame)
+  // the side block is turned 11.7° to the main block: its flats are fitted out square in its own frame (x = s, z = -t), then turned
+  const SIDEM = new THREE.Matrix4().makeBasis(new THREE.Vector3(PH_SIDE.ex[0], 0, -PH_SIDE.ex[1]), new THREE.Vector3(0, 1, 0), new THREE.Vector3(-PH_SIDE.ey[0], 0, PH_SIDE.ey[1])).setPosition(PH_SIDE.o[0], 0, -PH_SIDE.o[1]);
   for (const u of units) {
+    const side = !!u.side, add = side ? addS : addM, K = side ? KS : KM, pcs = side ? piecesS : pieces;
+    const topAt = side ? (a, b) => phTopY(...phSide(a, b)) : phTopY;
     const T0 = TYPES[u.type]; if (!T0) continue;
     const TOP = F === 4, T = TOP && TOPT[u.type] ? { ...T0, ...TOPT[u.type] } : T0;
-    const [u0, v0, u1, v1] = u.fp, y0 = F * FH + 0.05, wallH = FH - 0.25;
-    // the type's frame -> plan (u, v) -> model (x = u, z = -v)
-    const side = !!u.side, k0 = KSIDE[u.slot] === 0;
-    const P = side ? (L, W) => [u0 + L, v0 + W] : (L, W) => [k0 ? u0 + W : u1 - W, v0 + L];
+    const [u0, v0, u1, v1] = side ? u.fpS : u.fp, y0 = F * FH + 0.05, wallH = FH - 0.25;
+    // the type's frame -> plan (u, v) -> model (x = u, z = -v); the type plans are stretched to the flat's footprint (A817_C_204B)
+    const k0 = KSIDE[u.slot] === 0, sL = side ? (u1 - u0) / T.len : (v1 - v0) / T.len, sW = side ? (v1 - v0) / T.wid : (u1 - u0) / T.wid;
+    const P = side ? (L, W) => [u0 + L * sL, v0 + W * sW] : (L, W) => [k0 ? u0 + W * sW : u1 - W * sW, v0 + L * sL];
     const D = side ? (dL, dW) => [dL, -dW] : (dL, dW) => [k0 ? dW : -dW, -dL];
     const X = (L, W) => { const [uu, vv] = P(L, W); return [uu, -vv]; };
     const box = (L0, W0, L1, W1, ya, yb, k) => {
@@ -109,18 +113,18 @@ export function buildPHFitout(units, F, FH, FM) {
       // under the mansard everything tall is cut to the sloping ceiling (segmented so the top can follow the slope)
       const cl = TOP && yb > y0 + 0.75, g = cl ? new THREE.BoxGeometry(sx, Math.max(0.01, yb - ya), sz, Math.max(1, Math.ceil(sx / 0.12)), 1, Math.max(1, Math.ceil(sz / 0.12))) : new THREE.BoxGeometry(sx, Math.max(0.01, yb - ya), sz);
       g.translate((ax + bx) / 2, (ya + yb) / 2, (az + bz) / 2);
-      if (cl) { const p = g.attributes.position; let any = false; for (let i = 0; i < p.count; i++) { const lim = phTopY(p.getX(i), -p.getZ(i)) + 0.01; if (p.getY(i) > lim) { p.setY(i, Math.max(lim, ya)); any = true; } } if (any) g.computeVertexNormals(); }
+      if (cl) { const p = g.attributes.position; let any = false; for (let i = 0; i < p.count; i++) { const lim = topAt(p.getX(i), -p.getZ(i)) + 0.01; if (p.getY(i) > lim) { p.setY(i, Math.max(lim, ya)); any = true; } } if (any) g.computeVertexNormals(); }
       add(k, g);
     };
     const at = (L, W, face) => { const [x, z] = X(L, W); K.at(x, y0, z, D(face[0], face[1])); };
-    const piece = (t, L, W, face, o = {}) => { const [x, z] = X(L, W), [fx, fz] = D(face[0], face[1]); pieces.push({ t, x, y: y0, z, fx, fz, plot: u.plot, ...o }); };
+    const piece = (t, L, W, face, o = {}) => { const [x, z] = X(L, W), [fx, fz] = D(face[0], face[1]); pcs.push({ t, x, y: y0, z, fx, fz, plot: u.plot, ...o }); };
     // partitions, floors
     for (const [L0, W0, L1, W1] of T.walls) box(L0, W0, L1, W1, y0, y0 + wallH, 'wall');
     box(0.02, 0.02, T.len - 0.02, T.wid - 0.02, y0 - 0.012, y0 + 0.004, TOP ? 'lvtT' : 'lvt');   // pale oak boards through the flat (as the CGIs); tiles and carpet sit on top
     for (const r of T.tile) box(r[0], r[1], r[2], r[3], y0, y0 + 0.012, 'tile');
     for (const r of T.carpet) box(r[0], r[1], r[2], r[3], y0, y0 + 0.01, TOP ? 'sisal' : 'carpet');
     // kitchen along the W = 0 wall
-    const w0 = u.side && Math.abs(v0 - 11.9) < 0.01 ? 0.35 : 0.12;   // the kitchen wall's face (the flank wall by the core is thicker)
+    const w0 = side && v0 < 0.01 ? 0.35 : 0.12;   // the kitchen wall's face (the flank wall by the core is thicker)
     if (TOP) {
       // feature wall, then a handleless charcoal run: plinth, doors with a shadow gap, dark quartz top, black vertical-tile splashback,
       // wall units with an LED strip under them wherever the slope leaves the height, oven under the hob, a matt black tap
@@ -138,7 +142,7 @@ export function buildPHFitout(units, F, FH, FM) {
       box(sink - 0.25, w0 + 0.1, sink + 0.25, w0 + 0.5, y0 + 0.899, y0 + 0.905, 'blackM');
       box(sink - 0.02, w0 + 0.06, sink + 0.02, w0 + 0.1, y0 + 0.9, y0 + 1.24, 'blackM'); box(sink - 0.02, w0 + 0.06, sink + 0.02, w0 + 0.3, y0 + 1.2, y0 + 1.24, 'blackM');
       // wall units only where there is the height for them (the slope runs down to the knee wall by the window)
-      let wa = kb; for (let L = ka; L < kb; L += 0.05) { const [pu, pv] = P(L, w0 + 0.35); if (phTopY(pu, pv) - y0 > 2.3) { wa = Math.min(kb, Math.ceil((L - ka) / 0.3) * 0.3 + ka); break; } }
+      let wa = kb; for (let L = ka; L < kb; L += 0.05) { const [pu, pv] = P(L, w0 + 0.35); if (topAt(pu, pv) - y0 > 2.3) { wa = Math.min(kb, Math.ceil((L - ka) / 0.3) * 0.3 + ka); break; } }
       if (kb - wa > 0.25) {
         const nw = Math.max(1, Math.round((kb - wa) / 0.6)), ww = (kb - wa) / nw;
         for (let i = 0; i < nw; i++) box(wa + i * ww + 0.002, w0, wa + (i + 1) * ww - 0.002, w0 + 0.35, y0 + 1.45, y0 + 2.25, 'kitchenK');
@@ -232,6 +236,11 @@ export function buildPHFitout(units, F, FH, FM) {
     // plant room beside the two bed (water tanks and the sprinkler booster)
     for (const [L0, W0, L1, W1, h] of T.plant || []) box(L0, W0, L1, W1, y0, y0 + h, 'tank');
   }
+  // turn the side block's fit-out into place and join it to the rest
+  for (const [k, list] of Object.entries(G2)) for (const g of list) (G[k] ||= []).push(g.applyMatrix4(SIDEM));
+  for (const [k, list] of Object.entries(KS.b)) for (const g of list) (KM.b[k] ||= []).push((g.index ? g.toNonIndexed() : g).applyMatrix4(SIDEM));
+  for (const q of piecesS) { const v = new THREE.Vector3(q.x, q.y, q.z).applyMatrix4(SIDEM), d = new THREE.Vector3(q.fx, 0, q.fz).transformDirection(SIDEM); pieces.push({ ...q, x: v.x, y: v.y, z: v.z, fx: d.x, fz: d.z }); }
+  const K = KM;
   const grp = new THREE.Group(); grp.name = 'phFit' + F; grp.userData.pieces = pieces;
   for (const [k, list] of Object.entries(G)) { const g = mergeGeometries(finishUV(list, M[k]), false); if (!g) continue; const me = new THREE.Mesh(g, M[k]); me.castShadow = me.receiveShadow = k !== 'glass'; me.name = 'phfit_' + k; grp.add(me); }
   for (const [k, list] of Object.entries(K.b)) { const g = mergeGeometries(list.map(x => (x.index ? x.toNonIndexed() : x)), false); if (!g || !FM[k]) continue; const me = new THREE.Mesh(g, FM[k]); me.castShadow = me.receiveShadow = true; me.name = 'phfurn_' + k; grp.add(me); }
