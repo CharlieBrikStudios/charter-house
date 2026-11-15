@@ -8,3 +8,4 @@
 2026-11-15T12:52:16Z g1: ... I20261115 12:51:51.423015 125566531839104 rotation_averaging.cc:274] Marked 2498 image pairs as invalid with relative rotation error > 10 de
 2026-11-15T13:00:02Z g1: camera solve: SFM global free: 291 of 291 frames placed (100%), 81870 points, 2267 s; by folder c01:291/291
 2026-11-15T13:02:20Z g1: ... ---------------------------------------------------------------------------------------------------- [0m
+2026-11-15T13:12:21Z g1: ... 11630 (38.77%)      79.474 ms            24 m, 19 s           18.17 M                                [0m
