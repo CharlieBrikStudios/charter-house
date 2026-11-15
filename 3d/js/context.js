@@ -870,10 +870,11 @@ export function buildCourtyard(M, forest, festoon) {
   // flowers: blooms over the planters and the garden bed
   const FL = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a', '#f6c1a0'].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
   let fs = 911; const fr = () => ((fs = (fs * 16807) % 2147483647) / 2147483647);
-  const bloom = (x, z, y) => { const g = new THREE.IcosahedronGeometry(0.045 + fr() * 0.03, 0); g.translate(x, y, z); B.add(FL[Math.floor(fr() * FL.length)], g); };
-  for (const [x0, z0, x1, z1, yy] of beds) { const n = Math.min(70, Math.round((x1 - x0) * (z1 - z0) * 45) + 8); for (let i = 0; i < n; i++) bloom(x0 + fr() * (x1 - x0), z0 + fr() * (z1 - z0), yy + 0.15 + fr() * 0.4); }
-  for (let i = 0; i < 90; i++) bloom(12.0 + fr() * 4.2, 16.5 + fr() * 5.0, y0 + 0.2 + fr() * 0.45);
-  for (let i = 0; i < 50; i++) bloom(13.3 + fr() * 5.8, 12.7 + fr() * 1.4, y0 + 0.75 + fr() * 0.35);
+  // small, flattened blooms sitting in the planting rather than floating over it (15 Nov: they read as coloured dice in the 8K courtyard 360)
+  const bloom = (x, z, y) => { const g = new THREE.IcosahedronGeometry(0.022 + fr() * 0.016, 1); g.scale(1, 0.55, 1); g.translate(x, y, z); B.add(FL[Math.floor(fr() * FL.length)], g); };
+  for (const [x0, z0, x1, z1, yy] of beds) { const n = Math.min(110, Math.round((x1 - x0) * (z1 - z0) * 70) + 12); for (let i = 0; i < n; i++) bloom(x0 + fr() * (x1 - x0), z0 + fr() * (z1 - z0), yy + 0.12 + fr() * 0.2); }
+  for (let i = 0; i < 140; i++) bloom(12.0 + fr() * 4.2, 16.5 + fr() * 5.0, y0 + 0.18 + fr() * 0.22);
+  for (let i = 0; i < 80; i++) bloom(13.3 + fr() * 5.8, 12.7 + fr() * 1.4, y0 + 0.62 + fr() * 0.16);
   // boundary walls (existing, retained) and railings
   for (const [a, b, c, d] of [[22.61, 11.03, 22.95, 17.9], [21.5, 17.9, 22.95, 18.2], [21.5, 18.2, 21.8, 21.75], [11.7, 21.75, 21.8, 22.05]]) { const w = boxGeom(a, -1.2, b, c, y0 + 2.0, d); boxUV(w); B.add('brick2', w); }
   // festoon lights across the courtyard (catenaries between the gallery and the boundary)
