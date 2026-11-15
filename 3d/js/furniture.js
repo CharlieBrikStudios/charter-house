@@ -373,7 +373,7 @@ const L_2A = [
   { t: 'armchair', x: 6.7, z: 1.0, f: [-0.6, 0.8], fab: 'cognac' },
   { t: 'dining', x: 2.15, z: 1.15, w: 0.9, d: 1.5, top: 'walnut', chairs: [[1.56, 0.78, '+x'], [1.56, 1.52, '+x'], [2.74, 0.78, '-x'], [2.74, 1.52, '-x']] },
   { t: 'kitchen', x: 2.05, z: 3.3, f: '-z', len: 3.3, col: 'green', sink: [2.75, 3.3], hob: [1.0, 3.3] },
-  { t: 'plant', x: 3.62, z: 0.55, big: true }, { t: 'plant', x: 7.0, z: 3.2 },
+  { t: 'plant', x: 3.62, z: 0.55, big: true }, { t: 'plant', x: 6.85, z: 3.2 },   // 14 Nov: 15 cm off the bedroom wall (its leaves came through it)
   { t: 'bed', x: 9.66, z: 1.93, f: '-x', w: 1.6, fab: 'navy', throwM: 'mustard' },
   { t: 'bedside', x: 10.42, z: 0.86, f: '-x' }, { t: 'bedside', x: 10.42, z: 3.0, f: '-x' },
   { t: 'wardrobe', x: 7.72, z: 1.45, f: '+x', len: 1.4 },
