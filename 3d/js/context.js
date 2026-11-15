@@ -513,10 +513,10 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     for (const [za, zb] of [[-21.9, -26.7], [-26.9, -31.7], [-35.0, -39.8]]) {
       for (let x = -43.5; x < -3; x += 2.5) for (let z = zb; z < za - 0.01; z += 0.8) { const z2 = Math.min(za, z + 0.8), lg = boxGeom(x, 0, z, x + 0.08, 0.012, z2); lg.translate(0, groundY(x + 0.04, (z + z2) / 2) + 0.062, 0); B.add('lineWhite', lg); }   // in short lengths that follow the ground
     }
-    // parked cars, nose in or tail in, about two bays in three taken
+    // parked cars, nose in or tail in, about two bays in five taken (Charlie, 15 Nov: fewer cars in the car parks)
     { const cars = [], R = rng(616);
       for (const [za, zb, nose] of [[-21.9, -26.7, 1], [-26.9, -31.7, -1], [-35.0, -39.8, 1]]) for (let x = -43.5; x < -5.5; x += 2.5) {
-        if (R() > 0.66) continue;
+        if (R() > 0.4) continue;
         const flip = R() < 0.75 ? nose : -nose, cx = x + 1.25 + (R() - 0.5) * 0.25, cz = (za + zb) / 2 + (R() - 0.5) * 0.3;
         const col = R(); cars.push([cx, cz, (flip > 0 ? -Math.PI / 2 : Math.PI / 2) + (R() - 0.5) * 0.06, col < 0.22 ? 4 : col < 0.4 ? 3 : col < 0.56 ? 1 : col < 0.68 ? 0 : col < 0.76 ? 2 : col < 0.86 ? 7 : col < 0.93 ? 5 : 6]);
       }
@@ -741,6 +741,12 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
   return group;
 }
 
+// a mix of body shapes from the one car, so a car park doesn't read as forty copies (Charlie, 15 Nov: more realistic cars):
+// hatchback, saloon/estate (longer, lower), SUV (taller, wider), city car (shorter); the same for every part of a car
+function carScale(c) {
+  const h = Math.abs(Math.sin(c[0] * 12.9898 + c[1] * 78.233) * 43758.5453) % 1;
+  return h < 0.4 ? new THREE.Vector3(1, 1, 1) : h < 0.65 ? new THREE.Vector3(1.13, 0.96, 1.03) : h < 0.9 ? new THREE.Vector3(1.07, 1.17, 1.06) : new THREE.Vector3(0.86, 0.98, 0.95);
+}
 export function buildCars(M, list) {
   const { body, glass, wheels, hubs, trim, lightsF, lightsR, plates, platesR } = carGeometry();
   const colors = ['#1f2a36', '#e9e9ec', '#7b1e1e', '#2f3134', '#8c9196', '#22432f', '#c8c2b4', '#4b4f55'];
@@ -750,7 +756,7 @@ export function buildCars(M, list) {
     const items = list.filter(c => c[3] === ci); if (!items.length) return;
     const mat = new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.32, metalness: 0.5, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 0.8 });
     const im = new THREE.InstancedMesh(body, mat, items.length); im.castShadow = true; im.receiveShadow = true;
-    items.forEach((c, i) => { q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), c[2]); m4.compose(new THREE.Vector3(c[0], groundY(c[0], c[1]) + 0.05, c[1]), q, s); im.setMatrixAt(i, m4); });
+    items.forEach((c, i) => { q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), c[2]); m4.compose(new THREE.Vector3(c[0], groundY(c[0], c[1]) + 0.05, c[1]), q, carScale(c)); im.setMatrixAt(i, m4); });
     group.add(im);
   });
   const glassMat = new THREE.MeshPhysicalMaterial({ color: '#0d1116', roughness: 0.05, metalness: 0.1, clearcoat: 1, envMapIntensity: 1.8 });
@@ -762,7 +768,7 @@ export function buildCars(M, list) {
   const plateW = new THREE.MeshStandardMaterial({ color: '#f2f2ee', roughness: 0.4 }), plateY = new THREE.MeshStandardMaterial({ color: '#f0c419', roughness: 0.4 });
   for (const [geo, mat] of [[glass, glassMat], [wheels, wheelMat], [hubs, hubMat], [trim, trimMat], [lightsF, fMat], [lightsR, rMat], [plates, plateW], [platesR, plateY]]) {
     const im = new THREE.InstancedMesh(geo, mat, list.length); im.castShadow = true;
-    list.forEach((c, i) => { q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), c[2]); m4.compose(new THREE.Vector3(c[0], groundY(c[0], c[1]) + 0.05, c[1]), q, s); im.setMatrixAt(i, m4); });
+    list.forEach((c, i) => { q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), c[2]); m4.compose(new THREE.Vector3(c[0], groundY(c[0], c[1]) + 0.05, c[1]), q, carScale(c)); im.setMatrixAt(i, m4); });
     group.add(im);
   }
   return group;
@@ -961,7 +967,7 @@ export function buildParkingLots(M, polys) {
         for (const e of [-1.25, 1.25]) {   // the white side lines of the bay
           const l = new THREE.BoxGeometry(0.1, 0.02, 4.8); l.rotateY(Math.atan2(vx, vz)); const lx = cx + ux * e, lz = cz + uz * e; l.translate(lx, groundY(lx, lz) + 0.05, lz); lg.push(l);
         }
-        if (R() < 0.66) { const col = R(); cars.push([cx, cz, Math.atan2(-vz, vx) + (R() < 0.5 ? 0 : Math.PI) + (R() - 0.5) * 0.06, col < 0.22 ? 4 : col < 0.4 ? 3 : col < 0.56 ? 1 : col < 0.68 ? 0 : col < 0.76 ? 2 : col < 0.86 ? 7 : col < 0.93 ? 5 : 6]); }
+        if (R() < 0.4) { const col = R(); cars.push([cx, cz, Math.atan2(-vz, vx) + (R() < 0.5 ? 0 : Math.PI) + (R() - 0.5) * 0.06, col < 0.22 ? 4 : col < 0.4 ? 3 : col < 0.56 ? 1 : col < 0.68 ? 0 : col < 0.76 ? 2 : col < 0.86 ? 7 : col < 0.93 ? 5 : 6]); }
       }
     }
   }

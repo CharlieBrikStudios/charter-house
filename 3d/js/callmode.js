@@ -233,7 +233,7 @@ function buildCA() {
   caGroup = new THREE.Group(); caGroup.name = 'cm-ca'; caGroup.visible = false;
   const gold = '#d8b476';
   const wallM = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide });
-  const ceilM = new THREE.MeshBasicMaterial({ color: '#fff4dc', transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide });
+  const ceilM = new THREE.MeshBasicMaterial({ color: '#e0b25e', transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide });
   const lineM = new THREE.LineBasicMaterial({ color: gold, transparent: true, opacity: 1 });
   const topM = new THREE.LineBasicMaterial({ color: '#fff3d6', transparent: true, opacity: 0.8 });
   const ring = drape(CA, 0.5), top = ring.map(v => v.clone().setY(v.y - 0.5 + CEIL));
@@ -242,9 +242,9 @@ function buildCA() {
   const wp = [];
   for (let i = 0; i < ring.length - 1; i++) { const a = ring[i], b = ring[i + 1], c = top[i + 1], d = top[i]; wp.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, a.x, a.y, a.z, c.x, c.y, c.z, d.x, d.y, d.z); }
   const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3));
-  { const col = [], n = wp.length / 3; for (let i = 0; i < n; i++) { const lo = [0, 1, 3].includes(i % 6); col.push(0.85, 0.7, 0.45, lo ? 0.55 : 0.1); } wg.setAttribute('color', new THREE.Float32BufferAttribute(col, 4)); }
+  { const col = [], n = wp.length / 3; for (let i = 0; i < n; i++) { const lo = [0, 1, 3].includes(i % 6); col.push(0.88, 0.66, 0.3, lo ? 0.8 : 0.2); } wg.setAttribute('color', new THREE.Float32BufferAttribute(col, 4)); }
   // a 2 m gold ribbon on the ground along the boundary
-  { const rp = [], q = ring; for (let i = 0; i < q.length - 1; i++) { const a = q[i], b = q[i + 1], dx = b.x - a.x, dz = b.z - a.z, L = Math.hypot(dx, dz) || 1, nx = -dz / L * 1.1, nz = dx / L * 1.1;
+  { const rp = [], q = ring; for (let i = 0; i < q.length - 1; i++) { const a = q[i], b = q[i + 1], dx = b.x - a.x, dz = b.z - a.z, L = Math.hypot(dx, dz) || 1, nx = -dz / L * 2.5, nz = dx / L * 2.5;
       rp.push(a.x - nx, a.y, a.z - nz, b.x - nx, b.y, b.z - nz, b.x + nx, b.y, b.z + nz, a.x - nx, a.y, a.z - nz, b.x + nx, b.y, b.z + nz, a.x + nx, a.y, a.z + nz); }
     const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
     const rib = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: gold, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -6 })); rib.renderOrder = 9; caGroup.add(rib); }
