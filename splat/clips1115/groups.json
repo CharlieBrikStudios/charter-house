@@ -1,0 +1,22 @@
+{
+ "g1": {
+  "lat": 53.4103,
+  "lon": -2.1544,
+  "imgs": "368-368",
+  "clips": 1,
+  "stills": 0,
+  "files": [
+   "/workspace/clips1115/raw/IMG_0368.MOV"
+  ]
+ },
+ "g2": {
+  "lat": 53.4114,
+  "lon": -2.1562,
+  "imgs": "369-369",
+  "clips": 1,
+  "stills": 0,
+  "files": [
+   "/workspace/clips1115/raw/IMG_0369.MOV"
+  ]
+ }
+}
