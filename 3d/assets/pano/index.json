@@ -363,6 +363,13 @@
   "hd": 1
  },
  {
+  "site": "ch",
+  "file": "ext_walkway",
+  "spot": "walkway",
+  "type": "ext",
+  "hd": 1
+ },
+ {
   "site": "ph",
   "file": "ph33_living",
   "plot": 33,

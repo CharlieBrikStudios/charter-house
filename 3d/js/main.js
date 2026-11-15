@@ -2099,7 +2099,7 @@ function buildSpots() {
   spotPins = SPOTS.map((sp, i) => { const el = document.createElement('button'); el.className = 'spin'; el.style.opacity = 0; el.style.pointerEvents = 'none'; el.innerHTML = `<span>${sp.name}</span><i></i>`; el.onclick = () => goSpot(i); $('#labels').appendChild(el); return el; });
   // the street spots with a photoreal 360 get a picture (assets/spots/<id>.jpg, from spot_thumbs.py) in the strip on the landing view
   // and on their chip in the walk-around
-  const THUMBS = ['corner', 'park', 'arch', 'courtyard', 'harvey', 'brewery', 'church', 'market'];   // (smg: its 360 needs re-rendering first)
+  const THUMBS = ['corner', 'park', 'arch', 'courtyard', 'walkway', 'harvey', 'brewery', 'church', 'market'];   // (smg: its 360 needs re-rendering first)
   const thumb = (sp) => sp.pano && THUMBS.includes(sp.id) ? `assets/spots/${sp.id}.jpg` : null;
   $('#t-spots').innerHTML = SPOTS.map((sp, i) => `<button data-spot="${i}" aria-pressed="false">${thumb(sp) ? `<img src="${thumb(sp)}" alt="" loading="lazy">` : '<i></i>'}${sp.name}</button>`).join('');
   const looks = SPOTS.map((sp, i) => [sp, i]).filter(([sp]) => thumb(sp));
@@ -2484,7 +2484,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1794765000').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1794772000').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
