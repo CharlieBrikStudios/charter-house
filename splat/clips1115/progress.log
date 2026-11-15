@@ -14,3 +14,4 @@
 2026-11-15T13:39:53Z g1: trained (30000 steps), exported 594M
 2026-11-15T13:40:57Z g1: DONE g1.sog 26M
 2026-11-15T13:44:38Z g2: 227 frames (0 stills) in 1 folders
+2026-11-15T13:44:39Z g2: camera solve (global, 7 threads; lenses: )
