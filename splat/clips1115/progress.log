@@ -5,3 +5,4 @@
 2026-11-15T12:22:12Z g1: camera solve (global, 7 threads; lenses: )
 2026-11-15T12:32:12Z g1: ... I20261115 12:31:57.768357 125563574416960 pairing.cc:214] Processing block [5/6, 1/6]
 2026-11-15T12:42:14Z g1: ... I20261115 12:42:07.711128 125566531839104 global_positioning.cc:59] Solving the global positioner problem
+2026-11-15T12:52:16Z g1: ... I20261115 12:51:51.423015 125566531839104 rotation_averaging.cc:274] Marked 2498 image pairs as invalid with relative rotation error > 10 de
