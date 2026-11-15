@@ -134,6 +134,42 @@ function css() {
   .cm-upan img { width: 100%; border-radius: 10px; background: #fff; margin: 8px 0; }
   .cm-upan .row { display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; padding: 3px 0; }
   .cm-upan button { width: 100%; margin-top: 8px; padding: 10px; border-radius: 999px; border: 1px solid rgba(214,176,106,.6); background: rgba(214,176,106,.14); color: inherit; font: 600 13.5px var(--f-body); cursor: pointer; }
+  /* 360 walk arrows, picture pins and the map (Charlie, 15 Nov: like the Romal Nifty tour) */
+  .spin.cm-pic i { width: 58px; height: 58px; border-radius: 50%; transform: none; background: #222 center / cover no-repeat; border: 3px solid #fff; box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 0 2px rgba(216,180,118,.8); }
+  .spin.cm-pic:hover i { border-color: #d8b476; }
+  body.cm-street #t-acts { display: none; }
+  #cm-arrows { position: fixed; inset: 0; z-index: 17; pointer-events: none; }
+  .cm-arr { position: absolute; left: 0; top: 0; display: none; pointer-events: auto; cursor: pointer; background: none; border: 0; padding: 0; color: #fff; }
+  .cm-arr i { display: block; width: 60px; height: 60px; border-radius: 50%; background: rgba(20,16,14,.42); border: 2px solid rgba(255,250,240,.85); box-shadow: 0 4px 16px rgba(0,0,0,.35); backdrop-filter: blur(3px); transition: background .2s, transform .2s; }
+  .cm-arr svg { width: 100%; height: 100%; fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+  .cm-arr:hover i, .cm-arr:focus-visible i { background: rgba(216,180,118,.85); }
+  .cm-arr span { position: absolute; left: 50%; top: 100%; margin-top: 6px; transform: translateX(-50%); white-space: nowrap; font: 600 10.5px/1 var(--f-label, var(--f-body)); letter-spacing: .12em; text-transform: uppercase; padding: 6px 9px; border-radius: 999px; background: rgba(20,16,14,.72); border: 1px solid rgba(255,248,236,.35); }
+  #cm-map { position: fixed; z-index: 18; top: calc(var(--gt, 0px) + 82px); right: calc(var(--gr, 16px)); width: 340px; border-radius: 14px; overflow: hidden; background: #e9e4da; border: 1px solid rgba(255,255,255,.5); box-shadow: 0 12px 34px rgba(0,0,0,.45); transition: opacity .3s; font-family: var(--f-body); }
+  #cm-map.off { opacity: 0; pointer-events: none; }
+  #cm-map .mh { display: flex; align-items: center; justify-content: space-between; padding: 7px 8px 7px 12px; background: rgba(20,16,14,.88); color: #f3ead9; font: 600 11px/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; }
+  #cm-map .mh button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: none; color: inherit; font: 15px/1 var(--f-body); cursor: pointer; }
+  #cm-map .mw { position: relative; height: 200px; overflow: hidden; cursor: zoom-in; }
+  #cm-map .mi { position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+  #cm-map .mi > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
+  #cm-map .lb { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none; font: 600 9.5px/1 var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.6); }
+  #cm-map .lb.ch { color: #f1cf8e; font-size: 10.5px; }
+  #cm-map .nd { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; padding: 0; border-radius: 50%; border: 2px solid #fff; background: #333 center / cover no-repeat; box-shadow: 0 2px 8px rgba(0,0,0,.5); cursor: pointer; z-index: 2; transition: transform .2s; }
+  #cm-map .nd:hover { transform: scale(1.25); z-index: 4; }
+  #cm-map .nd.cur { border-color: #d8b476; box-shadow: 0 0 0 3px rgba(216,180,118,.6), 0 2px 10px rgba(0,0,0,.6); z-index: 3; }
+  #cm-map .nd span { position: absolute; left: 50%; top: 100%; margin-top: 3px; transform: translateX(-50%); white-space: nowrap; font: 600 9px/1 var(--f-body); color: #fff; background: rgba(20,16,14,.8); padding: 3px 6px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  #cm-map .nd:hover span, #cm-map .nd.cur span, #cm-map.big .nd span { opacity: 1; }
+  #cm-map .cone { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; pointer-events: none; z-index: 1; }
+  #cm-map .cone path { fill: rgba(216,180,118,.42); stroke: rgba(255,240,210,.9); stroke-width: 1; }
+  #cm-map .nn { position: absolute; right: 8px; bottom: 8px; width: 26px; height: 26px; border-radius: 50%; background: rgba(20,16,14,.75); color: #fff; display: grid; place-items: center; font: 700 10px/1 var(--f-body); z-index: 5; }
+  #cm-map .nn b { display: block; transform-origin: 50% 50%; }
+  #cm-map.big { top: 50%; left: 50%; right: auto; width: min(94vw, 1280px); transform: translate(-50%, -50%); z-index: 80; }
+  #cm-map .nd.up span { top: auto; bottom: 100%; margin: 0 0 3px; }
+  #cm-map.big .mw { height: auto; cursor: default; }
+  #cm-map.big .nd { width: 46px; height: 46px; margin: -23px 0 0 -23px; border-width: 3px; }
+  #cm-map.big .nd span { font-size: 10.5px; padding: 4px 8px; }
+  #cm-mapshade { position: fixed; inset: 0; z-index: 79; background: rgba(8,6,5,.55); display: none; }
+  #cm-mapshade.on { display: block; }
+  @media (max-width: 760px) { #cm-map { width: 200px; top: calc(var(--gt, 0px) + 70px); } #cm-map .mw { height: 130px; } #cm-map .nd { width: 24px; height: 24px; margin: -12px 0 0 -12px; } .cm-arr i { width: 50px; height: 50px; } }
   `;
   document.head.appendChild(s);
 }
@@ -388,6 +424,8 @@ function loop() {
     if (vis) { b.sx = (T0.x + 1) / 2 * w; b.sy = (1 - T0.y) / 2 * h; b.d = T0.z; } else b.sx = null;
   }
   placeBillboards(w, h);
+  patchSpots();
+  if (arrowsEl && mapEl) { const S = CH.SPOTS(), cur = CH.S.mode === 'tour' && CH.T ? S[CH.T.spot] : null; updateArrows(cur, S, w, h); updateMap(cur, S); }
   if (bollPin && bollPin.visible) { const t = performance.now() / 1000, r2 = bollPin.userData.r2, k = 1 + 0.25 * Math.sin(t * 2.4); r2.scale.set(k, k, 1); }
   // every apartment opened in call mode joins the shortlist
   if (CH.S.mode === 'unit' && CH.S.plot != null) seen.add(CH.S.plot);
@@ -408,6 +446,123 @@ function placeBillboards(w, h) {
     placed.push({ x, y, w: bw, h: bh });
     b.e.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`;
   }
+}
+
+// ---------------------------------------------------------------- 360 map, walk arrows and picture pins (Charlie, 15 Nov: like the Romal Nifty tour)
+// The map is a straight-down picture of this model (assets/map/call_map.jpg, made by route/map_shot.mjs) covering MAPB in model
+// metres, x to the right and z down the picture. North is turned NORTH degrees from straight up (fit.json: model -> National Grid).
+const MAPB = { x0: -215, x1: 45, z0: -65, z1: 60 };
+const NORTH = -33.9;
+const MAPLB = [['Charter House', 14, 9, 'ch'], ['Churchgate', -62, -3], ['Harvey Street', -45, 38], ['Market Place', -128, -24], ['Market Hall', -184, -2],
+  ['St Mary’s', -95, -40], ['St Mary’s Gate', -38, 10], ['Robinsons Brewery', -6, 55], ['Rostron Brow', -100, 32]];
+// extra links between the street 360s, so you can walk the whole set (main.js links only the spots round the building)
+const XLINK = { smg: ['church'], church: ['smg', 'market'], market: ['church'], arch: ['courtyard'], courtyard: ['arch'] };
+const SHORT = { church: 'St Mary’s', smg: 'St Mary’s Gate', park: 'Play park', arch: 'The entrance', brewery: 'The brewery', courtyard: 'Courtyard', market: 'Market Place', corner: 'Churchgate corner', harvey: 'Harvey Street' };
+const streetPano = (sp) => !!(sp && sp.pano && sp.plot == null && !sp.type);
+const thumbOf = (sp) => `${BASE}spots/${sp.id}.jpg`;
+let spotsRef = null, mapEl = null, mapInner = null, arrowsEl = null, mapBig = false, mapCur = -2, mapShade = null;
+const mapPct = (x, z) => [(x - MAPB.x0) / (MAPB.x1 - MAPB.x0) * 100, (z - MAPB.z0) / (MAPB.z1 - MAPB.z0) * 100];
+function patchSpots() {
+  const S = CH.SPOTS ? CH.SPOTS() : null;
+  if (!S || !S.length || S === spotsRef) return;
+  spotsRef = S;
+  for (const sp of S) { const add = XLINK[sp.id]; if (add && streetPano(sp)) sp.links = [...new Set([...(sp.links || []), ...add])]; }
+  // the pins inside a 360 become little round pictures of the place they lead to
+  const pins = [...document.querySelectorAll('#labels .spin')];
+  for (const sp of S) {
+    if (!streetPano(sp)) continue;
+    const p = pins.find(e => e.querySelector('span') && e.querySelector('span').textContent === sp.name), i = p && p.querySelector('i');
+    if (i) { i.style.backgroundImage = `url(${thumbOf(sp)})`; p.classList.add('cm-pic'); }
+  }
+  buildMap(S);
+}
+function buildArrows() {
+  arrowsEl = el('<div id="cm-arrows"></div>'); document.body.appendChild(arrowsEl);
+  arrowsEl.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) CH.goSpot(+b.dataset.i); });
+}
+const FWD = () => new THREE.Vector3();
+let fwd = null;
+function updateArrows(cur, S, w, h) {
+  const want = [];
+  if (cur && streetPano(cur) && CH.panoOn && CH.panoOn() && !CH.tour.busy()) for (const id of cur.links || []) {
+    const j = S.findIndex(q => q.id === id); if (j >= 0 && streetPano(S[j])) want.push(j);
+  }
+  while (arrowsEl.children.length < want.length) arrowsEl.appendChild(el('<button class="cm-arr" type="button"><i><svg viewBox="0 0 40 40"><path d="M11 25 L20 15 L29 25"/></svg></i><span></span></button>'));
+  // a ring on the ground in the middle of the view, as in Street View: each arrow points the way to the next 360, even behind you
+  if (!fwd) fwd = FWD();
+  CH.camera.getWorldDirection(fwd); let fx = fwd.x, fz = fwd.z; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;
+  const o = CH.tour.st.pos, cx = w / 2, cy = h * (w > 760 ? 0.655 : 0.64), Rx = Math.min(200, w * 0.32), Ry = w > 760 ? 50 : 36;
+  // the angle of each next spot (0 straight ahead, + to the right); arrows closer than MIN are spread apart so they never sit on each other
+  const ths = want.map(j => { const sp = S[j]; return Math.atan2((sp.at.x - o.x) * -fz + (sp.at.z - o.z) * fx, (sp.at.x - o.x) * fx + (sp.at.z - o.z) * fz); });
+  const ord = ths.map((t, k) => k).sort((a, c) => ths[a] - ths[c]);
+  const at = (t) => [cx + Rx * Math.sin(t), cy - Ry * Math.cos(t)], GAP = w > 760 ? 118 : 84;
+  for (let it = 0; it < 60; it++) {   // push neighbours apart round the ring until their labels clear each other
+    let moved = false;
+    for (let n = 1; n < ord.length; n++) { const a = ord[n - 1], c = ord[n], [x1, y1] = at(ths[a]), [x2, y2] = at(ths[c]); if (Math.hypot(x2 - x1, y2 - y1) < GAP) { ths[a] -= 0.03; ths[c] += 0.03; moved = true; } }
+    if (!moved) break;
+  }
+  [...arrowsEl.children].forEach((b, k) => {
+    const j = want[k]; if (j == null) { b.style.display = 'none'; return; }
+    const sp = S[j], th = ths[k];
+    const ax = cx + Rx * Math.sin(th), ay = cy - Ry * Math.cos(th);
+    const rot = Math.atan2(-Ry * Math.cos(th), Rx * Math.sin(th)) * 180 / Math.PI + 90, back = Math.cos(th) < -0.2;
+    b.dataset.i = j; b.title = 'Walk to ' + sp.name; b.setAttribute('aria-label', 'Walk to ' + sp.name);
+    b.querySelector('span').textContent = SHORT[sp.id] || sp.name;
+    b.querySelector('i').style.transform = `rotate(${rot.toFixed(1)}deg) scaleY(.8)`;
+    b.style.transform = `translate(${ax.toFixed(1)}px, ${ay.toFixed(1)}px) translate(-50%, -50%) scale(${back ? 0.82 : 1})`;
+    b.style.opacity = back ? 0.75 : 1; b.style.zIndex = String(Math.round(100 + 50 * Math.cos(th)));
+    b.style.display = 'block';
+  });
+}
+function buildMap(S) {
+  if (!mapEl) {
+    mapEl = el(`<div id="cm-map" class="off" role="region" aria-label="Map of the 360° views"><div class="mh"><span>Map · 360° views</span><button type="button" data-a="big" aria-label="Bigger map" title="Bigger map">⤢</button></div>
+      <div class="mw"><div class="mi"><img src="${BASE}map/call_map.jpg?v=1794750000" alt="Map of the streets round Charter House" draggable="false"><svg class="cone" viewBox="-60 -60 120 120"><path d="M0 0 L-30 -52 A60 60 0 0 1 30 -52 Z"/></svg></div>
+      <span class="nn" title="North"><b style="transform: rotate(${NORTH}deg)">N↑</b></span></div></div>`);
+    mapShade = el('<div id="cm-mapshade"></div>');
+    document.body.appendChild(mapShade); document.body.appendChild(mapEl);
+    mapInner = mapEl.querySelector('.mi');
+    const toggle = (v) => { mapBig = v; mapEl.classList.toggle('big', v); mapShade.classList.toggle('on', v); mapEl.querySelector('[data-a="big"]').textContent = v ? '✕' : '⤢'; mapCur = -2; };
+    mapEl.querySelector('[data-a="big"]').onclick = () => toggle(!mapBig);
+    mapShade.onclick = () => toggle(false);
+    mapEl.addEventListener('click', (e) => { const n = e.target.closest('.nd'); if (n) { toggle(false); CH.goSpot(+n.dataset.i); } });
+    mapEl.querySelector('.mw').addEventListener('click', (e) => { if (!mapBig && !e.target.closest('.nd')) toggle(true); });
+  }
+  mapInner.querySelectorAll('.nd, .lb').forEach(n => n.remove());
+  for (const [t, x, z, c] of MAPLB) { const [l, tp] = mapPct(x, z); mapInner.appendChild(el(`<span class="lb ${c || ''}" style="left:${l}%;top:${tp}%">${t}</span>`)); }
+  S.forEach((sp, i) => {
+    if (!streetPano(sp)) return;
+    const [l, tp] = mapPct(sp.at.x, sp.at.z);
+    mapInner.appendChild(el(`<button class="nd${['harvey', 'corner'].includes(sp.id) ? ' up' : ''}" type="button" data-i="${i}" style="left:${l}%;top:${tp}%;background-image:url(${thumbOf(sp)})" aria-label="Go to the 360° view: ${sp.name}"><span>${sp.name}</span></button>`));
+  });
+  mapCur = -2;
+}
+const CAMD = () => new THREE.Vector3();
+let camd = null;
+function updateMap(cur, S) {
+  const show = !!(cur && streetPano(cur) && CH.S.mode === 'tour');
+  mapEl.classList.toggle('off', !show);
+  document.body.classList.toggle('cm-street', show);   // the map and arrows replace the row of street buttons under the caption
+  if (!show) { if (mapBig) mapEl.querySelector('[data-a="big"]').click(); return; }
+  const mw = mapEl.querySelector('.mw'), W = mw.clientWidth, sx = MAPB.x1 - MAPB.x0, sz = MAPB.z1 - MAPB.z0;
+  const k = mapBig ? W / sx : (innerWidth > 760 ? 3.2 : 2.2);   // pixels per metre: the small map follows you, the big one shows it all
+  const iw = sx * k, ih = sz * k;
+  if (mapBig) mw.style.height = ih + 'px'; else mw.style.height = '';
+  const i = S.indexOf(cur);
+  if (i !== mapCur || mapInner.dataset.k !== String(k)) {
+    mapCur = i; mapInner.dataset.k = String(k);
+    mapInner.style.width = iw + 'px'; mapInner.style.height = ih + 'px';
+    const [l, tp] = mapPct(cur.at.x, cur.at.z), H = mw.clientHeight;
+    const ox = mapBig ? 0 : Math.min(0, Math.max(W - iw, W / 2 - l / 100 * iw)), oy = mapBig ? 0 : Math.min(0, Math.max(H - ih, H / 2 - tp / 100 * ih));
+    mapInner.style.transform = `translate(${ox}px, ${oy}px)`;
+    mapInner.querySelectorAll('.nd').forEach(n => n.classList.toggle('cur', +n.dataset.i === i));
+    const cone = mapInner.querySelector('.cone'); cone.style.left = l + '%'; cone.style.top = tp + '%';
+  }
+  // the cone turns with the view
+  if (!camd) camd = CAMD();
+  CH.camera.getWorldDirection(camd);
+  const ang = Math.atan2(camd.z, camd.x) * 180 / Math.PI + 90;
+  mapInner.querySelector('.cone').style.transform = `rotate(${ang.toFixed(1)}deg)`;
 }
 
 // ---------------------------------------------------------------- compare
@@ -467,7 +622,7 @@ export function init(api) {
   const ready = () => { const L = $('#loader'); return CH.CHref && CH.CHref() && (!L || getComputedStyle(L).display === 'none' || L.classList.contains('done') || L.classList.contains('off') || +getComputedStyle(L).opacity === 0); };
   const boot = () => {
     if (!ready()) return setTimeout(boot, 400);
-    buildUI(); buildLand(); buildCA(); buildBollards(); buildXray(); enhancePanel();
+    buildUI(); buildLand(); buildCA(); buildBollards(); buildXray(); enhancePanel(); buildArrows();
     window.__CALL = { start, stop, go, STOPS, seen, openCompare, openShort };
     for (const [id, b] of bbEls) b.show = ALWAYS.includes(id);
     loop();
