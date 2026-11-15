@@ -23,6 +23,8 @@ const BB = {
   church: { pos: null, place: 'tower', tag: 'Grade I', big: 'St Mary’s Church', small: 'Stockport’s oldest church, founded around 1190', soft: true },
   hall: { pos: null, place: 'hall', tag: 'Grade II · 1861', big: 'Market Hall', small: 'The “Glass Umbrella”. Best Small Indoor Market 2023', soft: true },
   brewery: { pos: [-8, 25, 70], tag: 'Since 1849', big: 'Robinsons Brewery', small: 'The Victorian brewery still frames the view', soft: true },
+  ca: { pos: [-150, 30, -30], tag: 'Since 1974', big: 'Market and Underbanks', small: 'Conservation area. Nothing over four storeys.', soft: true },
+  last: { pos: [11, 30, 10], tag: 'Charter House', big: 'The last site', small: 'to be developed in the Underbanks' },
   station: { pos: [-132, 24, 734], tag: 'Stockport station', big: '8 min', small: 'To Manchester Piccadilly. 11 trains an hour.' },
 };
 // council-owned land (Charlie, 15 Nov: "car park / new children's park, council-owned, protected views")
@@ -31,6 +33,11 @@ const LAND = [
   { id: 'kids', name: 'Children’s park', p: [[22, -30], [33, -24], [33, -11], [1, -10], [0, -16], [0, -37]] },
 ];
 const BOLLARDS = { pos: [-6, 0, 30], big: 'No through traffic', small: 'This was a cut-through to Asda. No traffic now.' };   // Charlie's words; spot to confirm
+// Market and Underbanks Conservation Area (designated 1974, extended 2005): the boundary from planning.data.gov.uk
+// (Historic England / Stockport Council, entity 44014592), fitted to the model on three listed buildings' grid references
+// (the Arden Arms, St Mary's Church, the Old Rectory; within 2 m)
+const CA = [[-42.7,36.8],[-13.8,39.3],[-6.8,43.8],[37,68.8],[88,98.7],[105.3,78.3],[112.1,83.6],[133.7,96.6],[138.8,99.8],[140.9,97.5],[145.3,100.8],[146.5,101.8],[148.8,98],[158.8,84.5],[166.9,71.7],[170.6,68.9],[180.1,69.8],[185,68.9],[187.2,68],[191.1,61.9],[192,62.8],[200.7,60.1],[230,63.2],[251.2,66.6],[251.4,67.2],[251.2,70.2],[249.8,80.1],[249.6,82.3],[249.8,83.3],[250.4,84],[252.2,84.5],[261.8,85.9],[264.4,86],[279.9,88],[284.1,31.6],[234.3,25.3],[236.6,12.1],[239.2,-6.1],[231.5,-7.5],[223.6,-5.5],[217.1,-3.3],[212.2,-1.1],[211.5,-3.8],[202.1,-29.8],[187.7,-60.6],[182.7,-66],[118.8,-36.1],[84.8,-28],[68.3,-24.6],[36.1,-48.2],[-40.6,-59],[-36.1,-67.9],[-25.5,-86.3],[-30.8,-87.2],[-76.1,-97.1],[-85,-98.8],[-96.3,-100.2],[-100.4,-101.2],[-104.4,-102.7],[-106.3,-103.7],[-109.9,-106],[-111.6,-107.2],[-114.7,-110],[-117.5,-113.3],[-118.7,-115],[-125.5,-125.5],[-126.9,-127.6],[-128.4,-129.5],[-130.9,-132.5],[-142,-143.9],[-143.2,-144.7],[-144,-145],[-145.2,-145.3],[-146.8,-145.3],[-164.8,-125],[-165.6,-123.4],[-166.1,-121.6],[-165.9,-120.7],[-165.2,-119.1],[-164.2,-117.9],[-144.4,-100.2],[-133.9,-91.6],[-141.6,-82.7],[-144.7,-78.4],[-145.4,-77.6],[-147,-76.5],[-148.6,-76],[-150.3,-75.7],[-151.9,-75.8],[-187.8,-73.2],[-219.7,-72.5],[-220.9,-73.5],[-220.4,-74.1],[-268.8,-117.1],[-269.5,-116.2],[-271.1,-117.6],[-270.5,-118.3],[-271.6,-119.3],[-273.4,-117.2],[-283.2,-106.3],[-287.4,-102.8],[-288.9,-101.1],[-292.9,-95.8],[-297.6,-88.6],[-303.3,-80.5],[-319.3,-61.3],[-326.1,-54.1],[-329.3,-50.1],[-332.3,-45.9],[-335,-41.6],[-337.4,-37.1],[-339.5,-32.4],[-341.3,-27.7],[-342.9,-22.8],[-346.1,-9.3],[-321.6,-6.2],[-322.7,2.1],[-323,7.9],[-329.4,25.1],[-326.9,35.6],[-325.9,38.6],[-319.5,38.6],[-318.6,42.2],[-317.3,41.9],[-316.2,50.3],[-313.6,86.4],[-313.4,89],[-313.8,95.9],[-297.2,93.1],[-295.9,100.1],[-299.6,113.7],[-300.7,117.5],[-300.5,119.1],[-290.5,118],[-287.1,118.3],[-283,119.9],[-285.6,130.4],[-291.7,145.6],[-294,153.1],[-294.7,156.2],[-297.7,172.1],[-284.3,170.7],[-273.4,171.2],[-278.5,178.5],[-276.7,179.6],[-271.7,184.2],[-269.9,180.4],[-257.6,159.4],[-241.3,138.4],[-239.7,135.7],[-229.7,129.4],[-222.1,123.2],[-217.4,119.8],[-213.3,117.3],[-206.5,114.1],[-190.6,108.5],[-157.5,96.3],[-153.4,95.1],[-148.5,94.1],[-142.7,93.3],[-137.3,93.2],[-128.4,93.5],[-117.9,95.5],[-109.8,98.8],[-107.3,92.9],[-95.4,83.3],[-104.1,82],[-112.9,80.5],[-121.3,78.5],[-120.4,77.3],[-121.5,75.8],[-120.5,73.9],[-121.2,72.7],[-124.5,72],[-137.8,70.3],[-137.8,57.5],[-134.9,52.2],[-133.6,46.6],[-132.9,39.5],[-133.1,38.1],[-132.7,33.9],[-131.2,25.7],[-119.2,27],[-108.8,28.4],[-109,31.9],[-69.2,34.4]];
+const CEIL = 12.5;   // four storeys
 // St Mary's Gate on its footprint (world.json special.smg), the building that hides St Mary's from the corner
 const SMG = [[-12.5, 18.8], [-22.5, 18.3], [-22.8, 13.5], [-63.0, 15.2], [-63.8, 1.9], [-13.3, 1.0]];
 
@@ -39,6 +46,7 @@ const SMG = [[-12.5, 18.8], [-22.5, 18.3], [-22.8, 13.5], [-63.0, 15.2], [-63.8,
 const STOPS = [
   { k: 'Bearings', t: 'Charter House, on the corner of Churchgate', s: 'The park at the end of the street. The Underbanks start 30 seconds away.', cam: [150, 58, 52], at: [10, 4, 4], bb: ['charter', 'park', 'brewery'] },
   { k: 'The old town', t: 'Down to the Market Hall, between the churches', s: 'St Mary’s and the 1861 Market Hall, at the top of Churchgate. St Mary’s Gate is see-through here so you can find them.', cam: [30, 30, -24], at: [-150, 2, -18], bb: ['church', 'hall', 'lofts'], xray: true },
+  { k: 'The Underbanks', t: 'The last site to be developed in the Underbanks', s: 'A conservation area since 1974. Nothing over four storeys can be built here.', cam: [230, 250, 330], at: [-40, 0, 10], bb: ['ca', 'last'], ca: true },
   { k: 'The views', t: 'St Mary’s Gate, the car park and the children’s park', s: 'The car park and the park are council-owned. The view stays.', cam: [6, 13.5, -3.5], at: [-30, 1, -30], bb: ['smg'], land: true },
   { k: 'A quiet street', t: 'The bollards', s: 'This was a cut-through to Asda. No traffic now.', cam: [-2, 14, -16], at: [-6, 0, 30], bollards: true },
   { k: 'The apartments', t: 'One bed or two bed', s: 'The plan, the price, the rent and the yield, side by side.', units: true },
@@ -65,7 +73,8 @@ function css() {
   #cm-bar button { height: 34px; min-width: 34px; padding: 0 12px; border-radius: 999px; border: 0; background: rgba(255,255,255,.08); color: inherit; font: inherit; cursor: pointer; }
   #cm-bar button:hover { background: rgba(255,255,255,.16); }
   #cm-bar .n { padding: 0 8px; opacity: .8; white-space: nowrap; }
-  #cm-bar .dots { display: flex; gap: 5px; padding: 0 6px; }
+  #cm-bar .dots { display: flex; flex-wrap: nowrap; gap: 5px; padding: 0 6px; }
+  #cm-bar .dots i { flex: none; }
   #cm-bar .dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); cursor: pointer; }
   #cm-bar .dots i.on { background: #d8b476; }
   #cm-cap { position: fixed; left: 28px; bottom: 30px; z-index: 65; max-width: min(620px, calc(100vw - 56px)); display: none; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.55); pointer-events: none; }
@@ -219,6 +228,35 @@ function subdivide(geo) {
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(out, 3)); return g;
 }
+let caGroup = null, clayOn = false;
+function buildCA() {
+  caGroup = new THREE.Group(); caGroup.name = 'cm-ca'; caGroup.visible = false;
+  const gold = '#d8b476';
+  const wallM = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+  const ceilM = new THREE.MeshBasicMaterial({ color: '#fff4dc', transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide });
+  const lineM = new THREE.LineBasicMaterial({ color: gold, transparent: true, opacity: 1 });
+  const topM = new THREE.LineBasicMaterial({ color: '#fff3d6', transparent: true, opacity: 0.8 });
+  const ring = drape(CA, 0.5), top = ring.map(v => v.clone().setY(v.y - 0.5 + CEIL));
+  ring.push(ring[0].clone()); top.push(top[0].clone());
+  caGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ring), lineM), new THREE.Line(new THREE.BufferGeometry().setFromPoints(top), topM));
+  const wp = [];
+  for (let i = 0; i < ring.length - 1; i++) { const a = ring[i], b = ring[i + 1], c = top[i + 1], d = top[i]; wp.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z, a.x, a.y, a.z, c.x, c.y, c.z, d.x, d.y, d.z); }
+  const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3));
+  { const col = [], n = wp.length / 3; for (let i = 0; i < n; i++) { const lo = [0, 1, 3].includes(i % 6); col.push(0.85, 0.7, 0.45, lo ? 0.55 : 0.1); } wg.setAttribute('color', new THREE.Float32BufferAttribute(col, 4)); }
+  // a 2 m gold ribbon on the ground along the boundary
+  { const rp = [], q = ring; for (let i = 0; i < q.length - 1; i++) { const a = q[i], b = q[i + 1], dx = b.x - a.x, dz = b.z - a.z, L = Math.hypot(dx, dz) || 1, nx = -dz / L * 1.1, nz = dx / L * 1.1;
+      rp.push(a.x - nx, a.y, a.z - nz, b.x - nx, b.y, b.z - nz, b.x + nx, b.y, b.z + nz, a.x - nx, a.y, a.z - nz, b.x + nx, b.y, b.z + nz, a.x + nx, a.y, a.z + nz); }
+    const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
+    const rib = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: gold, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -6 })); rib.renderOrder = 9; caGroup.add(rib); }
+  const wall = new THREE.Mesh(wg, wallM); wall.renderOrder = 7; caGroup.add(wall);
+  let geo = new THREE.ShapeGeometry(new THREE.Shape(CA.map(([x, z]) => new THREE.Vector2(x, z))), 1).toNonIndexed();
+  for (let k = 0; k < 2; k++) geo = subdivide(geo);
+  const pa = geo.attributes.position;
+  for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), z = pa.getY(i); pa.setXYZ(i, x, ground(x, z) + CEIL, z); }
+  geo.computeBoundingSphere();
+  const ceil = new THREE.Mesh(geo, ceilM); ceil.renderOrder = 8; caGroup.add(ceil);
+  CH.scene.add(caGroup);
+}
 function buildBollards() {
   const [x, , z] = BOLLARDS.pos, y = ground(x, z);
   bollPin = new THREE.Group(); bollPin.visible = false;
@@ -296,7 +334,8 @@ function go(i) {
   [...$('#cm-dots').children].forEach((d, j) => d.classList.toggle('on', j === i));
   document.body.classList.toggle('cm-units', !!s.units);
   { const P = $('#panel'); if (P && P.classList.contains('hide') === !!s.units) { P.classList.toggle('hide', !s.units); dispatchEvent(new Event('resize')); } }
-  setXray(!!s.xray); landGroup.visible = !!s.land; bollPin.visible = !!s.bollards;
+  setXray(!!s.xray); landGroup.visible = !!s.land; bollPin.visible = !!s.bollards; caGroup.visible = !!s.ca;
+  if (!!s.ca !== clayOn) { clayOn = !!s.ca; try { CH.setClay(clayOn); } catch { } }
   for (const [id, b] of bbEls) b.show = (s.bb || []).includes(id) || (s.land && id.startsWith('land-')) || (s.bollards && id === 'bollards');
   if (s.units) {
     const [a, b] = pickPair();
@@ -320,7 +359,8 @@ function start() {
 }
 function stop() {
   on = false; window.__CALL_ON = false; document.body.classList.remove('callmode', 'cm-units');
-  setXray(false); landGroup.visible = false; bollPin.visible = false;
+  setXray(false); landGroup.visible = false; bollPin.visible = false; caGroup.visible = false;
+  if (clayOn) { clayOn = false; try { CH.setClay(false); } catch { } }
   for (const b of bbEls.values()) { b.show = false; b.e.style.display = 'none'; }
   cancelAnimationFrame(raf);
   window.__noClamp = false; CH.controls.maxDistance = 190; CH.controls.minDistance = 9;
@@ -421,7 +461,7 @@ export function init(api) {
   const ready = () => { const L = $('#loader'); return CH.CHref && CH.CHref() && (!L || getComputedStyle(L).display === 'none' || L.classList.contains('done') || L.classList.contains('off') || +getComputedStyle(L).opacity === 0); };
   const boot = () => {
     if (!ready()) return setTimeout(boot, 400);
-    buildUI(); buildLand(); buildBollards(); buildXray(); enhancePanel();
+    buildUI(); buildLand(); buildCA(); buildBollards(); buildXray(); enhancePanel();
     window.__CALL = { start, stop, go, STOPS, seen, openCompare, openShort };
     if (/[?&]call=go\b/.test(location.search)) start();
   };
