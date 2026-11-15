@@ -18,8 +18,8 @@ export const SITE = IS_UBL ? UBL_SITE : IS_OSL ? OSL_SITE : IS_PH ? PH_SITE : CH
 export const FLOOR_H = IS_UBL ? UBL_FH : IS_OSL ? OSL_FH : IS_PH ? PH_FH : CHD.FLOOR_H;
 export const STATUS = {
   ...CHD.STATUS,
-  'Exchanged': { key: 'sold', label: 'Sold', color: '#7c736c' },
-  'Complete': { key: 'sold', label: 'Sold', color: '#7c736c' },
+  'Exchanged': { key: 'sold', label: 'Sold', color: '#e3242b' },
+  'Complete': { key: 'sold', label: 'Sold', color: '#e3242b' },
 };
 export const INTERIORS = CHD.INTERIORS;
 export const SUN = PLANF ? {} : CHD.SUN;

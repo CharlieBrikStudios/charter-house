@@ -550,6 +550,9 @@ interior.setAspect(innerWidth, innerHeight);
 const S = { mode: 'intro', floor: null, plot: null, hoverFloor: null, hoverPlot: null, roomIdx: 0, idle: 0, inside: false, view: false, area: false };
 const unitByPlot = new Map(UNITS.map(u => [u.plot, u]));
 const st = (u) => STATUS[u.status] || STATUS.Available;
+// Charlie, 15 Nov: a sold flat shows red with no price, everywhere
+const isSold = (u) => st(u).key === 'sold';
+const priceTxt = (u) => isSold(u) ? 'Sold' : fmtGBP(u.price);
 const avail = (list) => list.filter(u => u.status === 'Available');
 
 // ------------------------------------------------------------------ camera flights
@@ -932,7 +935,7 @@ async function showRoom(i, first = false) {
   if (!first) { interior.mat.uniforms.uFade.value = 0; await fadeTo(1, 0.25); }
   await interior.show(r.img, { big: innerWidth * DPR > 2200 });
   $('#in-title').textContent = i === 0 ? `Typical ${u.beds === 2 ? 'two' : 'one'}-bedroom ${r.title.toLowerCase()}` : r.title;
-  $('#in-text').textContent = r.caption + (i === 0 ? `. ${u.sqft} sq ft (${sqm(u.sqft)} m²), ${fmtGBP(u.price)}.` : '.');
+  $('#in-text').textContent = r.caption + (i === 0 ? `. ${u.sqft} sq ft (${sqm(u.sqft)} m²)${isSold(u) ? '' : ', ' + fmtGBP(u.price)}.` : '.');
   interior.mat.uniforms.uFade.value = 1; await fadeTo(0, 0.45);
 }
 function fadeTo(v, dur) { return new Promise(res => { const a = interior.mat.uniforms.uFade.value; const t0 = performance.now(); const tick = () => { const k = Math.min(1, (performance.now() - t0) / (dur * 1000)); interior.mat.uniforms.uFade.value = a + (v - a) * k; k < 1 ? requestAnimationFrame(tick) : res(); }; tick(); }); }
@@ -1016,7 +1019,7 @@ function compassWord(n) {
 }
 
 // ------------------------------------------------------------------ panel
-const waLink = (u, reserve = false) => `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(u ? (reserve ? `Hi Charlie, I'd like to reserve Plot ${u.plot} at ${SITE.name} (${u.beds} bed, ${FLOORS[u.floor].name.toLowerCase()}, ${fmtGBP(u.price)}). What are the next steps?` : `Hi Charlie, I'm interested in Plot ${u.plot} at ${SITE.name} (${u.beds} bed, ${FLOORS[u.floor].name.toLowerCase()}, ${fmtGBP(u.price)}). Can you tell me more?`) : `Hi Charlie, I'd like to know more about ${SITE.name}.`)}`;
+const waLink = (u, reserve = false) => `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(u ? (reserve ? `Hi Charlie, I'd like to reserve Plot ${u.plot} at ${SITE.name} (${u.beds} bed, ${FLOORS[u.floor].name.toLowerCase()}${isSold(u) ? '' : ', ' + fmtGBP(u.price)}). What are the next steps?` : `Hi Charlie, I'm interested in Plot ${u.plot} at ${SITE.name} (${u.beds} bed, ${FLOORS[u.floor].name.toLowerCase()}${isSold(u) ? '' : ', ' + fmtGBP(u.price)}). Can you tell me more?`) : `Hi Charlie, I'd like to know more about ${SITE.name}.`)}`;
 const waIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .3-3.4-.7-2.9-1.2-4.7-4.1-4.8-4.3-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.5-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.7-.1l2 .9c.3.1.5.2.5.3.1.2.1.7-.1 1.3Z"/></svg>';
 const chev = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 6l-6 6 6 6"/></svg>';
 const floorUnits = (f) => UNITS.filter(u => u.floor === f);
@@ -1142,15 +1145,15 @@ function renderPanel() {
         ${IS_OSL || IS_UBL ? '' : '<button class="btn ghost" data-act="door">Walk to the door</button>'}
         ${(!IS_PH && !IS_UBL && !IS_OSL && hasPano) ? (NO_INSIDE || ownPano(u.plot) >= 0 ? '' : '<button class="btn ghost wide" data-act="inside">Walk around in 3D</button>') : hasPano ? '<button class="btn ghost wide" data-act="p360">Photoreal 360° rooms</button>' : ''}
       </div>
-      <div class="facts"><div><span class="label">Price</span><b class="num">${fmtGBP(u.price)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
+      <div class="facts"><div><span class="label">Price</span><b class="num${isSold(u) ? ' soldtxt' : ''}">${priceTxt(u)}</b></div><div><span class="label">Rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b></div><div><span class="label">Size</span><b class="num">${u.sqft}<small> sq ft</small></b></div></div>
       <div class="acts uacts"><button class="btn ghost angle" data-act="angle" data-a="0" aria-pressed="${viewAlt === 0}">${IS_UBL ? 'Garden angle' : IS_OSL ? 'Street angle' : IS_PH ? 'Front angle' : 'Street-side angle'}</button><button class="btn ghost angle" data-act="angle" data-a="1" aria-pressed="${viewAlt === 1}">${IS_UBL ? 'St Petersgate angle' : IS_OSL ? 'Courtyard angle' : IS_PH ? 'Garden-side angle' : 'Other-side angle'}</button></div>
       <div class="acts uacts"><button class="btn ghost" data-act="plan">Floor plan</button><button class="btn ghost more" data-act="details">All details<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M7 17 17 7M9 7h8v8"/></svg></button></div>
       <button class="morehint" data-act="details">Lease, service charge, yield and floor plan <span>Open ›</span></button>
     </div>`;
     UDET = `<div class="uhead"><div><span class="label">${u.house ? 'Townhouse' : 'Apartment ' + u.apt} · type ${u.type}</span><h2>Plot ${u.plot}</h2><div class="sub">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''} · ${u.sqft} sq ft (${sqm(u.sqft)} m²)</div></div><span class="status ${s.key}">${s.label}</span></div>
-      <div class="price"><b class="num">${fmtGBP(u.price)}</b><span>${canBuy ? `£${SITE.reservation.toLocaleString('en-GB')} reserves it` : 'No longer available'}</span></div>
+      <div class="price"><b class="num${isSold(u) ? ' soldtxt' : ''}">${priceTxt(u)}</b><span>${canBuy ? `£${SITE.reservation.toLocaleString('en-GB')} reserves it` : 'No longer available'}</span></div>
       <div class="money">
-        <div class="rentbox"><span class="label">Forecast rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b><span>${yld}% gross yield${R.why.length ? ' · ' + R.why.join(', ') : ''}</span></div>
+        <div class="rentbox"><span class="label">Forecast rent</span><b class="num">${fmtGBP(rent)}<small> pcm</small></b><span>${isSold(u) ? '' : yld + '% gross yield'}${R.why.length ? (isSold(u) ? '' : ' · ') + R.why.join(', ') : ''}</span></div>
         <div class="lease"><div><span class="label">${u.house ? 'Tenure' : 'Lease'}</span><b>${u.house ? 'Freehold' : SITE.lease}</b></div><div><span class="label">Ground rent</span><b>${u.house ? 'None' : SITE.groundRent}</b></div><div><span class="label">${scw}</span><b class="num">£${scr.toFixed(2)}/sq ft</b><small>about ${fmtGBP(scy)} a year</small></div><div><span class="label">Completion</span><b>${SITE.completion}</b></div></div>
       </div>
       <p class="aspect">${u.view}.</p>
@@ -1184,7 +1187,7 @@ function unitRow(u) {
   return `<button class="urow ${s.key} ${S.hoverPlot === u.plot ? 'hover' : ''}" data-plot="${u.plot}" ${S.plot === u.plot ? 'aria-current="true"' : ''}>
     <span class="pl num">${u.plot}${PICKS[u.plot] ? '<span class="pick">Pick</span>' : ''}<small>${u.apt}</small></span>
     <span class="d"><span>${u.beds} bed · ${u.sqft} sq ft</span><span>${u.note}</span></span>
-    <span class="pr"><span class="num">${fmtGBP(u.price)}</span><small class="rentl">${fmtGBP(rentFor(u, RK).pcm)} pcm</small><span class="status ${s.key}" style="margin-top:6px">${s.label}</span></span></button>`;
+    <span class="pr">${isSold(u) ? '' : `<span class="num">${fmtGBP(u.price)}</span><small class="rentl">${fmtGBP(rentFor(u, RK).pcm)} pcm</small>`}<span class="status ${s.key}" style="margin-top:6px">${s.label}</span></span></button>`;
 }
 $('#panel').addEventListener('click', (e) => {
   const b = e.target.closest('[data-floor],[data-plot],[data-act]'); if (!b) return;
@@ -1741,7 +1744,7 @@ function renderList() {
     old: u => !u.ext, ext: u => !!u.ext,
     park: u => IS_PH ? !!u.side : /Park/.test(u.note), corner: u => IS_UBL ? u.slot === 'w' : IS_PH ? (u.type === '2A' || u.type === '1C') : /[Cc]orner/.test(u.note) || (IS_OSL && u.plot === 1), picks: u => !!PICKS[u.plot] };
   const rows = UNITS.filter(test[lf] || test.all).sort((a, b) => lf === 'u190' || lf === 'u160' ? a.price - b.price : a.plot - b.plot);
-  $('#l-body').innerHTML = rows.map(u => `<tr class="r" data-plot="${u.plot}"><td><b style="font-family:var(--f-display);font-size:17px">${u.plot}</b> <span style="color:var(--ink-3)">${u.apt}</span>${PICKS[u.plot] ? ' <span class="pick">Pick</span>' : ''}</td><td>${FLOORS[u.floor].name}</td><td>${u.beds} bed · ${u.type}</td><td>${u.sqft} sq ft</td><td style="color:var(--ink-2)">${u.note}</td><td>${fmtGBP(u.price)}</td><td>${fmtGBP(rentFor(u, RK).pcm)} pcm</td><td><span class="status ${st(u).key}">${st(u).label}</span></td></tr>`).join('');
+  $('#l-body').innerHTML = rows.map(u => `<tr class="r" data-plot="${u.plot}"><td><b style="font-family:var(--f-display);font-size:17px">${u.plot}</b> <span style="color:var(--ink-3)">${u.apt}</span>${PICKS[u.plot] ? ' <span class="pick">Pick</span>' : ''}</td><td>${FLOORS[u.floor].name}</td><td>${u.beds} bed · ${u.type}</td><td>${u.sqft} sq ft</td><td style="color:var(--ink-2)">${u.note}</td><td>${isSold(u) ? '' : fmtGBP(u.price)}</td><td>${isSold(u) ? '' : fmtGBP(rentFor(u, RK).pcm) + ' pcm'}</td><td><span class="status ${st(u).key}">${st(u).label}</span></td></tr>`).join('');
 }
 $('#l-filters').onclick = (e) => { const b = e.target.closest('[data-f]'); if (b) { lf = b.dataset.f; renderList(); } };
 $('#l-body').onclick = (e) => { const r = e.target.closest('[data-plot]'); if (!r) return; $('#list').classList.remove('on'); if (S.mode === 'inside') closeInterior(); if (S.mode === 'view') closeView('leave'); toUnit(+r.dataset.plot); };
@@ -2234,7 +2237,7 @@ function walkToDoor(plot) {
   document.querySelectorAll('#t-spots [data-spot]').forEach(b => b.setAttribute('aria-pressed', 'false'));
   $('#t-backlbl').textContent = `Back to Plot ${plot}`;
   const legs = doorRoute(u);
-  tourCaption(`Walk to the front door · Plot ${plot}`, legs[0].say || '', `${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''} · ${fmtGBP(u.price)}`, '<button class="btn ghost" data-tact="skip">Skip to the door</button>');
+  tourCaption(`Walk to the front door · Plot ${plot}`, legs[0].say || '', `${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''}${isSold(u) ? '' : ' · ' + fmtGBP(u.price)}`, '<button class="btn ghost" data-tact="skip">Skip to the door</button>');
   tour.walk(legs, {
     onStep: (L) => { if (L.say) $('#t-title').textContent = L.say; },
     onDone: () => {
