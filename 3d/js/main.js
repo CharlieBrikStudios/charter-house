@@ -1385,7 +1385,7 @@ function buildUnitTags(f) {
     }
     const el = document.createElement('div'); el.className = 'tag ' + st(u).key + (has360(u.plot) ? ' has360' : '');
     el.innerHTML = `${P360_BADGE}<div class="b"><strong class="num">${u.plot}</strong><em>${u.beds} bed · ${u.status === 'Available' ? fmtGBP(u.price) : st(u).label}</em></div><div class="stem"></div><div class="pin"></div>`;
-    tapOrTurn(el, () => { if (!openOwnPano(u.plot)) toUnit(u.plot); });   /* plots with photoreal rooms open straight into the kitchen/living; a drag that starts on the tag turns the building */
+    tapOrTurn(el, () => { if (window.__CALL_ON || !openOwnPano(u.plot)) toUnit(u.plot); });   /* plots with photoreal rooms open straight into the kitchen/living; a drag that starts on the tag turns the building */
     el.onpointerenter = () => { S.hoverPlot = u.plot; }; el.onpointerleave = () => { S.hoverPlot = null; };
     $('#labels').appendChild(el);
     const tp = new THREE.Vector3((x0 + x1) / 2, y + 0.2, (z0 + z1) / 2); if (PLANF) tp.applyMatrix4(CH.group.matrixWorld);
@@ -1508,7 +1508,7 @@ canvas.addEventListener('pointerup', (e) => {
   ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   const hit = pick();
   if (S.mode === 'explore' && hit.floor != null) toFloor(hit.floor);
-  else if ((S.mode === 'floor' || S.mode === 'unit') && hit.plot != null && ownPano(hit.plot) >= 0) openOwnPano(hit.plot);   /* straight into the photoreal kitchen/living */
+  else if ((S.mode === 'floor' || S.mode === 'unit') && hit.plot != null && !window.__CALL_ON && ownPano(hit.plot) >= 0) openOwnPano(hit.plot);   /* straight into the photoreal kitchen/living */
   else if ((S.mode === 'floor' || S.mode === 'unit') && hit.plot != null && !(S.mode === 'unit' && hit.plot === S.plot)) toUnit(hit.plot);
 });
 function pick() {
@@ -2557,4 +2557,6 @@ function waitForTextures() {
 }
 
 // expose for testing
-window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT };
+window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT, flyTo };
+// call mode (preview, 15 Nov 2026): only with ?call in the link; a failure there never touches the live page
+if (/[?&]call\b/.test(location.search)) import('./callmode.js?v=1794535000').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));

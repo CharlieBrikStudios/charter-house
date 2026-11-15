@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>Your Charter House shortlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600&family=Besley:wght@400;500;600&family=Familjen+Grotesk:wght@400;500;600&display=swap">
+<style>
+/* The after-call shortlist (15 Nov 2026): the flats a buyer looked at on the call, with plans, prices, rents and views. No names. */
+:root { --ink: #2b221c; --ink-2: #6b5a4c; --paper: #f7f2ea; --card: #fff; --brass: #b8914e; --line: rgba(43,34,28,.12); --sold: #e3242b;
+  --f-display: "Besley", Georgia, serif; --f-body: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; --f-label: "Archivo", "Helvetica Neue", Arial, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 var(--f-body); -webkit-font-smoothing: antialiased; }
+header { padding: 28px 16px 18px; text-align: center; background: #1c1613; color: #f5eee4; }
+header img { height: 46px; filter: brightness(0) invert(1); }
+header h1 { margin: 14px 0 6px; font: 500 clamp(26px, 5vw, 38px)/1.1 var(--f-display); }
+header p { margin: 0 auto; max-width: 560px; color: rgba(245,238,228,.75); }
+main { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; }
+.cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.lbl { font: 600 11px/1 var(--f-label); letter-spacing: .12em; text-transform: uppercase; color: var(--brass); }
+.card h2 { margin: 6px 0 2px; font: 500 26px/1.1 var(--f-display); }
+.sub { color: var(--ink-2); font-size: 14.5px; }
+.card img { width: 100%; height: 280px; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 12px; margin: 12px 0; }
+.price { font: 600 30px/1 var(--f-display); }
+.price.sold { color: var(--sold); text-transform: uppercase; letter-spacing: .04em; font-size: 22px; }
+.st { display: inline-block; margin-left: 8px; padding: 3px 9px; border-radius: 999px; font: 600 11.5px/1.4 var(--f-label); background: #e8f3ea; color: #24663a; vertical-align: middle; }
+.st.reserved, .st.legals { background: #fdf1dd; color: #8a5a12; } .st.sold { background: #fde5e6; color: #b3151c; }
+.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+.kv div { padding: 9px 11px; border-radius: 12px; background: var(--paper); }
+.kv span { display: block; font: 600 10.5px/1.2 var(--f-label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.kv b { font-size: 17px; }
+.view { margin: 0 0 12px; color: var(--ink-2); }
+.acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); text-decoration: none; font: 600 14px var(--f-body); }
+.btn.dark { background: #1c1613; color: #fff; border-color: #1c1613; } .btn.wa { background: #3aa66a; color: #fff; border-color: #3aa66a; }
+.why { margin-top: 22px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.why h3 { margin: 0 0 10px; font: 500 22px/1.2 var(--f-display); }
+.why ul { margin: 0; padding-left: 20px; } .why li { margin: 6px 0; }
+.empty { padding: 30px; text-align: center; background: var(--card); border-radius: 18px; border: 1px solid var(--line); }
+footer { max-width: 980px; margin: 0 auto; padding: 0 16px 40px; color: var(--ink-2); font-size: 13px; }
+</style></head><body>
+<header><img src="assets/brand_charterhouse.png" alt="Charter House"><h1>Your shortlist</h1><p>The apartments we looked at together on the call, with the plans, prices and forecast rents.</p></header>
+<main><div class="cards" id="cards"></div>
+<div class="why"><h3>Why Charter House</h3><ul>
+  <li>The last site to be developed in the Underbanks, a conservation area since 1974 where nothing goes over four storeys.</li>
+  <li>St Mary’s Gate, across Harvey Street: one-bed rents were forecast at £900 pcm in Q1 2023. They let at £1,100 to £1,250 by May 2025.</li>
+  <li>8 minutes by train to Manchester Piccadilly, with 11 trains an hour.</li>
+</ul></div></main>
+<footer id="foot"></footer>
+<script type="module">
+import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './js/site.js?v=1794535000';
+import { rentFor } from './js/sales.js?v=1794535000';
+const ps = (new URLSearchParams(location.search).get('p') || '').split(/[.,]/).map(Number).filter(Boolean);
+const by = new Map(UNITS.map(u => [u.plot, u]));
+const list = ps.map(p => by.get(p)).filter(Boolean);
+const wa = (u) => `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(`Hi Charlie, about plot ${u.plot} at Charter House.`)}`;
+const C = document.getElementById('cards');
+C.innerHTML = list.length ? list.map(u => {
+  const s = STATUS[u.status] || STATUS.Available, sold = s.key === 'sold', rent = rentFor(u, false).pcm;
+  return `<article class="card"><span class="lbl">${FLOORS[u.floor].name} · ${u.beds} bedroom${u.beds > 1 ? 's' : ''}</span><h2>Plot ${u.plot}</h2><div class="sub">Apartment ${u.apt} · ${u.sqft} sq ft</div>
+    <img src="assets/plans/unit${u.plot}.jpg" alt="Floor plan of plot ${u.plot}" loading="lazy">
+    <div><span class="price${sold ? ' sold' : ''}">${sold ? 'Sold' : fmtGBP(u.price)}</span><span class="st ${s.key}">${s.label}</span></div>
+    <div class="kv"><div><span>Forecast rent</span><b>${fmtGBP(rent)} pcm</b></div><div><span>Gross yield</span><b>${sold ? 'n/a' : (rent * 12 / u.price * 100).toFixed(1) + '%'}</b></div>
+      <div><span>Service charge</span><b>£${SITE.serviceCharge.toFixed(2)}/sq ft</b></div><div><span>Completion</span><b>${SITE.completion}</b></div></div>
+    <p class="view">${u.view}. ${u.note}.</p>
+    <div class="acts"><a class="btn dark" href="./#plot-${u.plot}">Open it in the 3D model</a>${sold ? '' : `<a class="btn wa" href="${wa(u)}" target="_blank" rel="noopener">WhatsApp Charlie</a>`}</div></article>`;
+}).join('') : '<div class="empty">This link has no apartments on it. Ask Charlie for a new one.</div>';
+document.getElementById('foot').textContent = `Prices and availability from the live list, ${SITE.updated}. Rents are Brik Studios forecasts, not guarantees. ${SITE.lease} lease, ground rent ${SITE.groundRent.toLowerCase()}. Indicative only, based on the developer’s plans; subject to contract.`;
+</script>
+</body></html>
