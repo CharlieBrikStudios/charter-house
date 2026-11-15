@@ -30,7 +30,7 @@ import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=17
 import { buildPHFitout } from './phfit.js?v=1794535000';
 import { PH_PLAN, phSide } from './ph_data.js?v=1794535000';
 import { walkMaterials, buildApartment, Walker } from './walk.js?v=1794535000';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794535000';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1794747000';
 import { createTour } from './tour.js?v=1794535000';
 import { buildCrowd } from './crowd.js?v=1794535000';
 import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1794535000';
@@ -2559,4 +2559,4 @@ function waitForTextures() {
 // expose for testing
 window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT, flyTo };
 // call mode (preview, 15 Nov 2026): only with ?call in the link; a failure there never touches the live page
-if (/[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1794535000').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (/[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1794747000').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));

@@ -89,6 +89,9 @@ function css() {
   #cm-live b { color: #fff; font-weight: 700; }
   #cm-live small { display: block; opacity: .65; font-size: 11.5px; margin-top: 2px; }
   .cm-bb { position: fixed; left: 0; top: 0; z-index: 62; transform: translate(-50%, -100%); pointer-events: none; display: none; }
+  .cm-bb { padding-bottom: 26px; }
+  .cm-bb::after { content: ''; position: absolute; left: 50%; bottom: 0; width: 2px; height: 26px; margin-left: -1px; background: linear-gradient(rgba(214,176,106,.95), rgba(214,176,106,.25)); }
+  .cm-bb::before { content: ''; position: absolute; left: 50%; bottom: -4px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #d8b476; box-shadow: 0 0 0 3px rgba(216,180,118,.3); }
   .cm-bb .c { min-width: 190px; max-width: 280px; padding: 12px 14px 11px; border-radius: 12px; background: rgba(24,19,16,.92); border: 1px solid rgba(214,176,106,.55); color: #f3ead9; font: 400 12.5px/1.35 var(--f-body); box-shadow: 0 10px 34px rgba(0,0,0,.4); }
   .cm-bb.soft .c { background: rgba(255,255,255,.9); color: #2b221c; border-color: rgba(0,0,0,.12); min-width: 0; padding: 9px 12px; }
   .cm-bb .tg { display: block; font: 600 10.5px/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: #d8b476; margin-bottom: 7px; }
@@ -391,16 +394,17 @@ function loop() {
 }
 
 function placeBillboards(w, h) {
-  // nearest first; each card's box (anchored bottom-centre at its point) is pushed up past any card already placed
+  // nearest first; each card stands on a pin at its own building
   const list = [...bbEls.values()].filter(b => b.show && b.sx != null).sort((a, c) => a.d - c.d), placed = [];
   for (const b of list) {
     const bw = b.e.offsetWidth || 220, bh = b.e.offsetHeight || 90;
     const right = !on && innerWidth > 760 && !document.getElementById('panel')?.classList.contains('hide') ? 410 : 0;   // keep clear of the panel outside call mode
-    let x = Math.min(Math.max(b.sx, bw / 2 + 12), w - right - bw / 2 - 12), y = Math.max(b.sy, bh + 66);
-    for (let k = 0; k < 6; k++) {
-      const hit = placed.find(r => Math.abs(r.x - x) < (r.w + bw) / 2 + 8 && y > r.y - r.h - 8 && y - bh < r.y + 8);
-      if (!hit) break; y = hit.y - hit.h - 10; if (y - bh < 60) { y = hit.y + bh + 10; }
-    }
+    // each card stays on its own building: no sliding or stacking (Charlie, 15 Nov: the Lofts card had slid onto St Marys Gate);
+    // a card whose building is off screen, under the panel or behind a nearer card is hidden instead
+    const x = b.sx, y = b.sy;
+    const out = x < bw / 2 + 8 || x > w - right - bw / 2 - 8 || y < bh + 60 || y > h - 20;
+    const hit = placed.find(r => Math.abs(r.x - x) < (r.w + bw) / 2 + 8 && y > r.y - r.h - 8 && y - bh < r.y + 8);
+    if (out || hit) { b.e.style.display = 'none'; continue; }
     placed.push({ x, y, w: bw, h: bh });
     b.e.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`;
   }

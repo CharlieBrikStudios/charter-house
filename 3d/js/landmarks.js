@@ -305,8 +305,11 @@ export function buildMarketHallOSM(L, tex, base, poly, groundAt) {
     if (xE - xW < 12) break;
     strips.push({ z0, z1, xW, xE });
   }
-  let y0 = -1e9; for (const s of strips) for (const x of [s.xW, s.xE]) for (const z of [s.z0, s.z1]) y0 = Math.max(y0, groundAt(x, z));
-  y0 += 0.15;
+  // the floor sits at the street level of the Churchgate entrance (the east end), not on the highest ground sample under the
+  // footprint, which stood it on a raised stone plinth (Charlie, 15 Nov: 'sat on a raised plinth, which makes no sense')
+  let xE = -1e9, zA = 1e9, zB = -1e9; for (const s of strips) { xE = Math.max(xE, s.xE); zA = Math.min(zA, s.z0, s.z1); zB = Math.max(zB, s.z0, s.z1); }
+  let y0 = 0; { const zs = [0.3, 0.5, 0.7].map(f => zA + (zB - zA) * f); y0 = zs.reduce((a, z) => a + groundAt(xE + 2.5, z), 0) / zs.length; }
+  y0 += 0.08;
   // straight pitched profile across one strip (u 0..bw, v EAVE..APEX): slate low down, glazing either side of the ridge (in the texture)
   const S = bw / 2;
   const prof = [[0, EAVE], [S, APEX], [bw, EAVE]];
