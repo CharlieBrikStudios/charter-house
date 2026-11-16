@@ -18,7 +18,7 @@ export const SITE = {
   whatsapp: '447353164480',
   phone: '07353 164480',
   email: 'charlie@brik-studios.com',
-  updated: '12 Nov 2026',
+  updated: '16 Nov 2026',
 };
 
 export const FLOOR_H = 2.85;                // floor to floor (61.77 / 64.62 / 67.47 / 70.32 AOD)
@@ -73,7 +73,7 @@ export const UNITS = [
 
   P(14, '2.01', 2, '1A', 1, 412, 191000, 'Sold', 'Park facing', ['CG6', 'RC1'], [18.55, -0.34, 22.6, 11.0], 'Looks across Churchgate to the trees and new play park'),
   P(15, '2.02', 2, '1A', 1, 412, 191000, 'Sold', 'Park facing', ['CG5', 'RC2'], [14.72, -0.34, 18.55, 11.0], 'Looks across Churchgate to the trees and new play park'),
-  P(16, '2.03', 2, '1A', 1, 412, 191000, 'Sold', 'Park facing', ['CG4', 'RC3'], [10.9, -0.34, 14.72, 11.0], 'Looks across Churchgate to the trees and new play park'),
+  P(16, '2.03', 2, '1A', 1, 412, 191000, 'Available', 'Park facing', ['CG4', 'RC3'], [10.9, -0.34, 14.72, 11.0], 'Looks across Churchgate to the trees and new play park'),
   P(17, '2.04', 2, '2A', 2, 658, 302000, 'Available', 'Corner 2 bed, 5 windows', ['CG1', 'CG2', 'CG3', 'HV1', 'HV2'], [0, 0, 10.9, 6.2], 'Corner 2 bed: Churchgate, Harvey Street and towards St Mary’s Church'),
   P(18, '2.05', 2, '1C', 1, 410, 192000, 'Available', 'Facing St Mary’s Gate, square layout', ['HV3', 'HV4'], [0, 6.2, 6.7, 13.3], 'Faces St Mary’s Gate across Harvey Street'),
   P(19, '2.06', 2, '1B', 1, 412, 193000, 'Available', 'Facing St Mary’s Gate, rectangle', ['HV5', 'RH1'], [0.34, 13.3, 11.7, 17.2], 'Harvey Street to the front, courtyard to the rear'),
