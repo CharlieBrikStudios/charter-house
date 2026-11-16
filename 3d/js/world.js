@@ -283,7 +283,10 @@ class Wall {
 
 function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFlat) {
   let hip = null;
-  let p = b.p; if (polyArea(p) > 0) p = p.slice().reverse();   // walls face out: a positive-area plan (x, z) winds the wall quads inwards
+  // walls face out: a positive-area plan (x, z) winds the wall quads inwards, so the walls run round the plan the other way;
+  // insetPoly (the hipped roofs) still wants the positive-area order, and its result is turned to match (Charlie, 16 Nov)
+  const pos = polyArea(b.p) > 0 ? b.p : b.p.slice().reverse();
+  let p = pos.slice().reverse();
   // our winding: model (x, z) with z pointing "down" on the plan; outward normal of edge a->b = (dz, -dx) for CCW in (x, -z)
   const c = centroidOf(p);
   const gC = groundAt(c[0], c[1]);
@@ -320,7 +323,7 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
       const g = new THREE.BoxGeometry(0.75, 1.6, 0.55); g.rotateY(Math.atan2(-uz, ux)); g.translate(cpos[0], yTop + rise + 0.3, cpos[2]); chim.push(g);
       for (const d of [-0.18, 0.18]) { const pot = new THREE.CylinderGeometry(0.09, 0.11, 0.4, 8); pot.translate(cpos[0] + ux * d, yTop + rise + 1.3, cpos[2] + uz * d); chim.push(pot); }
     }
-  } else if (b.r === 'gable' && (hip = insetPoly(p, Math.min(3.2, Math.max(1.2, ob.h1 * 0.45))))) {
+  } else if (b.r === 'gable' && (hip = insetPoly(pos, Math.min(3.2, Math.max(1.2, ob.h1 * 0.45)))) && (hip = hip.slice().reverse())) {
     // irregular footprint with a pitched roof: hipped slopes up to an inset ridge platform (reads as slate roofs)
     const d = Math.min(3.2, Math.max(1.2, ob.h1 * 0.45)), rise = d * 0.75;
     for (let k = 0; k < p.length; k++) {
