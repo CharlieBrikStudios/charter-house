@@ -283,7 +283,7 @@ class Wall {
 
 function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFlat) {
   let hip = null;
-  let p = b.p; if (polyArea(p) < 0) p = p.slice().reverse();
+  let p = b.p; if (polyArea(p) > 0) p = p.slice().reverse();   // walls face out: a positive-area plan (x, z) winds the wall quads inwards
   // our winding: model (x, z) with z pointing "down" on the plan; outward normal of edge a->b = (dz, -dx) for CCW in (x, -z)
   const c = centroidOf(p);
   const gC = groundAt(c[0], c[1]);

@@ -422,7 +422,11 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
       const bar = boxGeom(a + 0.6, eh + 0.9, -0.24, b - 0.6, eh + 1.04, -0.16); B.add('timberBlack', bar);
     } else { boxUV(tri); B.add('cBrickOld', tri); }
     const s1 = new THREE.BufferGeometry();
-    s1.setAttribute('position', new THREE.Float32BufferAttribute([a + 0.3, eh, -0.5, m, ap, -0.5, m, ap, 5, a + 0.3, eh, -0.5, m, ap, 5, a + 0.3, eh, 5,
+    // wound to face up and out (Charlie, 16 Nov: from above they faced down, so only the black gable boards showed, like A-frames)
+    s1.setAttribute('position', new THREE.Float32BufferAttribute([a + 0.3, eh, -0.5, m, ap, 5, m, ap, -0.5, a + 0.3, eh, -0.5, a + 0.3, eh, 5, m, ap, 5,
+      m, ap, -0.5, b - 0.3, eh, 5, b - 0.3, eh, -0.5, m, ap, -0.5, m, ap, 5, b - 0.3, eh, 5,
+      // and the undersides, seen from the pavement
+      a + 0.3, eh, -0.5, m, ap, -0.5, m, ap, 5, a + 0.3, eh, -0.5, m, ap, 5, a + 0.3, eh, 5,
       m, ap, -0.5, b - 0.3, eh, -0.5, b - 0.3, eh, 5, m, ap, -0.5, b - 0.3, eh, 5, m, ap, 5], 3)); s1.computeVertexNormals(); boxUV(s1, 2.6); B.add('cSlate', s1);
     for (const [x1, y1] of [[a + 0.3, eh], [b - 0.3, eh]]) {
       const len = Math.hypot(m - x1, ap - y1); const g = new THREE.BoxGeometry(len, 0.22, 0.06);
