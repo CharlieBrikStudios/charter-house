@@ -1,7 +1,7 @@
 // Call mode (preview, 15 Nov 2026, Charlie's "go ahead with all those"). Loaded only with ?call in the link.
 // Charlie's stops on one key, proof billboards, the protected council land, the bollards, a see-through St Mary's Gate,
 // the one bed vs two bed compare, an honest live line and the after-call shortlist link. Nothing here changes the live page.
-import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1794928484';
+import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1794931130';
 import { rentFor, PICKS } from './sales.js?v=1794535000';
 
 const BASE = 'assets/';
@@ -45,13 +45,12 @@ const SMG = [[-12.5, 18.8], [-22.5, 18.3], [-22.8, 13.5], [-63.0, 15.2], [-63.8,
 // cam: [x, height above ground, z] -> look at [x, height, z]
 const STOPS = [
   { k: 'Bearings', t: 'Charter House, on the corner of Churchgate', s: 'The park at the end of the street. The Underbanks start 30 seconds away.', cam: [150, 58, 52], at: [10, 4, 4], bb: ['charter', 'park', 'brewery'] },
-  { k: 'The old town', t: 'Down to the Market Hall, between the churches', s: 'St Mary’s and the 1861 Market Hall, at the top of Churchgate. St Mary’s Gate is see-through here so you can find them.', cam: [30, 30, -24], at: [-150, 2, -18], bb: ['church', 'hall', 'lofts'], xray: true },
+  { k: 'The old town', t: 'Down to the Market Hall, between the churches', s: 'St Mary’s and the 1861 Market Hall, at the top of Churchgate.', cam: [30, 30, -24], at: [-150, 2, -18], bb: ['church', 'hall', 'lofts'] },   // St Mary's Gate solid again (Charlie, 17 Nov)
   { k: 'The Underbanks', t: 'The last site to be developed in the Underbanks', s: 'A conservation area since 1974. Nothing over four storeys can be built here.', cam: [230, 250, 330], at: [-40, 0, 10], bb: ['ca', 'last'], ca: true },
   { k: 'The views', t: 'St Mary’s Gate, the car park and the children’s park', s: 'The car park and the park are council-owned. The view stays.', cam: [6, 13.5, -3.5], at: [-30, 1, -30], bb: ['smg'], land: true },
-  { k: 'A quiet street', t: 'The bollards', s: 'This was a cut-through to Asda. No traffic now.', cam: [-108, 16, 24], at: [-138, 0, -12], bollards: true },
-  { k: 'The apartments', t: 'One bed or two bed', s: 'The plan, the price, the rent and the yield, side by side.', units: true },
+  { k: 'A quiet street', t: 'The bollards', s: 'This was a cut-through to Asda. No traffic now.', cam: [-78, 14, -4], at: [-137, 1, -12], bollards: true },   // down Market Place from the end of Churchgate (17 Nov: the old camera sat on a shop roof)
   { k: 'Round the back', t: 'The courtyard and the walkways', s: 'The residents’ entrances, off the street.', cam: [36, 9.5, 37], at: [14, 5.5, 13] },
-  { k: 'Your shortlist', t: 'The flats you looked at', s: 'I’ll send you a link with the plans and the numbers on WhatsApp.', shortlist: true },
+  { k: 'Private pre-launch', t: 'Charter House', s: '27 apartments on the corner of Churchgate and Harvey Street.', front: true },   // ends at the front, no shortlist pop-up (Charlie, 17 Nov)
 ];
 
 let CH, THREE, on = false, idx = -1, raf = 0;
@@ -381,10 +380,9 @@ function go(i) {
     const [a, b] = pickPair();
     CH.toUnit(a);
     setTimeout(() => { if (idx === i) openCompare(a, b); }, 1700);
-  } else if (s.shortlist) {
+  } else if (s.front) {
     if (CH.S.mode !== 'explore') CH.toExplore(false);
     fly(new THREE.Vector3(-14, 13.5, -29), new THREE.Vector3(9, 6, 6), 1.6);
-    setTimeout(() => { if (idx === i) openShort(); }, 900);
   } else {
     if (CH.S.mode !== 'explore') CH.toExplore(false);
     const [cx, ch, cz] = s.cam, [tx, th, tz] = s.at;
