@@ -18,7 +18,7 @@ export const SITE = {
   whatsapp: '447353164480',
   phone: '07353 164480',
   email: 'charlie@brik-studios.com',
-  updated: '16 Nov 2026',
+  updated: '17 Nov 2026',
 };
 
 export const FLOOR_H = 2.85;                // floor to floor (61.77 / 64.62 / 67.47 / 70.32 AOD)
@@ -84,8 +84,8 @@ export const UNITS = [
   P(23, '3.03', 3, '1A', 1, 412, 193000, 'Sold', 'Park facing, top floor', ['CG4', 'RC3'], [10.9, -0.34, 14.72, 11.0], 'Top floor, looking across Churchgate to the treetops'),
   P(24, '3.04', 3, '2A', 2, 658, 303000, 'Sold', 'Top-floor corner 2 bed, 5 windows', ['CG1', 'CG2', 'CG3', 'HV1', 'HV2'], [0, 0, 10.9, 6.2], 'Top-floor corner: views towards the Market Hall and St Mary’s Church'),
   P(25, '3.05', 3, '1C', 1, 410, 194000, 'Available', 'Facing St Mary’s Gate, top floor', ['HV3', 'HV4'], [0, 6.2, 6.7, 13.3], 'Top floor, facing St Mary’s Gate across Harvey Street'),
-  P(26, '3.06', 3, '1B', 1, 412, 195000, 'Available', 'Facing St Mary’s Gate, top floor', ['HV5', 'RH1'], [0.34, 13.3, 11.7, 17.2], 'Top floor, Harvey Street to the front, courtyard to the rear'),
-  P(27, '3.07', 3, '1B', 1, 412, 195000, 'Available', 'Facing St Mary’s Gate, top floor', ['HV6', 'RH2'], [0.34, 17.2, 11.7, 21.27], 'Top floor, Harvey Street to the front, courtyard to the rear'),
+  P(26, '3.06', 3, '1B', 1, 412, 195000, 'Sold', 'Facing St Mary’s Gate, top floor', ['HV5', 'RH1'], [0.34, 13.3, 11.7, 17.2], 'Top floor, Harvey Street to the front, courtyard to the rear'),
+  P(27, '3.07', 3, '1B', 1, 412, 195000, 'Sold', 'Facing St Mary’s Gate, top floor', ['HV6', 'RH2'], [0.34, 17.2, 11.7, 21.27], 'Top floor, Harvey Street to the front, courtyard to the rear'),
 ];
 
 // Interior CGIs per apartment family. Images are Charter House CGIs (indicative).

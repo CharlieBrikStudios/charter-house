@@ -1,7 +1,7 @@
 // Call mode (preview, 15 Nov 2026, Charlie's "go ahead with all those"). Loaded only with ?call in the link.
 // Charlie's stops on one key, proof billboards, the protected council land, the bollards, a see-through St Mary's Gate,
 // the one bed vs two bed compare, an honest live line and the after-call shortlist link. Nothing here changes the live page.
-import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1794867359';
+import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1794918000';
 import { rentFor, PICKS } from './sales.js?v=1794535000';
 
 const BASE = 'assets/';

@@ -1,6 +1,6 @@
 // Which development this page sells: Charter House (default) or The Print House (window.__SITE = 'ph' or ?site=ph).
 // Everything the selector shows (units, floors, prices, copy) comes through here, so one engine serves both.
-import * as CHD from './data.js?v=1794867359';
+import * as CHD from './data.js?v=1794918000';
 import { PH_SITE, PH_FLOORS, PH_UNITS, PH_FH } from './ph_data.js?v=1794535000';
 import { OSL_SITE, OSL_FLOORS, OSL_UNITS, OSL_FH } from './osl_data.js?v=1794535000';
 import { UBL_SITE, UBL_FLOORS, UBL_UNITS, UBL_FH } from './ubl_data.js?v=1794535000';
