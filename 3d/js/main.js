@@ -9,32 +9,32 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002500';
-import { buildUBL } from './ublbuild.js?v=1795002500';
-import { buildUBLFitout } from './ublfit.js?v=1795002500';
-import { UBL_LEVELS } from './ubl_data.js?v=1795002500';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002500';
-import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002500';
-import { buildOSL } from './oslbuild.js?v=1795002500';
-import { buildOSLFitout } from './oslfit.js?v=1795002500';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002500';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002500';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002500';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002500';
-import { buildFar, hazeUniforms } from './far.js?v=1795002500';
-import { buildRailway } from './railway.js?v=1795002500';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002500';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002600';
+import { buildUBL } from './ublbuild.js?v=1795002600';
+import { buildUBLFitout } from './ublfit.js?v=1795002600';
+import { UBL_LEVELS } from './ubl_data.js?v=1795002600';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002600';
+import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002600';
+import { buildOSL } from './oslbuild.js?v=1795002600';
+import { buildOSLFitout } from './oslfit.js?v=1795002600';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002600';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002600';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002600';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002600';
+import { buildFar, hazeUniforms } from './far.js?v=1795002600';
+import { buildRailway } from './railway.js?v=1795002600';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002600';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1795002500';
-import { Interior } from './interior.js?v=1795002500';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002500';
-import { buildPHFitout } from './phfit.js?v=1795002500';
-import { PH_PLAN, phSide } from './ph_data.js?v=1795002500';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002500';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002500';
-import { createTour } from './tour.js?v=1795002500';
-import { buildCrowd } from './crowd.js?v=1795002500';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002500';
+import { Forest, windUniforms } from './trees.js?v=1795002600';
+import { Interior } from './interior.js?v=1795002600';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002600';
+import { buildPHFitout } from './phfit.js?v=1795002600';
+import { PH_PLAN, phSide } from './ph_data.js?v=1795002600';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002600';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002600';
+import { createTour } from './tour.js?v=1795002600';
+import { buildCrowd } from './crowd.js?v=1795002600';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002600';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -256,7 +256,7 @@ const CHURCHGATE = [[-145, -11.5], [-121, -8.9], [-104, -7.5], [-85, -6.8], [-62
 const roadZ = (x) => { for (let i = 0; i < CHURCHGATE.length - 1; i++) { const a = CHURCHGATE[i], b = CHURCHGATE[i + 1]; if (x >= a[0] && x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return null; };
 async function build() {
   if (IS_OSL) return buildOSLScene();
-  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002500')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
+  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002600')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
   setTerrain(W.terrain); setMid(F.mid); wallsData = wallsJson;
   W.bld.push(...(F.bld || []).filter(b => !TOUR_WORLD || ![561905, 561914, 561919].includes(b.id)));   // tour: the station is built by railway.js
   const exchangeBld = TOUR_WORLD ? W.bld.filter(b => EXCHANGE_IDS.includes(b.id)) : [];
@@ -1435,7 +1435,7 @@ const LANDMARKS = IS_OSL ? [
   ['Wellington Street', [-18, 1, 214]], ['Fletcher Street', [-45.5, 1, 185.7]], ['Seaton House · Brik Studios HQ', [-32, 12, 212]], ["Residents' garden", [-49, 3, 210]],
   ["St Joseph's Primary School", [-74, 6, 170]], ["St Joseph's Church", [-128, 16, 207]],
   ['Church and school car park', [-84, 2.5, 193]], ['School playground', [-80, 3, 212]],
-  ['The Underbanks · about 3 min walk', [-170, 9, 95]],   // Charlie, 18 Nov: show buyers how close the Underbanks are
+  ['The Underbanks · about 4 min walk', [-138, 8, 55]],   // Charlie, 18 Nov: show buyers how close the Underbanks are (≈300 m by the streets)
 ] : [
   ['Churchgate', [-30, 0.6, -6.6]], ['Churchgate', [48, 1.2, 2]], ['Harvey Street', [-5.6, 0.4, 19]], ['Apsley Street', [24, 0.2, 52]],
   ['Play park', [17, 6.5, -29]], ['Churchgate car park', [-24, 2.5, -27]], ["Residents' courtyard", [17, 3.5, 17]],   // 50–56 Churchgate label removed (Charlie, 18 Nov)
@@ -1993,11 +1993,11 @@ function adapt(rawDt) {
 // ------------------------------------------------------------------ build timeline: scroll from groundworks to handover
 // Stages are indicative until the contractor's programme is loaded (dates replace the stage names when it is).
 const BUILD_STAGES = IS_PH ? [
-  [0, 'Site set-up and groundworks'], [0.12, 'The frame rises, floor by floor'], [0.55, 'Brickwork and the big 8 ft windows'],
+  [0, 'Site set-up and the dig'], [0.07, 'Rebar and concrete: the foundations and the core'], [0.15, 'The steel frame rises, floor by floor'], [0.3, 'The outside: brickwork and the big 8 ft windows'],
   [0.72, 'Steel walkways go on round the garden'], [0.86, 'The residents’ garden is planted'], [0.97, `Handover · ${SITE.completion}`],
-] : [
-  [0, 'Site set-up and groundworks'], [0.12, 'The frame rises, floor by floor'], [0.55, 'Brickwork, stone and the gables'],
-  [0.72, 'Glazing and the courtyard walkways'], [0.86, 'The courtyard garden is planted'], [0.97, `Handover · ${SITE.completion}`],
+] : [   // Charter House (Charlie): the dig, rebar and concrete, the steel frame, the outside, then handover in February 2028
+  [0, 'Site set-up and the dig'], [0.07, 'Rebar and concrete: the foundations and the core'], [0.15, 'The steel frame rises, floor by floor'], [0.55, 'The outside: brickwork, stone and the gables'],
+  [0.72, 'Glazing and the courtyard walkways'], [0.86, 'The courtyard garden is planted'], [0.97, 'Handover · February 2028'],
 ];
 let crane = null, buildP = 1, buildPlay = 0;
 function makeCrane() {
@@ -2020,11 +2020,79 @@ function makeCrane() {
   g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   return g;
 }
+// the construction stages under the brick (Charlie: the dig, rebar and concrete, the steel frame, then the outside): an
+// excavated pad, a concrete raft with its rebar mat, then a steel frame with concrete floor slabs rising level by level ahead of
+// the brickwork, which follows it up; the rig is hidden once the outside is complete
+let buildRig = null;
+function makeBuildRig() {
+  const grp = new THREE.Group(); grp.name = 'buildRig';
+  const base = SY(), nf = IS_PH ? CH.NF : 4, fh = IS_PH ? CH.FH : FLOOR_H;
+  let polys, W3;
+  if (IS_PH) {
+    const P = PH_PLAN, S = P.SIDE;
+    polys = [[[0, 0], [P.UW, 0], [P.UW, P.WING[1]], [P.WING[2], P.WING[1]], [P.WING[2], P.WING[3]], [P.UW, P.WING[3]], [P.UW, P.D], [0, P.D]],
+      [phSide(0, 0), phSide(S.S, 0), phSide(S.S, S.T), phSide(0, S.T)]];
+    W3 = (u, y, v) => CH.local(u, y, v);
+  } else {
+    polys = [[[0, 0], [10.9, 0], [10.9, -0.34], [22.61, -0.34], [22.61, 11.03], [11.7, 11.03], [11.7, 21.27], [0.34, 21.27], [0.34, 9.2], [0, 9.2]]];
+    W3 = (x, y, z) => new THREE.Vector3(x, base + y, z);
+  }
+  const inside = (P, x, z) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) if ((P[i][1] > z) !== (P[j][1] > z) && x < (P[j][0] - P[i][0]) * (z - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) c = !c; return c; };
+  const mat = {
+    earth: new THREE.MeshStandardMaterial({ color: '#5b4632', roughness: 1 }), rebar: new THREE.MeshStandardMaterial({ color: '#8a4b2a', roughness: 0.7, metalness: 0.4 }),
+    conc: new THREE.MeshStandardMaterial({ color: '#b9b6b0', roughness: 0.95 }), steel: new THREE.MeshStandardMaterial({ color: '#5d6266', roughness: 0.5, metalness: 0.6 }),
+  };
+  const bar = (A, B, w, h, list) => {   // a box from A to B (world points), w wide, h tall
+    const d = new THREE.Vector3().subVectors(B, A), L = d.length(); if (L < 0.05) return;
+    const g = new THREE.BoxGeometry(L, h, w); g.rotateY(Math.atan2(-d.z, d.x)); g.translate((A.x + B.x) / 2, (A.y + B.y) / 2, (A.z + B.z) / 2); list.push(g);
+  };
+  const slabFor = (P, y, t) => {   // a slab over the plan polygon at height y (in the frame's own units), t thick
+    const g = new THREE.BufferGeometry(), pos = [];
+    const sh = new THREE.Shape(P.map(([a, b]) => new THREE.Vector2(a, b))), tris = THREE.ShapeUtils.triangulateShape(sh.getPoints(), []);
+    for (const [i, j, k] of tris) for (const yy of [y, y - t]) for (const q of (yy === y ? [i, j, k] : [i, k, j])) { const w = W3(P[q][0], yy, P[q][1]); pos.push(w.x, w.y, w.z); }
+    for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], a0 = W3(a[0], y - t, a[1]), a1 = W3(a[0], y, a[1]), b0 = W3(b[0], y - t, b[1]), b1 = W3(b[0], y, b[1]); pos.push(...a0.toArray(), ...b0.toArray(), ...b1.toArray(), ...a0.toArray(), ...b1.toArray(), ...a1.toArray()); }
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals(); return g;
+  };
+  // the dig and the raft
+  const dig = [], raft = [], mesh = [];
+  for (const P of polys) {
+    dig.push(slabFor(P, -0.05, 0.6));
+    raft.push(slabFor(P, 0.25, 0.3));
+    let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [a, b] of P) { x0 = Math.min(x0, a); z0 = Math.min(z0, b); x1 = Math.max(x1, a); z1 = Math.max(z1, b); }
+    for (let a = x0 + 0.3; a < x1; a += 0.6) { let r = null; for (let b = z0 + 0.1; b <= z1; b += 0.25) { const ok = inside(P, a, b); if (ok && !r) r = b; if ((!ok || b + 0.25 > z1) && r !== null) { bar(W3(a, 0.3, r), W3(a, 0.3, b), 0.03, 0.03, mesh); r = null; } } }
+    for (let b = z0 + 0.3; b < z1; b += 0.6) { let r = null; for (let a = x0 + 0.1; a <= x1; a += 0.25) { const ok = inside(P, a, b); if (ok && r === null) r = a; if ((!ok || a + 0.25 > x1) && r !== null) { bar(W3(r, 0.3, b), W3(a, 0.3, b), 0.03, 0.03, mesh); r = null; } } }
+  }
+  const M1 = (list, m, name) => { if (!list.length) return null; const o = new THREE.Mesh(mergeGeometries(list.map(g => g.index ? g.toNonIndexed() : g), false), m); o.name = name; o.castShadow = o.receiveShadow = true; grp.add(o); return o; };
+  const lv = { dig: M1(dig, mat.earth, 'dig'), raft: M1(raft, mat.conc, 'raft'), rebar: M1(mesh, mat.rebar, 'rebar'), levels: [] };
+  // the frame: a column grid inside the plan and at its corners, edge beams and a concrete slab at every floor
+  for (let k = 0; k < nf; k++) {
+    const st = [], sl = [], y0 = k * fh + 0.3, y1 = (k + 1) * fh + 0.3;
+    for (const P of polys) {
+      let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [a, b] of P) { x0 = Math.min(x0, a); z0 = Math.min(z0, b); x1 = Math.max(x1, a); z1 = Math.max(z1, b); }
+      const cols = P.map(q => q.slice());
+      for (let a = x0 + 3; a < x1 - 1; a += 5.8) for (let b = z0 + 3; b < z1 - 1; b += 5.8) if (inside(P, a, b)) cols.push([a, b]);
+      for (const [a, b] of cols) { const A = W3(a, y0, b); const g = new THREE.BoxGeometry(0.26, y1 - y0, 0.26); g.translate(A.x, (W3(a, y0, b).y + W3(a, y1, b).y) / 2, A.z); st.push(g); }
+      for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; bar(W3(a[0], y1 - 0.2, a[1]), W3(b[0], y1 - 0.2, b[1]), 0.22, 0.4, st); }
+      for (let b = z0 + 3; b < z1 - 1; b += 5.8) { let r = null; for (let a = x0; a <= x1 + 0.01; a += 0.5) { const ok = inside(P, a, b); if (ok && r === null) r = a; if ((!ok || a + 0.5 > x1) && r !== null) { bar(W3(r, y1 - 0.2, b), W3(a, y1 - 0.2, b), 0.2, 0.36, st); r = null; } } }
+      if (k < nf - 1) sl.push(slabFor(P, y1, 0.25));
+    }
+    lv.levels.push({ steel: M1(st, mat.steel, 'steel' + k), slab: M1(sl, mat.conc, 'slab' + k) });
+  }
+  grp.userData = lv; scene.add(grp); return grp;
+}
 function setBuild(p) {
   buildP = p = THREE.MathUtils.clamp(p, 0, 1);
   const base = SY(), top = IS_PH ? base + CH.FH * CH.NF + 2 : base + 4 * FLOOR_H + 5;
-  const rise = THREE.MathUtils.smoothstep(p, 0.12, 0.55);
-  if (p >= 0.995) setCut(999); else { cutTarget = p < 0.12 ? base - 0.5 : base + 0.3 + (top - base) * rise; CUT.constant = cutTarget; }
+  // the outside follows the frame up: brick from 30% to 62%, the frame ahead of it from 15% to 47%
+  const rise = THREE.MathUtils.smoothstep(p, 0.3, 0.62);
+  if (p >= 0.995) setCut(999); else { cutTarget = p < 0.3 ? base - 0.5 : base + 0.3 + (top - base) * rise; CUT.constant = cutTarget; }
+  if (!buildRig) { try { buildRig = makeBuildRig(); } catch (e) { console.warn('build rig', e); buildRig = new THREE.Group(); buildRig.userData = { levels: [] }; } }
+  {
+    const R = buildRig.userData, on = p < 0.66, fr = THREE.MathUtils.smoothstep(p, 0.15, 0.47), nLv = R.levels.length, shown = Math.ceil(fr * nLv - 1e-6);
+    buildRig.visible = on;
+    if (R.dig) R.dig.visible = p < 0.3; if (R.rebar) R.rebar.visible = p >= 0.07 && p < 0.11; if (R.raft) R.raft.visible = p >= 0.11;
+    R.levels.forEach((L, k) => { const v = p >= 0.15 && k < shown; if (L.steel) L.steel.visible = v; if (L.slab) L.slab.visible = v && k < shown - 1 + (fr >= 1 ? 1 : 0); });
+  }
   const glazed = p > 0.6, walk = p > 0.72, garden = p > 0.86;
   if (CH.meshes.glass) CH.meshes.glass.visible = glazed;
   CH.unitRooms.forEach(r => r.visible = glazed);
@@ -2041,7 +2109,7 @@ function setBuild(p) {
 function openBuild() {
   if (S.mode !== 'explore') toExplore(false);
   $('#buildbar').hidden = false; $('#btn-build').setAttribute('aria-pressed', 'true'); $('#panel').classList.add('hide');
-  $('#bb-ticks').innerHTML = ['Start', 'Frame', 'Brick', 'Walkways', 'Garden', 'Handover'].map(t => `<span>${t}</span>`).join('');
+  $('#bb-ticks').innerHTML = (IS_PH ? ['Dig', 'Concrete', 'Steel', 'Outside', 'Walkways', 'Handover'] : ['Dig', 'Concrete', 'Steel', 'Outside', 'Garden', 'Handover']).map(t => `<span>${t}</span>`).join('');
   $('#hint').style.opacity = 0; setBuild(0.08); buildPlay = 1;
 }
 function closeBuild() {
@@ -2124,8 +2192,8 @@ function buildSpots() {
   }
   // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
   for (const p of PANO_INDEX) {
-    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=1794803000`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
-    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=1794803000`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
+    if (p.spot) { const sp = SPOTS.find((q) => q.id === p.spot); if (sp) { sp.pano = `pano/${p.file}.jpg?v=${p.v || 1794803000}`; sp.hd = !!p.hd; sp.glide = false; sp.note = sp.note + ' Photoreal 360°: drag to look round.'; } continue; }   // a street spot with its own photoreal 360
+    SPOTS.push({ id: 'pano-' + p.file, name: p.name, at: V3(...p.pos), look: V3(...p.look), pano: `pano/${p.file}.jpg?v=${p.v || 1794803000}`, hd: !!p.hd, glide: false, type: p.type, plot: p.plot, room: p.room || p.name, note: p.note || 'Photoreal 360°. Drag to look round.' });
   }
   const LINKS = {"wellington": [], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner", "brewery"], "brewery": ["harvey"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
@@ -2519,7 +2587,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1795000000').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1795002600').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
@@ -2616,4 +2684,4 @@ if (EDITION === 'ch' || EDITION === 'ph') {
 }
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.
-if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002500').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002600').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
