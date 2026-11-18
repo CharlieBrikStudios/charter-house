@@ -1,11 +1,11 @@
-// Which development this page sells: Charter House (default) or The Print House (window.__SITE = 'ph' or ?site=ph).
+// Which development this page sells: Charter House (default) or The Print House (window.__SITE = 'ph', set by the print-house/3d page).
 // Everything the selector shows (units, floors, prices, copy) comes through here, so one engine serves both.
-import * as CHD from './data.js?v=1794998796';
+import * as CHD from './data.js?v=1794999265';
 import { PH_SITE, PH_FLOORS, PH_UNITS, PH_FH } from './ph_data.js?v=1794535000';
 import { OSL_SITE, OSL_FLOORS, OSL_UNITS, OSL_FH } from './osl_data.js?v=1794535000';
 import { UBL_SITE, UBL_FLOORS, UBL_UNITS, UBL_FH } from './ubl_data.js?v=1794535000';
 
-export const IS_PH = typeof window !== 'undefined' && (window.__SITE === 'ph' || /[?&]site=ph\b/.test(location.search));
+export const IS_PH = typeof window !== 'undefined' && window.__SITE === 'ph';   // the Print House edition lives on its own link (print-house/3d) from 18 Nov; ?site=ph no longer opens it here
 // Oldham Street Lofts, Hyde (window.__SITE = 'osl' or ?site=osl): a different town, built in the same plan-frame way as The Print House
 export const IS_OSL = typeof window !== 'undefined' && (window.__SITE === 'osl' || /[?&]site=osl\b/.test(location.search));
 // Underbank Lofts, St Petersgate, Stockport (window.__SITE = 'ubl' or ?site=ubl): in the same Stockport world as The Print House
