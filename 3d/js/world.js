@@ -3,8 +3,8 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1795002400';
-import { buildShopfronts } from './shopfronts.js?v=1795002400';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795002500';
+import { buildShopfronts } from './shopfronts.js?v=1795002500';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
@@ -138,6 +138,29 @@ export function insetPoly(p, d) {
     if ((b[0] - a[0]) * (qb[0] - qa[0]) + (b[1] - a[1]) * (qb[1] - qa[1]) <= 0) return null;
   }
   return out;
+}
+function cleanPoly(p) {
+  let q = p.slice();
+  for (let pass = 0; pass < 3; pass++) {
+    const out = [];
+    for (let i = 0; i < q.length; i++) {
+      const a = out.length ? out[out.length - 1] : q[q.length - 1], b = q[i], c = q[(i + 1) % q.length];
+      if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 0.35) continue;
+      const e1x = b[0] - a[0], e1z = b[1] - a[1], e2x = c[0] - b[0], e2z = c[1] - b[1], l1 = Math.hypot(e1x, e1z), l2 = Math.hypot(e2x, e2z);
+      if (l2 > 1e-6 && Math.abs(e1x * e2z - e1z * e2x) / (l1 * l2) < 0.12 && e1x * e2x + e1z * e2z > 0) continue;   // in line
+      out.push(b);
+    }
+    if (out.length === q.length || out.length < 3) { q = out.length >= 3 ? out : q; break; }
+    q = out;
+  }
+  return q;
+}
+function hipRoof(pos, d0) {
+  const pc = cleanPoly(pos);
+  for (const d of [d0, d0 * 0.6, 1.0, 0.6]) {
+    for (const P of [pos, pc]) { const q = insetPoly(P, d); if (q) return { pr: P.slice().reverse(), q: q.slice().reverse(), d }; }
+  }
+  return null;
 }
 // minimum-area oriented bounding box: centre, unit axis (long), half lengths
 export function obb(pts) {
@@ -350,9 +373,10 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
       const g = new THREE.BoxGeometry(0.75, 1.6, 0.55); g.rotateY(Math.atan2(-uz, ux)); g.translate(cpos[0], yTop + rise + 0.3, cpos[2]); chim.push(g);
       for (const d of [-0.18, 0.18]) { const pot = new THREE.CylinderGeometry(0.09, 0.11, 0.4, 8); pot.translate(cpos[0] + ux * d, yTop + rise + 1.3, cpos[2] + uz * d); chim.push(pot); }
     }
-  } else if (b.r === 'gable' && (hip = insetPoly(pos, Math.min(3.2, Math.max(1.2, ob.h1 * 0.45)))) && (hip = hip.slice().reverse())) {
-    // irregular footprint with a pitched roof: hipped slopes up to an inset ridge platform (reads as slate roofs)
-    const d = Math.min(3.2, Math.max(1.2, ob.h1 * 0.45)), rise = d * 0.75;
+  } else if (b.r === 'gable' && (hip = hipRoof(pos, Math.min(3.2, Math.max(1.2, ob.h1 * 0.45))))) {
+    // irregular footprint with a pitched roof: hipped slopes up to an inset ridge platform (reads as slate roofs). The plan is
+    // tidied first (doubled and in-line points out) and the slope narrowed if it has to be, so awkward footprints still get one
+    const d = hip.d, rise = d * 0.75, p = hip.pr; hip = hip.q;
     for (let k = 0; k < p.length; k++) {
       const a = p[k], c = p[(k + 1) % p.length], qa = hip[k], qc = hip[(k + 1) % p.length];
       let t1 = [[a[0], yTop, a[1]], [c[0], yTop, c[1]], [qc[0], yTop + rise, qc[1]]], t2 = [[a[0], yTop, a[1]], [qc[0], yTop + rise, qc[1]], [qa[0], yTop + rise, qa[1]]];
@@ -454,7 +478,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + (opts.splat || 'world_splat.png'), { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795002500'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {
@@ -489,7 +513,7 @@ gWet = S.b;`)
   for (const id of (opts.white || [])) { const b = W.bld.find(q => q.id === id); if (b) b.white = true; }
   // round the Print House the grey flat roofs become slate (Charlie, 18 Nov: "nothing's built like that with a really grey flat
   // roof"); sheds, canopies and the big works roofs stay flat
-  if (opts.slateNear) { const [cx, cz, rr] = opts.slateNear; for (const b of W.bld) { if (b.r !== 'flat' || ['shed', 'canopy', 'works'].includes(b.s)) continue; let x = 0, z = 0; for (const q of b.p) { x += q[0]; z += q[1]; } x /= b.p.length; z /= b.p.length; if (Math.hypot(x - cx, z - cz) < rr && Math.abs(polyArea(b.p)) < 2600) b.r = 'gable'; } }
+  if (opts.slateNear) { const [cx, cz, rr] = opts.slateNear; for (const b of W.bld) { if (b.r !== 'flat' || ['shed', 'canopy'].includes(b.s)) continue; let x = 0, z = 0; for (const q of b.p) { x += q[0]; z += q[1]; } x /= b.p.length; z /= b.p.length; if (Math.hypot(x - cx, z - cz) < rr) b.r = 'gable'; } }   // every size now, works included (the big flat ones read as empty, Charlie's video 6:20)
   W.bld.forEach((b, i) => addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead));
   if (W.special.brewery) buildBrewery(M, W.special.brewery, Wl, roofsFlat, chim, group, W.special.brewery_bulk);
   const tm = townMaterial(M);

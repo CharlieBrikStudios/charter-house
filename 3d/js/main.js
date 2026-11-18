@@ -9,32 +9,32 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002400';
-import { buildUBL } from './ublbuild.js?v=1795002400';
-import { buildUBLFitout } from './ublfit.js?v=1795002400';
-import { UBL_LEVELS } from './ubl_data.js?v=1795002400';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002400';
-import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002400';
-import { buildOSL } from './oslbuild.js?v=1795002400';
-import { buildOSLFitout } from './oslfit.js?v=1795002400';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002400';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002400';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002400';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002400';
-import { buildFar, hazeUniforms } from './far.js?v=1795002400';
-import { buildRailway } from './railway.js?v=1795002400';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002400';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002500';
+import { buildUBL } from './ublbuild.js?v=1795002500';
+import { buildUBLFitout } from './ublfit.js?v=1795002500';
+import { UBL_LEVELS } from './ubl_data.js?v=1795002500';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002500';
+import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002500';
+import { buildOSL } from './oslbuild.js?v=1795002500';
+import { buildOSLFitout } from './oslfit.js?v=1795002500';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002500';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002500';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002500';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002500';
+import { buildFar, hazeUniforms } from './far.js?v=1795002500';
+import { buildRailway } from './railway.js?v=1795002500';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002500';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1795002400';
-import { Interior } from './interior.js?v=1795002400';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002400';
-import { buildPHFitout } from './phfit.js?v=1795002400';
-import { PH_PLAN, phSide } from './ph_data.js?v=1795002400';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002400';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002400';
-import { createTour } from './tour.js?v=1795002400';
-import { buildCrowd } from './crowd.js?v=1795002400';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002400';
+import { Forest, windUniforms } from './trees.js?v=1795002500';
+import { Interior } from './interior.js?v=1795002500';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002500';
+import { buildPHFitout } from './phfit.js?v=1795002500';
+import { PH_PLAN, phSide } from './ph_data.js?v=1795002500';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002500';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002500';
+import { createTour } from './tour.js?v=1795002500';
+import { buildCrowd } from './crowd.js?v=1795002500';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002500';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -256,7 +256,7 @@ const CHURCHGATE = [[-145, -11.5], [-121, -8.9], [-104, -7.5], [-85, -6.8], [-62
 const roadZ = (x) => { for (let i = 0; i < CHURCHGATE.length - 1; i++) { const a = CHURCHGATE[i], b = CHURCHGATE[i + 1]; if (x >= a[0] && x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return null; };
 async function build() {
   if (IS_OSL) return buildOSLScene();
-  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002400')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
+  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002500')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
   setTerrain(W.terrain); setMid(F.mid); wallsData = wallsJson;
   W.bld.push(...(F.bld || []).filter(b => !TOUR_WORLD || ![561905, 561914, 561919].includes(b.id)));   // tour: the station is built by railway.js
   const exchangeBld = TOUR_WORLD ? W.bld.filter(b => EXCHANGE_IDS.includes(b.id)) : [];
@@ -421,7 +421,7 @@ async function build() {
     // the opening shot is the CGI's side, from high over the south-east corner: both blocks' walkways wrapped round the garden
     HERO.pos.copy(CH.local(47, 39, 33)); HERO.tgt.copy(CH.local(13, 2.5, 13.5));
     VIEWS.rear = { pos: CH.local(50, 21, -44), tgt: CH.local(12, 7, 5) };
-    VIEWS.street = { pos: new THREE.Vector3(6, groundAt(6, 236) + 38, 236), tgt: new THREE.Vector3(-29, groundAt(-27, 214) + 4, 212) };   // over the street trees, across Seaton House into the garden
+    VIEWS.street = { pos: CH.local(-4, 22, 60), tgt: CH.local(16, 4, 24) };   // from over the Fletcher Street corner of Wellington Street, clear of the trees: Seaton House's front, over it to the garden and the blocks
     VIEWS.above = { pos: CH.local(36, 72, 34), tgt: CH.local(13, 0, 12) };   // near plan view from the south: the walkways and the garden
     // over the roofs from behind Seaton House: St Joseph's across Fletcher Street and the 1840 viaduct on the skyline beyond
     VIEWS.church = { pos: CH.local(22, 26, 50), tgt: CH.local(42.2, 12, -25.2) };   // a shallow look west: the horizon (and the viaduct) stays in frame
@@ -2616,4 +2616,4 @@ if (EDITION === 'ch' || EDITION === 'ph') {
 }
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.
-if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002400').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002500').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
