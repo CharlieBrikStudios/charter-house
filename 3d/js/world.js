@@ -3,8 +3,8 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1795002200';
-import { buildShopfronts } from './shopfronts.js?v=1795002200';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795002400';
+import { buildShopfronts } from './shopfronts.js?v=1795002400';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
@@ -298,7 +298,7 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
   let gMin = Infinity; for (const q of p) gMin = Math.min(gMin, groundAt(q[0], q[1]));
   const st = STYLE[b.s] ?? 3;
   const sd = hash(b.id + 0.37);
-  const oldTown = c[0] < -60 && c[0] > -280 && c[1] > -80 && c[1] < 160;   // brick, not random white render, round Market Place and the Underbanks (Charlie, 18 Nov)
+  const oldTown = (c[0] < -60 && c[0] > -280 && c[1] > -80 && c[1] < 160) || Math.hypot(c[0] + 52, c[1] - 204) < 170;   // and round the Print House (Victorian brick, 18 Nov)   // brick, not random white render, round Market Place and the Underbanks (Charlie, 18 Nov)
   const tint = b.white || (!oldTown && (st === 2 || st === 3) && hash(b.id * 3.3) < 0.18) ? [2, 2, 2] : st === 5 ? [0.55, 0.6, 0.6] : BRICKS[Math.floor(hash(b.id * 1.7) * BRICKS.length)];
   // per-building corrections from Charlie and the drone footage (OSM heights are rough)
   //  12: the building between St Mary's Gate and the brewery is one storey with its roof as the second (Charlie, 18 Nov)

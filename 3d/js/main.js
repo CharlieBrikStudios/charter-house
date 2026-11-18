@@ -9,32 +9,32 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002200';
-import { buildUBL } from './ublbuild.js?v=1795002200';
-import { buildUBLFitout } from './ublfit.js?v=1795002200';
-import { UBL_LEVELS } from './ubl_data.js?v=1795002200';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002200';
-import { buildPHStreets } from './phstreets.js?v=1795002200';
-import { buildOSL } from './oslbuild.js?v=1795002200';
-import { buildOSLFitout } from './oslfit.js?v=1795002200';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002200';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002200';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002200';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002200';
-import { buildFar, hazeUniforms } from './far.js?v=1795002200';
-import { buildRailway } from './railway.js?v=1795002200';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002200';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002400';
+import { buildUBL } from './ublbuild.js?v=1795002400';
+import { buildUBLFitout } from './ublfit.js?v=1795002400';
+import { UBL_LEVELS } from './ubl_data.js?v=1795002400';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002400';
+import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002400';
+import { buildOSL } from './oslbuild.js?v=1795002400';
+import { buildOSLFitout } from './oslfit.js?v=1795002400';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002400';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002400';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002400';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002400';
+import { buildFar, hazeUniforms } from './far.js?v=1795002400';
+import { buildRailway } from './railway.js?v=1795002400';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002400';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1795002200';
-import { Interior } from './interior.js?v=1795002200';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002200';
-import { buildPHFitout } from './phfit.js?v=1795002200';
-import { PH_PLAN, phSide } from './ph_data.js?v=1795002200';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002200';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002200';
-import { createTour } from './tour.js?v=1795002200';
-import { buildCrowd } from './crowd.js?v=1795002200';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002200';
+import { Forest, windUniforms } from './trees.js?v=1795002400';
+import { Interior } from './interior.js?v=1795002400';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002400';
+import { buildPHFitout } from './phfit.js?v=1795002400';
+import { PH_PLAN, phSide } from './ph_data.js?v=1795002400';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002400';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002400';
+import { createTour } from './tour.js?v=1795002400';
+import { buildCrowd } from './crowd.js?v=1795002400';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002400';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -93,8 +93,9 @@ if (IS_PH) {
   document.querySelectorAll('.brand img, .lcard img').forEach(i => { i.src = BASE + 'brand_printhouse.png'; i.alt = 'The Print House'; });
   $('.brand .addr').textContent = '61 Wellington Street · Stockport · SK1';
   $('#btn-tour').hidden = true;
-  const vb = { front: 'Garden and walkways', rear: 'St Joseph’s side', street: 'Wellington Street', above: 'From above' };
-  document.querySelectorAll('#views [data-view]').forEach(b => b.textContent = vb[b.dataset.view]);
+  const vb = { front: 'Garden and walkways', rear: 'St Joseph’s side', street: 'Wellington Street', above: 'From above', church: 'Church and viaduct' };
+  $('#views [data-view="church"]').hidden = false;   // Charlie, 18 Nov: an angle over the building to St Joseph's and the viaduct
+  document.querySelectorAll('#views [data-view]').forEach(b => { if (vb[b.dataset.view]) b.textContent = vb[b.dataset.view]; });
   $('#btn-clay').title = 'Turn every other building into a plain white architectural model so The Print House stands out';
   $('.credit').innerHTML = 'Live availability from Brik Studios, updated <span id="upd"></span>. Model built from Ollier Smurthwaite GA plans; surroundings approximate.';
 }
@@ -103,7 +104,7 @@ if (IS_OSL) {
   $('.brand .addr').textContent = 'Syddall Street · Hyde · SK14';
   $('#btn-tour').hidden = true; $('#btn-build').hidden = true; $('#btn-360').hidden = true; $('#btn-area').hidden = true;
   const vb = { front: 'The corner', rear: 'The courtyard', street: 'Syddall Street', above: 'From above' };
-  document.querySelectorAll('#views [data-view]').forEach(b => b.textContent = vb[b.dataset.view]);
+  document.querySelectorAll('#views [data-view]').forEach(b => { if (vb[b.dataset.view]) b.textContent = vb[b.dataset.view]; });
   $('#btn-clay').title = 'Turn every other building into a plain white architectural model so Oldham Street Lofts stands out';
 }
 if (IS_UBL) {
@@ -111,7 +112,7 @@ if (IS_UBL) {
   $('.brand .addr').textContent = '3–5 St Petersgate · Stockport · SK1';
   $('#btn-tour').hidden = true; $('#btn-build').hidden = true; $('#btn-360').hidden = true;
   const vb = { front: 'The garden side', rear: 'St Petersgate', street: 'High Street', above: 'From above' };
-  document.querySelectorAll('#views [data-view]').forEach(b => b.textContent = vb[b.dataset.view]);
+  document.querySelectorAll('#views [data-view]').forEach(b => { if (vb[b.dataset.view]) b.textContent = vb[b.dataset.view]; });
   $('#btn-clay').title = 'Turn every other building into a plain white architectural model so Underbank Lofts stands out';
   $('.credit').innerHTML = 'Availability from Brik Studios, updated <span id="upd"></span>. Model built from the Ollier Smurthwaite tender drawings; surroundings approximate.';
 }
@@ -255,7 +256,7 @@ const CHURCHGATE = [[-145, -11.5], [-121, -8.9], [-104, -7.5], [-85, -6.8], [-62
 const roadZ = (x) => { for (let i = 0; i < CHURCHGATE.length - 1; i++) { const a = CHURCHGATE[i], b = CHURCHGATE[i + 1]; if (x >= a[0] && x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return null; };
 async function build() {
   if (IS_OSL) return buildOSLScene();
-  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002200')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
+  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002400')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
   setTerrain(W.terrain); setMid(F.mid); wallsData = wallsJson;
   W.bld.push(...(F.bld || []).filter(b => !TOUR_WORLD || ![561905, 561914, 561919].includes(b.id)));   // tour: the station is built by railway.js
   const exchangeBld = TOUR_WORLD ? W.bld.filter(b => EXCHANGE_IDS.includes(b.id)) : [];
@@ -290,6 +291,15 @@ async function build() {
       const RJ0 = await fetch(BASE + 'roads.json').then(r => r.json()), c0 = CH.local(13, 0, 10);
       const keepOut = [...(seatonG ? seatonG.userData.keep : []), ...(CH.group.userData.platform ? [CH.group.userData.platform] : [])];
       scene.add(buildPHStreets(M, RJ0.roads, groundAt, { centre: [c0.x, c0.z], radius: 85, keepOut, blds: W.bld, lampHeads }));
+      // round it (Charlie's video, 18 Nov): the church and school car park and the other car parks with bays and cars, the
+      // playground walled off from the car park, the flats' gated car park across Fletcher Street, their garden planted up
+      const SP = W.special.ph;
+      if (SP) {
+        if (SP.parking) { const lots = buildParkingLots(M, SP.parking); scene.add(lots); if (lots.userData.cars.length) scene.add(buildCars(M, lots.userData.cars)); }
+        if (SP.walls_play) scene.add(buildBrickWalls(M, SP.walls_play, { h: 1.9 }));
+        if (SP.walls_mini) scene.add(buildBrickWalls(M, SP.walls_mini, { h: 0.8 }));
+        scene.add(buildPHExtras(M, groundAt, forest, SP, RJ0.roads));
+      }
     } catch (e) { console.warn('ph streets', e); }
     plates = { plates: [], walls: [] };
     furniture = { groups: [], materials: {} };
@@ -413,6 +423,8 @@ async function build() {
     VIEWS.rear = { pos: CH.local(50, 21, -44), tgt: CH.local(12, 7, 5) };
     VIEWS.street = { pos: new THREE.Vector3(6, groundAt(6, 236) + 38, 236), tgt: new THREE.Vector3(-29, groundAt(-27, 214) + 4, 212) };   // over the street trees, across Seaton House into the garden
     VIEWS.above = { pos: CH.local(36, 72, 34), tgt: CH.local(13, 0, 12) };   // near plan view from the south: the walkways and the garden
+    // over the roofs from behind Seaton House: St Joseph's across Fletcher Street and the 1840 viaduct on the skyline beyond
+    VIEWS.church = { pos: CH.local(22, 26, 50), tgt: CH.local(42.2, 12, -25.2) };   // a shallow look west: the horizon (and the viaduct) stays in frame
     const c = CH.local(13, 0, 11); CLAMP.x0 = c.x - 50; CLAMP.x1 = c.x + 50; CLAMP.z0 = c.z - 50; CLAMP.z1 = c.z + 50; CLAMP.y1 = SY() + 30;
   }
   if (IS_UBL) {
@@ -1422,6 +1434,8 @@ const LANDMARKS = IS_OSL ? [
 ] : IS_PH ? [
   ['Wellington Street', [-18, 1, 214]], ['Fletcher Street', [-45.5, 1, 185.7]], ['Seaton House · Brik Studios HQ', [-32, 12, 212]], ["Residents' garden", [-49, 3, 210]],
   ["St Joseph's Primary School", [-74, 6, 170]], ["St Joseph's Church", [-128, 16, 207]],
+  ['Church and school car park', [-84, 2.5, 193]], ['School playground', [-80, 3, 212]],
+  ['The Underbanks · about 3 min walk', [-170, 9, 95]],   // Charlie, 18 Nov: show buyers how close the Underbanks are
 ] : [
   ['Churchgate', [-30, 0.6, -6.6]], ['Churchgate', [48, 1.2, 2]], ['Harvey Street', [-5.6, 0.4, 19]], ['Apsley Street', [24, 0.2, 52]],
   ['Play park', [17, 6.5, -29]], ['Churchgate car park', [-24, 2.5, -27]], ["Residents' courtyard", [17, 3.5, 17]],   // 50–56 Churchgate label removed (Charlie, 18 Nov)
@@ -2602,4 +2616,4 @@ if (EDITION === 'ch' || EDITION === 'ph') {
 }
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.
-if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002200').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002400').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));

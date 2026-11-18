@@ -114,3 +114,92 @@ export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOu
   }
   return group;
 }
+
+// Round the Print House (Charlie's video, 18 Nov): the mini car park across Fletcher Street gets brick piers and black gates
+// so it reads as that building's own; the school playground opposite gets a play surface (its walls come from context.js);
+// the garden of the flats next door (Marsland House) is planted up: hedges, trees, shrubs, flowers and flagged paths.
+const segDist = (x, z, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz || 1; let t = ((x - a[0]) * dx + (z - a[1]) * dz) / l2; t = Math.max(0, Math.min(1, t)); return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t); };
+const lineDist = (x, z, L) => { let d = 1e9; for (let i = 0; i + 1 < L.length; i++) d = Math.min(d, segDist(x, z, L[i], L[i + 1])); return d; };
+export function buildPHExtras(M, groundAt, forest, SP, roads = []) {
+  const group = new THREE.Group(); group.name = 'phExtras';
+  const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
+  const streets = roads.filter(r => /Fletcher Street|Wellington Street/.test(r.n || ''));
+  const onStreet = (x, z, pad = 1.0) => streets.some(r => lineDist(x, z, r.c) < r.w / 2 + 0.5 + pad);
+  // a box along a chord from A to B: s along it, y up from ground at A, t across
+  const along = (A, Bq) => { const L = Math.hypot(Bq[0] - A[0], Bq[1] - A[1]), ux = (Bq[0] - A[0]) / L, uz = (Bq[1] - A[1]) / L, ang = Math.atan2(-uz, ux);
+    return { L, box: (k, s0, s1, y0, y1, t0, t1) => { const g = new THREE.BoxGeometry(Math.max(0.01, s1 - s0), Math.max(0.01, y1 - y0), Math.max(0.01, t1 - t0)); g.rotateY(ang); const sc = (s0 + s1) / 2, tc = (t0 + t1) / 2; g.translate(A[0] + ux * sc - uz * tc, (y0 + y1) / 2, A[1] + uz * sc + ux * tc); add(k, g); } }; };
+  // ---- the gates
+  if (SP.gate_mini) {
+    const A = SP.gate_mini.a, Bq = SP.gate_mini.b, C = along(A, Bq), gy = Math.min(groundAt(...A), groundAt(...Bq));
+    for (const s of [0, C.L]) { C.box('brick', s - 0.3, s + 0.3, gy - 0.3, gy + 1.75, -0.3, 0.3); C.box('stone', s - 0.36, s + 0.36, gy + 1.75, gy + 1.9, -0.36, 0.36); }
+    for (let s = 0.4; s < C.L - 0.35; s += 0.12) C.box('iron', s - 0.013, s + 0.013, gy + 0.08, gy + 1.55 + 0.12 * Math.sin(Math.PI * s / C.L), -0.015, 0.015);
+    for (const y of [0.15, 0.85, 1.48]) C.box('iron', 0.32, C.L - 0.32, gy + y, gy + y + 0.05, -0.025, 0.025);
+    C.box('iron', C.L / 2 - 0.03, C.L / 2 + 0.03, gy + 0.08, gy + 1.62, -0.03, 0.03);
+    // a small plate on the pier: the flats' own parking
+    const cv = document.createElement('canvas'); cv.width = 512; cv.height = 256; const x = cv.getContext('2d');
+    x.fillStyle = '#1f2a24'; x.fillRect(0, 0, 512, 256); x.fillStyle = '#efe9dc'; x.textAlign = 'center'; x.font = '700 58px Arial, sans-serif'; x.fillText('PRIVATE PARKING', 256, 112); x.font = '500 40px Arial, sans-serif'; x.fillText('Residents only', 256, 182);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.25), new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 }));
+    const ux = (Bq[0] - A[0]) / C.L, uz = (Bq[1] - A[1]) / C.L; pl.position.set(A[0] - uz * -0.31, gy + 1.3, A[1] + ux * -0.31); pl.rotation.y = Math.atan2(uz, -ux); group.add(pl);
+  }
+  // ---- the playground: a green play surface with painted markings, benches along the wall
+  if (SP.play && SP.play.length > 2) {
+    const P = SP.play, sh = new THREE.Shape(P.map(([x, z]) => new THREE.Vector2(x, -z))), g = new THREE.ShapeGeometry(sh); g.rotateX(-Math.PI / 2);
+    const pp = g.attributes.position; for (let i = 0; i < pp.count; i++) pp.setY(i, groundAt(pp.getX(i), pp.getZ(i)) + 0.04); g.computeVertexNormals(); add('play', g);
+    let bi = 0, bl = 0; for (let i = 0; i < P.length; i++) { const q = P[(i + 1) % P.length], l = Math.hypot(q[0] - P[i][0], q[1] - P[i][1]); if (l > bl) { bl = l; bi = i; } }
+    const q0 = P[bi], q1 = P[(bi + 1) % P.length], ux = (q1[0] - q0[0]) / bl, uz = (q1[1] - q0[1]) / bl;
+    let cx = 0, cz = 0; for (const [x, z] of P) { cx += x; cz += z; } cx /= P.length; cz /= P.length;
+    const mark = (k, geo, x, z) => { geo.rotateX(-Math.PI / 2); geo.translate(x, groundAt(x, z) + 0.055, z); add(k, geo); };
+    mark('lineWhite', new THREE.RingGeometry(1.5, 1.6, 40), cx + ux * 3.5, cz + uz * 3.5);
+    mark('lineYellow', new THREE.RingGeometry(0.5, 0.58, 24), cx + ux * 3.5, cz + uz * 3.5);
+    for (let k = 0; k < 8; k++) { const s = -2.5 - k * 0.65, q = new THREE.PlaneGeometry(0.55, 0.55); q.rotateZ(-Math.atan2(uz, ux)); mark(k % 3 === 2 ? 'lineYellow' : 'lineWhite', q, cx + ux * s, cz + uz * s); }
+  }
+  // ---- the garden next door
+  const GD = SP.garden;
+  if (GD) {
+    const inGrass = (x, z) => GD.grass.some(P => inPoly(P, x, z));
+    const nearPath = (x, z, d) => GD.paths.some(L => lineDist(x, z, L) < d);
+    const nearHedge = (x, z, d) => GD.hedges.some(L => lineDist(x, z, L) < d);
+    // flagged paths, 1.5 m wide
+    for (const L of GD.paths) for (let i = 0; i + 1 < L.length; i++) {
+      const a = L[i], b = L[i + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]); if (l < 0.2) continue; const ux = (b[0] - a[0]) / l, uz = (b[1] - a[1]) / l;
+      for (let s = 0; s < l; s += 0.9) { const s1 = Math.min(l, s + 0.9), x0 = a[0] + ux * s, z0 = a[1] + uz * s, x1 = a[0] + ux * s1, z1 = a[1] + uz * s1;
+        const q = []; for (const [x, z] of [[x0 - uz * 0.75, z0 + ux * 0.75], [x0 + uz * 0.75, z0 - ux * 0.75], [x1 + uz * 0.75, z1 - ux * 0.75], [x1 - uz * 0.75, z1 + ux * 0.75]]) q.push(x, groundAt(x, z) + 0.05, z);
+        const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([...q.slice(0, 3), ...q.slice(6, 9), ...q.slice(3, 6), ...q.slice(0, 3), ...q.slice(9, 12), ...q.slice(6, 9)], 3)); g.computeVertexNormals();
+        if (g.attributes.normal.getY(0) < 0) { const p = g.attributes.position; for (let k = 0; k < p.count; k += 3) { const tx = p.getX(k + 1), ty = p.getY(k + 1), tz = p.getZ(k + 1); p.setXYZ(k + 1, p.getX(k + 2), p.getY(k + 2), p.getZ(k + 2)); p.setXYZ(k + 2, tx, ty, tz); } g.computeVertexNormals(); }
+        g.setAttribute('uv', new THREE.Float32BufferAttribute(new Array(12).fill(0).map((_, k) => k % 2 ? 0 : 0), 2)); add('flags', g); }
+    }
+    if (forest) {
+      // clipped hedges on the OpenStreetMap hedge lines
+      let sd = 4311; const rr = () => ((sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296);
+      for (const L of GD.hedges) for (let i = 0; i + 1 < L.length; i++) { const a = L[i], b = L[i + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        for (let s = 0.4; s < l; s += 0.75) { const x = a[0] + (b[0] - a[0]) * s / l, z = a[1] + (b[1] - a[1]) * s / l; if (!onStreet(x, z, 0.3)) forest.add(x, z, { h: 1.2, r: 0.62, kind: 'hedge', seed: 8000 + Math.round(x * 7 + z * 13) }); } }
+      // trees on a loose grid, clear of the paths, hedges and the street
+      let k = 0; const kinds = ['birch', 'sycamore', 'birch', 'oak'];
+      for (const P of GD.grass) { let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [x, z] of P) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); }
+        for (let x = x0 + 2.5; x < x1; x += 5.2) for (let z = z0 + 2.5; z < z1; z += 5.2) { const px = x + (rr() - 0.5) * 1.6, pz = z + (rr() - 0.5) * 1.6;
+          if (!inPoly(P, px, pz) || nearPath(px, pz, 2.0) || nearHedge(px, pz, 1.6) || onStreet(px, pz, 2.5)) continue;
+          const kind = kinds[k++ % kinds.length]; forest.add(px, pz, { h: kind === 'oak' ? 8.5 : kind === 'birch' ? 7.5 : 7, r: kind === 'birch' ? 2.0 : 3.0, kind, seed: 8200 + k }); } }
+      // shrubs and grasses along the path edges, low enough to see over
+      for (let i = 0; i < 260; i++) { const P = GD.grass[i % GD.grass.length]; let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [x, z] of P) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); }
+        const px = x0 + rr() * (x1 - x0), pz = z0 + rr() * (z1 - z0); if (!inPoly(P, px, pz) || onStreet(px, pz, 0.6) || nearPath(px, pz, 0.85)) continue;
+        if (!nearPath(px, pz, 2.6) && !nearHedge(px, pz, 1.4) && rr() < 0.7) continue;
+        forest.add(px, pz, { h: 0.5 + rr() * 0.7, r: 0.35 + rr() * 0.3, kind: rr() < 0.55 ? 'shrub' : 'grass', seed: 8400 + i }); }
+    }
+    // flowers in the beds by the paths
+    const FLC = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a', '#ff9f5a'];
+    let fs = 9157; const fr = () => ((fs = (fs * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 900; i++) { const P = GD.grass[i % GD.grass.length]; let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [x, z] of P) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); }
+      const px = x0 + fr() * (x1 - x0), pz = z0 + fr() * (z1 - z0); if (!inPoly(P, px, pz) || onStreet(px, pz, 0.6)) continue; const dp = Math.min(...GD.paths.map(L => lineDist(px, pz, L))); if (dp < 0.85 || dp > 1.9) continue;
+      const g = new THREE.IcosahedronGeometry(0.035 + fr() * 0.025, 0); g.scale(1, 0.6, 1); g.translate(px, groundAt(px, pz) + 0.25 + fr() * 0.25, pz); add('fl' + Math.floor(fr() * FLC.length), g); }
+    FLC.forEach((c, i) => { M['phFl' + i] = M['phFl' + i] || new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }); });
+  }
+  const flags = M.paving.clone(); flags.color = new THREE.Color('#cfc6b6'); flags.side = THREE.DoubleSide;
+  const mats = { brick: M.cBrickOld || M.brick, stone: M.stone, iron: M.timberBlack, play: new THREE.MeshStandardMaterial({ color: '#3f6b4c', roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -2 }), lineWhite: M.lineWhite, lineYellow: M.lineYellow, flags };
+  for (const [k, list] of Object.entries(G)) {
+    const g = mergeGeometries(list.map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false); if (!g) continue;
+    const mat = k.startsWith('fl') && k !== 'flags' ? M['phFl' + k.slice(2)] : mats[k];
+    const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = ['brick', 'stone', 'iron'].includes(k); m.name = 'phx_' + k; group.add(m);
+  }
+  return group;
+}

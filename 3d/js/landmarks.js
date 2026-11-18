@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1795002200';
+import { boxUV } from './building.js?v=1795002400';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -466,6 +466,10 @@ export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
     K.add('grit', box(sx0, 0, sz1, sx1, 7.2, sz0));
     const g = new THREE.Shape([new THREE.Vector2(-3.95, 0), new THREE.Vector2(3.95, 0), new THREE.Vector2(0, 3.4)]);
     const rg = new THREE.ExtrudeGeometry(g, { depth: sx1 - sx0 + 0.4, bevelEnabled: false }); rg.rotateY(Math.PI / 2); rg.translate(sx0 - 0.2, 7.2, (sz0 + sz1) / 2); K.add('slate', rg);
+    // (Charlie, 18 Nov: "add all the windows on this side of the church", the side The Print House looks at) the sacristy's
+    // east wall and the aisles' east ends either side of the apse
+    for (const c of [sz0 - 2.0, sz1 + 2.0]) { K.win('z', 1, sx1, c, 1.2, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); K.win('z', 1, sx1, c, 4.4, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); }
+    for (const sg of [-1, 1]) K.win('z', 1, NX - 0.6, sg * (NW + AW / 2), 2.2, 0.8, 2.3, { lights: 1, transom: false, k: 0.85, deep: 0.14 });
     for (let i = 0; i < 3; i++) { const c = sx0 + 1.8 + i * 3.6; K.win('x', -1, sz1, c, 1.2, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); K.win('x', -1, sz1, c, 4.4, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); }
   }
   const grp = new THREE.Group(); grp.name = 'stjoseph';
