@@ -9,7 +9,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1794999265';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795000918';
 import { buildUBL } from './ublbuild.js?v=1794535000';
 import { buildUBLFitout } from './ublfit.js?v=1794535000';
 import { UBL_LEVELS } from './ubl_data.js?v=1794535000';
@@ -1415,7 +1415,7 @@ const LANDMARKS = IS_OSL ? [
   ["St Joseph's Primary School", [-74, 6, 170]], ["St Joseph's Church", [-128, 16, 207]],
 ] : [
   ['Churchgate', [-30, 0.6, -6.6]], ['Churchgate', [48, 1.2, 2]], ['Harvey Street', [-5.6, 0.4, 19]], ['Apsley Street', [24, 0.2, 52]],
-  ['Play park', [17, 6.5, -29]], ['Churchgate car park', [-24, 2.5, -27]], ['50–56 Churchgate', [30, 11.5, 5]], ["Residents' courtyard", [17, 3.5, 17]],
+  ['Play park', [17, 6.5, -29]], ['Churchgate car park', [-24, 2.5, -27]], ["Residents' courtyard", [17, 3.5, 17]],   // 50–56 Churchgate label removed (Charlie, 18 Nov)
 ];
 const lmEls = LANDMARKS.map(([t, p]) => { const el = document.createElement('div'); el.className = 'ltag'; el.textContent = t; $('#labels').appendChild(el); return { el, name: t, p: new THREE.Vector3(...p) }; });
 const CARD_BY_ID = new Map();
@@ -2085,8 +2085,7 @@ function buildSpots() {
       { id: 'walkway', name: 'Top-floor walkway', at: V3(20.2, 3 * F + 1.65, 11.8), look: V3(12.5, 3 * F + 1.3, 11.9), note: 'Townhouse-style front doors off an open walkway, not a hotel corridor.', glide: false },
       { id: 'church', name: 'Down Churchgate from St Mary’s', at: eyeAt(-95, -7.4), look: V3(8, 7, 2), note: 'Stockport’s oldest church behind you, Charter House at the end of the street.', glide: false },
       { id: 'market', name: 'Market Place', at: eyeAt(-127, -13), look: V3(-152, 5.5, -9), note: 'The 1861 Market Hall, two minutes’ walk from your front door.', glide: false },
-      { id: 'roof', name: 'Above the roof', at: V3(10, 31, -5), look: V3(-60, 12, -14), note: 'Drag round: St Mary’s, the Market Hall, the viaduct and the hills.', glide: false },
-    ];
+    ];   // 'Above the roof' removed (Charlie, 18 Nov)
   }
   // photoreal path-traced 360s of the rooms (rendered offline from this model; listed in assets/pano/index.json)
   for (const p of PANO_INDEX) {
@@ -2343,6 +2342,7 @@ $('#vw-360').onclick = () => { if (S.mode === 'view') closeView(); };
   const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
   if (req && exit) {
     $('#btn-fs').hidden = false; document.body.classList.add('has-fs');
+    { const pad = $('#navpad'), fs = $('#btn-fs'); if (pad && fs) { pad.prepend(fs); const tip = document.createElement('span'); tip.id = 'fs-tip'; tip.textContent = 'Full screen'; tip.onclick = () => fs.click(); pad.appendChild(tip); } }
     $('#btn-fs').onclick = () => { try { const r = isFs() ? exit.call(document) : req.call(de, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => {}); } catch (e) {} };
     const sync = () => { document.body.classList.toggle('is-fs', isFs()); $('#btn-fs').setAttribute('aria-label', isFs() ? 'Exit full screen' : 'Full screen'); $('#btn-fs').title = isFs() ? 'Exit full screen' : 'Full screen (hides the browser bar)'; setTimeout(() => dispatchEvent(new Event('resize')), 120); };
     document.addEventListener('fullscreenchange', sync); document.addEventListener('webkitfullscreenchange', sync);
@@ -2484,7 +2484,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1794780000').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1795000000').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
@@ -2558,6 +2558,21 @@ function waitForTextures() {
 
 // expose for testing
 window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, T, panoOn: () => panoOn, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT, flyTo };
+// Charter House (18 Nov, Charlie): the right-hand panel no longer sits open on the building and floor views; it opens only for a flat
+// (its plan, price and the View from the window / Step inside buttons). The panel toggle tab goes with it.
+if (EDITION === 'ch') {
+  const P = $('#panel');
+  let was = '';
+  const keep = () => {
+    const unit = S.mode === 'unit' || ['view', 'inside', 'walk'].includes(S.mode);
+    document.body.classList.toggle('nopanel', !unit);
+    if (!unit && !P.classList.contains('hide')) { P.classList.add('hide'); try { applyViewOffset(); } catch (e) {} }
+    if (S.mode === 'unit' && was !== 'unit' && P.classList.contains('hide')) { P.classList.remove('hide'); try { applyViewOffset(); } catch (e) {} }   // a flat just opened: show its panel once
+    was = S.mode;
+  };
+  new MutationObserver(keep).observe(P, { attributes: true, attributeFilter: ['class'], childList: true });
+  setInterval(keep, 400);
+}
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.
-if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1794999265').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795000918').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));

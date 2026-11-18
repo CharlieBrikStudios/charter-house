@@ -169,6 +169,18 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 #btn-fs:hover { border-color: var(--brass); color: var(--brass); }
 #btn-fs svg { width: 20px; height: 20px; }
 #btn-fs .fs-off, .is-fs #btn-fs .fs-on { display: none; } .is-fs #btn-fs .fs-off { display: block; }
+/* 18 Nov (Charlie): Gallery, the apartments list, the film and Highlight are gone from the Charter House page */
+#btn-gallery, #btn-list, #btn-tour, #btn-clay { display: none !important; }
+body.nopanel #ptoggle { display: none !important; }
+/* Full screen sits at the top of the left pad, in brass, with a label until it is used (Charlie, 18 Nov) */
+#navpad #btn-fs { position: relative; inset: auto; width: 44px; height: 44px; border-radius: 50%; background: var(--brass); color: #1b1511; border: 0; box-shadow: 0 0 0 0 rgb(216 180 118 / .5); animation: fsPulse 2.4s ease-in-out 3; }
+#navpad #btn-fs:hover { background: #e6c48a; color: #1b1511; }
+#navpad #btn-fs svg { width: 21px; height: 21px; }
+@keyframes fsPulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(216 180 118 / .5); } 50% { box-shadow: 0 0 0 8px rgb(216 180 118 / 0); } }
+#fs-tip { position: absolute; left: calc(100% + 10px); top: 10px; white-space: nowrap; padding: 7px 12px; border-radius: 999px; background: var(--brass); color: #1b1511; font: 600 13px/1 var(--f-body); pointer-events: auto; cursor: pointer; box-shadow: 0 6px 18px rgb(0 0 0 / .35); }
+#fs-tip::before { content: ''; position: absolute; left: -5px; top: 50%; width: 10px; height: 10px; background: var(--brass); transform: translateY(-50%) rotate(45deg); border-radius: 2px; }
+.is-fs #fs-tip, #fs-tip.gone { display: none; }
+@media (prefers-reduced-motion: reduce) { #navpad #btn-fs { animation: none; } }
 .has-fs .tools { right: calc(var(--gr) + 50px); }
 .has-fs #tourui .ttop { right: calc(var(--gr) + 50px); }
 .has-fs #viewui.on .top { right: calc(var(--gr) + clamp(10px, 1.4vw, 22px) + 50px); }
@@ -721,6 +733,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1794999265"></script>
+<script type="module" src="js/main.js?v=1795000918"></script>
 
 </body></html>
