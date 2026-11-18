@@ -1054,7 +1054,7 @@ function openPhoto(f) {
   let d = $('#photobox');
   if (!d) {
     d = document.createElement('div'); d.id = 'photobox'; d.setAttribute('role', 'dialog');
-    d.innerHTML = '<div class="pb-top"><img src="' + BASE + 'brand_charterhouse.png" alt="Charter House"><span class="pb-cap"></span><button class="pb-close" aria-label="Close">×</button></div><div class="pb-stage"><img class="pb-img" alt=""></div><div class="pb-hint">Scroll or pinch to zoom · drag to look round</div>';
+    d.innerHTML = '<div class="pb-top"><img src="' + BASE + (IS_PH ? 'brand_printhouse.png" alt="The Print House">' : 'brand_charterhouse.png" alt="Charter House">') + '<span class="pb-cap"></span><button class="pb-close" aria-label="Close">×</button></div><div class="pb-stage"><img class="pb-img" alt=""></div><div class="pb-hint">Scroll or pinch to zoom · drag to look round</div>';
     document.body.appendChild(d);
     const st = d.querySelector('.pb-stage'), im = d.querySelector('.pb-img'); let z = 1, tx = 0, ty = 0, drag = null;
     const apply = () => { im.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`; };
@@ -2354,7 +2354,7 @@ $('#vw-360').onclick = () => { if (S.mode === 'view') closeView(); };
   const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
   if (req && exit) {
     $('#btn-fs').hidden = false; document.body.classList.add('has-fs');
-    { const pad = $('#navpad'), fs = $('#btn-fs'); if (pad && fs) { pad.prepend(fs); const tip = document.createElement('span'); tip.id = 'fs-tip'; tip.textContent = 'Full screen'; tip.onclick = () => fs.click(); pad.appendChild(tip); } }
+    { const pad = $('#navpad'), fs = $('#btn-fs'); if (pad && fs) { pad.prepend(fs); const tip = document.createElement('span'); tip.id = 'fs-tip'; tip.textContent = 'Full screen'; tip.onclick = () => fs.click(); pad.appendChild(tip); setTimeout(() => tip.classList.add('gone'), 12000); } }
     $('#btn-fs').onclick = () => { try { const r = isFs() ? exit.call(document) : req.call(de, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => {}); } catch (e) {} };
     const sync = () => { document.body.classList.toggle('is-fs', isFs()); $('#btn-fs').setAttribute('aria-label', isFs() ? 'Exit full screen' : 'Full screen'); $('#btn-fs').title = isFs() ? 'Exit full screen' : 'Full screen (hides the browser bar)'; setTimeout(() => dispatchEvent(new Event('resize')), 120); };
     document.addEventListener('fullscreenchange', sync); document.addEventListener('webkitfullscreenchange', sync);
@@ -2570,9 +2570,9 @@ function waitForTextures() {
 
 // expose for testing
 window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, T, panoOn: () => panoOn, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT, flyTo };
-// Charter House (18 Nov, Charlie): the right-hand panel no longer sits open on the building and floor views; it opens only for a flat
-// (its plan, price and the View from the window / Step inside buttons). The panel toggle tab goes with it.
-if (EDITION === 'ch') {
+// Charter House and The Print House (18 Nov, Charlie): the right-hand panel no longer sits open on the building and floor views; it opens
+// only for a flat (its plan, price and the View from the window / Step inside buttons). The panel toggle tab goes with it.
+if (EDITION === 'ch' || EDITION === 'ph') {
   const P = $('#panel');
   let was = '';
   const keep = () => {
@@ -2582,8 +2582,14 @@ if (EDITION === 'ch') {
     if (S.mode === 'unit' && was !== 'unit' && P.classList.contains('hide')) { P.classList.remove('hide'); try { applyViewOffset(); } catch (e) {} }   // a flat just opened: show its panel once
     was = S.mode;
   };
+  // with the floor panel gone, the photoreal cut-away of a floor opens from a brass button at the foot of the screen
+  const fp = document.createElement('button'); fp.id = 'fp-btn'; fp.type = 'button'; fp.hidden = true;
+  fp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.6"/><path d="m21 16-5-5-8 8"/></svg><span></span>';
+  fp.onclick = () => { if (S.mode === 'floor' && FLOOR_PHOTO[S.floor]) openPhoto(S.floor); };
+  document.body.appendChild(fp);
+  const fpSync = () => { const on = S.mode === 'floor' && S.floor != null && !!FLOOR_PHOTO[S.floor] && !S.area; fp.hidden = !on; if (on) fp.querySelector('span').textContent = 'See the photoreal cut-away'; };
   new MutationObserver(keep).observe(P, { attributes: true, attributeFilter: ['class'], childList: true });
-  setInterval(keep, 400);
+  setInterval(() => { keep(); fpSync(); }, 400);
 }
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.

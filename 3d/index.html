@@ -181,6 +181,10 @@ body.nopanel #ptoggle { display: none !important; }
 #fs-tip::before { content: ''; position: absolute; left: -5px; top: 50%; width: 10px; height: 10px; background: var(--brass); transform: translateY(-50%) rotate(45deg); border-radius: 2px; }
 .is-fs #fs-tip, #fs-tip.gone { display: none; }
 @media (prefers-reduced-motion: reduce) { #navpad #btn-fs { animation: none; } }
+/* the floor's photoreal cut-away, now the panel is gone on the floor views (Charlie, 18 Nov) */
+#fp-btn { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 16; display: inline-flex; align-items: center; gap: 9px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: var(--brass); color: #1b1511; font: 600 15px/1 var(--f-body); cursor: pointer; box-shadow: 0 10px 28px rgb(0 0 0 / .4); transition: background .2s, transform .2s; }
+#fp-btn:hover { background: #e6c48a; transform: translateX(-50%) translateY(-1px); }
+#fp-btn[hidden] { display: none; }
 .has-fs .tools { right: calc(var(--gr) + 50px); }
 .has-fs #tourui .ttop { right: calc(var(--gr) + 50px); }
 .has-fs #viewui.on .top { right: calc(var(--gr) + clamp(10px, 1.4vw, 22px) + 50px); }
@@ -733,6 +737,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1795001300"></script>
+<script type="module" src="js/main.js?v=1795001500"></script>
 
 </body></html>
