@@ -19,7 +19,7 @@ export const PH_SITE = {
   rent1: 1250, rent2: 1525,          // Brik forecast Oct 2026: 1 bed £1,250, 2 bed £1,500–1,550
   reservation: 2500,                 // Print House reservation deposit (ROI deck)
   whatsapp: '447353164480', phone: '07353 164480', email: 'charlie@brik-studios.com',
-  updated: '30 Oct 2026',
+  updated: '18 Nov 2026',
   // placement in the town model: the main block's long axis runs 11.7° off Seaton House's side (OpenStreetMap), as the GA
   // plans, which also lays it parallel to Fletcher Street; origin set so the side block's Fletcher face is 3.5 m off that
   // road's centre line and it stands 1 m clear of Seaton House (13 Nov 2026; the old axis was 19° out)
@@ -53,7 +53,8 @@ const P_ = PH_PLAN, sideFp = (t0, t1) => { const c = [[0, t0], [P_.SIDE.S, t0], 
 const SLOTS = [
   { type: '1A', fp: sideFp(P_.SIDE.PW, P_.SIDE.T), fpS: [0, P_.SIDE.PW, P_.SIDE.S, P_.SIDE.T], facing: 'Fletcher Street', side: true },
   { type: '1A', fp: sideFp(0, P_.SIDE.PW), fpS: [0, 0, P_.SIDE.S, P_.SIDE.PW], facing: 'Fletcher Street', side: true },
-  { type: '2A', fp: [P_.PW[4], 0, P_.UW, P_.D], facing: 'St Joseph’s Church', corner: true },
+  { type: '2A', fp: [P_.PW[4], 0, P_.UW, P_.D], facing: 'St Joseph’s Church', corner: true,   // the flat's real outline: the wing in, the plant room corner out
+    polyPlan: [[P_.PW[4], 0], [P_.UW, 0], [P_.UW, P_.WING[1]], [P_.WING[2], P_.WING[1]], [P_.WING[2], P_.WING[3]], [P_.PW[4] + 4.0, P_.WING[3]], [P_.PW[4] + 4.0, P_.D], [P_.PW[4], P_.D]] },
   { type: '1B', fp: [P_.PW[3], 0, P_.PW[4], P_.D], facing: 'St Joseph’s Church' },
   { type: '1B', fp: [P_.PW[2], 0, P_.PW[3], P_.D], facing: 'St Joseph’s Church' },
   { type: '1B', fp: [P_.PW[1], 0, P_.PW[2], P_.D], facing: 'St Joseph’s Church' },
@@ -61,7 +62,7 @@ const SLOTS = [
   { type: '1C', fp: [0, P_.C1, P_.PW[0], P_.D], facing: 'Fletcher Street and St Joseph’s', corner: true },
 ];
 const SF = [[1,'G',1,414.2,182000,'Available'],[2,'G',1,414.2,182000,'Available'],[3,'G',2,650.7,293000,'Available'],[4,'G',1,432.5,188000,'Available'],[5,'G',1,432.5,188000,'Available'],[6,'G',1,432.5,188000,'Available'],[7,'G',1,429.8,188000,'Available'],[8,'G',1,411.2,182000,'Available'],
-  [9,'1',1,414.2,185000,'Available'],[10,'1',1,414.2,185000,'Available'],[11,'1',2,650.7,296000,'Exchanged'],[12,'1',1,432.5,192000,'In Legals'],[13,'1',1,432.5,192000,'Exchanged'],[14,'1',1,432.5,192000,'Exchanged'],[15,'1',1,429.8,192000,'In Legals'],[16,'1',1,411.2,186000,'Exchanged'],
+  [9,'1',1,414.2,185000,'Available'],[10,'1',1,414.2,185000,'Available'],[11,'1',2,650.7,296000,'Exchanged'],[12,'1',1,432.5,192000,'Exchanged'],[13,'1',1,432.5,192000,'Exchanged'],[14,'1',1,432.5,192000,'Exchanged'],[15,'1',1,429.8,192000,'In Legals'],[16,'1',1,411.2,186000,'Exchanged'],
   [17,'2',1,414.2,187000,'Exchanged'],[18,'2',1,414.2,187000,'In Legals'],[19,'2',2,650.7,298000,'Exchanged'],[20,'2',1,432.5,194000,'Exchanged'],[21,'2',1,432.5,194000,'Exchanged'],[22,'2',1,432.5,194000,'Exchanged'],[23,'2',1,429.8,194000,'Exchanged'],[24,'2',1,411.2,188000,'Exchanged'],
   [25,'3',1,414.2,189000,'Exchanged'],[26,'3',1,414.2,189000,'Exchanged'],[27,'3',2,650.7,299000,'Exchanged'],[28,'3',1,432.5,196000,'Exchanged'],[29,'3',1,432.5,196000,'Exchanged'],[30,'3',1,432.5,196000,'In Legals'],[31,'3',1,429.8,196000,'In Legals'],[32,'3',1,411.2,190000,'Exchanged'],
   [33,'4',1,414.2,184000,'Available'],[34,'4',1,414.2,184000,'Available'],[35,'4',2,650.7,295000,'Available'],[36,'4',1,432.5,189000,'Available'],[37,'4',1,432.5,189000,'Available'],[38,'4',1,432.5,189000,'Available'],[39,'4',1,429.8,189000,'Available'],[40,'4',1,411.2,184000,'Available']];
@@ -75,6 +76,7 @@ export const PH_UNITS = SF.map(([plot, fl, beds, sqft, price, status]) => {
     : 'Kitchen-living looks out to St Joseph’s Church; bedroom and front door over the residents’ garden';
   return { plot, apt: `${PH_FLOORS[floor].short}.${String(k + 1).padStart(2, '0')}`, floor, type: s.type, beds, sqft: Math.round(sqft), price, status, note, view, fp: s.fp.slice(), fpS: s.fpS ? s.fpS.slice() : null, slot: k, side: !!s.side,
     // the side block's flats are turned to the main block: their outline in model x, z (x = u, z = -v) for the floor tags and glow
+    ...(s.polyPlan ? { poly: s.polyPlan.map(([a, b]) => [a, -b]) } : {}),
     ...(s.fpS ? { poly: [[s.fpS[0], s.fpS[1]], [s.fpS[2], s.fpS[1]], [s.fpS[2], s.fpS[3]], [s.fpS[0], s.fpS[3]]].map(([a, b]) => { const [uu, vv] = phSide(a, b); return [uu, -vv]; }) } : {}) };
 });
 

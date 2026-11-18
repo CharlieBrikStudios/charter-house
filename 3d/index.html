@@ -333,6 +333,11 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
 .tag.has360 .p360 { display: inline-flex; }
 @keyframes p360bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .tag .p360 { animation: none; } }
+/* only a tag's label and its 360 badge take clicks: the gaps round them (the stem, the padding) used to sit over the next flat's
+   tag, so its 360 badge could not be pressed (Charlie, 18 Nov); the tag under the pointer comes to the front */
+.tag { pointer-events: none; }
+.tag .b, .tag .p360, .tag .pin { pointer-events: auto; cursor: pointer; }
+.tag:hover, .tag:focus-within { z-index: 5; }
 .ltag { position: absolute; left: 0; top: 0; opacity: 0; transform: translate(-50%, -50%); font: 500 10px/1 var(--f-label); letter-spacing: .18em; text-transform: uppercase; color: rgba(255,250,240,.9); text-shadow: 0 1px 8px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.8); white-space: nowrap; transition: opacity .3s; }
 .ltag::before { content: ""; display: block; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,250,240,.85); margin: 0 auto 6px; box-shadow: 0 0 0 3px rgba(0,0,0,.25); }
 .ftag { position: absolute; transform: translate(12px, -50%); padding: 6px 10px; border-radius: 9px; background: rgba(18,14,12,.8); border: 1px solid var(--line-hi); font-size: 12.5px; white-space: nowrap; pointer-events: none; }
@@ -737,6 +742,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1795001500"></script>
+<script type="module" src="js/main.js?v=1795002100"></script>
 
 </body></html>

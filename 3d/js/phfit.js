@@ -4,10 +4,10 @@
 // Built in the Print House model's plan frame (x = u, z = -v), so the group sits inside the model's transform.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1794535000';
-import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1794535000';
-import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug, pot } from './furniture.js?v=1794535000';
-import { phTopY, phSide, PH_SIDE } from './ph_data.js?v=1794535000';
+import { CUT } from './materials.js?v=1795002100';
+import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1795002100';
+import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug, pot } from './furniture.js?v=1795002100';
+import { phTopY, phSide, PH_SIDE } from './ph_data.js?v=1795002100';
 
 // which side of each main-block slot its kitchen runs along (kitchens pair back to back across the party walls)
 const KSIDE = { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1 };
@@ -20,14 +20,20 @@ const TYPES = {
     bath: { r: [5.05, 1.15, 6.45, 3.8], shower: 'W1' },
     kitchen: [0.5, 4.3], dining: [1.15, 2.2], sofa: { at: [3.4, 3.33], face: [0, -1], len: 2.0, back: 0.45 }, coffee: [3.4, 2.35], rug: [3.4, 2.45, 2.0, 1.7],
     beds: [{ at: [8.7, 2.77], face: [0, -1], w: 1.5 }], wardrobe: { at: [8.7, 0.32], face: [0, 1], len: 1.4 }, arm: { at: [0.75, 3.15], face: [0.6, -0.8] } },
-  '2A': { len: 10.2, wid: 6.8,
-    walls: [[0, 3.05, 2.6, 3.15], [3.45, 3.1, 3.55, 6.8], [4.4, 3.55, 6.4, 3.65], [6.35, 1.6, 6.45, 6.8], [4.15, 2.4, 4.25, 3.6], [5.45, 2.4, 5.55, 3.6], [4.2, 2.35, 5.5, 2.45],
-      [7.95, 0, 8.05, 1.6], [8.9, 1.55, 10.2, 1.65], [6.45, 0, 6.55, 1.4], [6.5, 1.35, 7.9, 1.45]],
-    tile: [[8.05, 0, 10.2, 1.55], [4.25, 2.45, 5.45, 3.6]], carpet: [[0, 3.15, 3.45, 6.8], [3.55, 3.65, 6.35, 6.8]],
-    bath: { r: [8.05, 0, 10.2, 1.55], shower: 'L1' }, bath2: { r: [4.25, 2.45, 5.45, 3.55], shower: 'W0' },
-    kitchen: [0.4, 4.0], dining: [1.25, 2.0], sofa: { at: [5.0, 3.0], face: [0, -1], len: 2.0, back: 0.53 }, coffee: [5.0, 2.1], rug: [5.0, 2.1, 1.9, 1.6],
-    beds: [{ at: [1.75, 5.75], face: [0, -1], w: 1.6 }, { at: [5.0, 5.75], face: [0, -1], w: 1.4 }], wardrobe: { at: [5.0, 3.95], face: [0, 1], len: 1.2 },
-    plant: [[7.0, 2.0, 9.8, 3.6, 1.7], [6.8, 4.3, 7.7, 6.5, 1.3]] },
+  // the end two bed, redrawn from the type plan (Charlie, 18 Nov: the corner by the gable is the plant room, not the flat): L is the
+  // depth from the street face (v), W runs from the party wall towards the gable (u - 20.592), both at true scale. Living-kitchen
+  // along the party wall; bedroom 2 behind the second street window; bedroom 1 in the wing with its narrow window; ensuite and
+  // a lobby between; the bathroom and hall by the front door on the walkway; the plant room (tanks) in the south-east corner
+  '2A': { len: 11.57, wid: 7.924,
+    floors: [[0.02, 0.02, 8.5, 3.9], [8.5, 0.02, 11.55, 3.9], [0.02, 3.9, 6.12, 7.9], [2.62, 7.9, 6.12, 9.92]],
+    walls: [[0.35, 3.85, 2.25, 3.95], [3.1, 3.85, 5.45, 3.95], [6.05, 3.85, 11.4, 3.95], [3.1, 3.95, 3.2, 7.92],
+      [3.2, 5.05, 4.25, 5.15], [5.05, 5.05, 5.3, 5.15], [5.2, 3.95, 5.3, 5.15], [6.05, 3.95, 6.15, 9.95],
+      [8.45, 2.0, 8.55, 3.85], [8.55, 1.9, 9.3, 2.0], [10.1, 1.9, 11.4, 2.0]],
+    tile: [[8.55, 2.0, 11.2, 3.85], [3.2, 3.95, 5.2, 5.05]], carpet: [[0.35, 3.95, 3.1, 7.8], [3.2, 5.15, 6.05, 9.85], [2.7, 7.95, 3.2, 9.85]],
+    bath: { r: [8.55, 2.0, 11.2, 3.85], shower: 'L1' }, bath2: { r: [3.2, 3.95, 5.2, 5.05], shower: 'W0' },
+    kitchen: [3.6, 7.7], dining: [6.7, 2.45], sofa: { at: [3.7, 2.0], face: [-1, 0], len: 2.0, back: 0.5 }, coffee: [2.65, 2.0], rug: [2.7, 2.0, 1.9, 2.3],
+    beds: [{ at: [1.75, 7.05], face: [0, -1], w: 1.4 }, { at: [4.6, 8.95], face: [0, -1], w: 1.5 }], wardrobe: { at: [3.55, 6.3], face: [1, 0], len: 1.6 },
+    plant: [[6.2, 4.0, 11.5, 7.88, 0.02], [6.5, 4.4, 8.3, 7.5, 1.6], [8.7, 4.4, 9.7, 5.4, 1.4], [9.9, 6.1, 11.2, 7.5, 1.2]] },
   '1C': { len: 10.2, wid: 5.2,
     walls: [[3.35, 3.0, 3.45, 5.2], [4.4, 2.95, 6.2, 3.05], [6.15, 1.8, 6.25, 5.2], [5.35, 1.8, 5.45, 3.0], [5.4, 1.75, 6.2, 1.85], [7.2, 1.75, 9.3, 1.85], [9.25, 1.8, 9.35, 5.2]],
     tile: [[3.45, 3.05, 6.15, 5.2]], carpet: [[6.25, 1.85, 9.25, 5.2]],
@@ -120,7 +126,7 @@ export function buildPHFitout(units, F, FH, FM) {
     const piece = (t, L, W, face, o = {}) => { const [x, z] = X(L, W), [fx, fz] = D(face[0], face[1]); pcs.push({ t, x, y: y0, z, fx, fz, plot: u.plot, ...o }); };
     // partitions, floors
     for (const [L0, W0, L1, W1] of T.walls) box(L0, W0, L1, W1, y0, y0 + wallH, 'wall');
-    box(0.02, 0.02, T.len - 0.02, T.wid - 0.02, y0 - 0.012, y0 + 0.004, TOP ? 'lvtT' : 'lvt');   // pale oak boards through the flat (as the CGIs); tiles and carpet sit on top
+    for (const r of T.floors || [[0.02, 0.02, T.len - 0.02, T.wid - 0.02]]) box(r[0], r[1], r[2], r[3], y0 - 0.012, y0 + 0.004, TOP ? 'lvtT' : 'lvt');   // pale oak boards through the flat (as the CGIs); tiles and carpet sit on top
     for (const r of T.tile) box(r[0], r[1], r[2], r[3], y0, y0 + 0.012, 'tile');
     for (const r of T.carpet) box(r[0], r[1], r[2], r[3], y0, y0 + 0.01, TOP ? 'sisal' : 'carpet');
     // kitchen along the W = 0 wall
@@ -129,7 +135,7 @@ export function buildPHFitout(units, F, FH, FM) {
       // feature wall, then a handleless charcoal run: plinth, doors with a shadow gap, dark quartz top, black vertical-tile splashback,
       // wall units with an LED strip under them wherever the slope leaves the height, oven under the hob, a matt black tap
       const [ka, kb] = T.kitchen, kw = w0 + 0.6, sink = T.sink ?? ka + (kb - ka) * 0.7, hob = T.hob ?? ka + (kb - ka) * 0.3;
-      const Lend = { '1B': 4.94, '2A': 4.4, '1C': 4.6, '1A': 4.84 }[u.type] || kb + 0.4;
+      const Lend = { '1B': 4.94, '2A': 7.9, '1C': 4.6, '1A': 4.84 }[u.type] || kb + 0.4;
       box(0.36, w0, Lend, w0 + 0.006, y0, y0 + 2.9, 'feature');
       box(ka, w0 + 0.05, kb, kw - 0.06, y0, y0 + 0.1, 'shadow');
       const nd = Math.max(1, Math.round((kb - ka) / 0.6)), dw = (kb - ka) / nd;

@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1794535000';
-import { groundAt, letteringTexture } from './world.js?v=1794535000';
+import { boxGeom, boxUV } from './building.js?v=1795002100';
+import { groundAt, letteringTexture } from './world.js?v=1795002100';
 // split a flat shape into a fine even mesh (no edge longer than about L), so it can follow sloping ground: Churchgate climbs
 // past the play park, and a four-corner quad would cut through the slope and the grass under it would vanish into the
 // terrain. Every triangle is cut into the same n x n pattern, so shared edges split at the same points (no cracks).
@@ -727,7 +727,19 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
     // trees at the bend of Churchgate and along its south side beyond the play park
     for (const [x, z, h] of [[36, -24, 10], [46, -30, 11], [56, -20, 10.5], [64, -6, 10], [70, -26, 11.5], [80, 8, 10]]) if (tryAdd(x, z, 7)) forest.add(x, z, { h, r: h * 0.36, kind: R() < 0.5 ? 'oak' : 'sycamore', seed: Math.floor(R() * 1e6), density: 0.85 });
     // a couple of street trees on Harvey Street / Apsley Street
-    forest.add(-11.2, 30.5, { h: 10, r: 3.8, kind: 'oak', seed: 71 });
+    // (the oak at -11.2, 30.5 by the one-storey building is not there: planters instead, Charlie 18 Nov)
+    // two low railway-sleeper planters by its corner, with shrubs, grasses and a few flowers; nothing tall, so the 360 views stay open
+    {
+      const FLC = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a'];
+      const flm = FLC.map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
+      let fsd = 4242; const fr = () => ((fsd = (fsd * 16807) % 2147483647) / 2147483647);
+      for (const [x0, z0, x1, z1] of [[-13.6, 29.2, -11.0, 30.2], [-12.4, 31.0, -10.4, 32.0]]) {
+        const gy = groundY((x0 + x1) / 2, (z0 + z1) / 2), h = 0.48, t = 0.12;
+        for (const [a1, b1, c1, d1] of [[x0, z0, x1, z0 + t], [x0, z1 - t, x1, z1], [x0, z0, x0 + t, z1], [x1 - t, z0, x1, z1]]) { const w = boxGeom(a1, gy - 0.1, b1, c1, gy + h, d1); boxUV(w, 1.2); B.add('timber', w); }
+        for (let x = x0 + 0.3; x < x1 - 0.15; x += 0.5) forest.add(x, (z0 + z1) / 2 + Math.sin(x * 4) * 0.15, { kind: Math.sin(x * 7) > 0 ? 'shrub' : 'grass', h: 0.6, r: 0.42, y: gy + h - 0.05, seed: 7100 + Math.round(x * 10) });
+        for (let i = 0; i < 26; i++) { const g = new THREE.IcosahedronGeometry(0.03 + fr() * 0.02, 1); g.scale(1, 0.55, 1); g.translate(x0 + t + fr() * (x1 - x0 - 2 * t), gy + h + 0.12 + fr() * 0.18, z0 + t + fr() * (z1 - z0 - 2 * t)); B.add(flm[Math.floor(fr() * flm.length)], g); }
+      }
+    }
     forest.add(6, 31.2, { h: 13, r: 5.2, kind: 'sycamore', seed: 72 });
   }
 

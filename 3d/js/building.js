@@ -1,8 +1,8 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1795000918';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1794535000';
+import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1795002100';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1795002100';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -304,6 +304,27 @@ export function buildCharterHouse(M, base) {
       const isStreet = key === 'cbC' || key === 'cbH' || key === 'cwC' || key === 'hwH' || key === 'hwS';
       if (o.type === 'blind') {
         const g = boxGeom(x0, o.v0, 0.11, x1, o.v1, 0.2); fa.place(g); boxUV(g); B.add('brick', g);
+      } else if (o.type === 'door' && o.id === 'DOOR') {
+        // a flat's front door (Charlie, 18 Nov): frame and head, a sill, a leaf set back in the opening with raised panels round a
+        // glazed slot, brass handle, letter plate and number, steel kick plate; the colour varies from door to door.
+        // (in this frame the wall face is z = 0 and outward is -z)
+        const P = (a, b, c, d, e, f, k) => { const g = boxGeom(a, b, c, d, e, f); fa.place(g); B.add(k, g); };
+        const pal = ['doorNavy', 'doorSage', 'doorCharcoal', 'doorOxblood', 'doorGreen'];
+        const col = pal[Math.abs(Math.round(o.c * 7.3 + o.floor * 3 + key.length)) % pal.length];
+        const c = o.c, l0 = x0 + 0.07, l1 = x1 - 0.07, v0 = o.v0, v1 = o.v1;
+        P(x0, v0, 0.04, l0, v1, 0.24, 'frame'); P(l1, v0, 0.04, x1, v1, 0.24, 'frame'); P(x0, v1 - 0.07, 0.04, x1, v1 + 0.02, 0.24, 'frame');
+        P(x0 - 0.03, v0 - 0.03, -0.06, x1 + 0.03, v0 + 0.015, 0.2, 'stone');
+        P(l0, v0, 0.12, l1, v1 - 0.07, 0.17, col);                                                    // the leaf
+        const p0 = l0 + 0.085, p1 = l1 - 0.085;
+        P(p0, v0 + 0.2, 0.108, c - 0.045, v0 + 0.86, 0.12, col); P(c + 0.045, v0 + 0.2, 0.108, p1, v0 + 0.86, 0.12, col);       // lower panels
+        P(p0, v0 + 1.06, 0.108, c - 0.15, v1 - 0.3, 0.12, col); P(c + 0.15, v0 + 1.06, 0.108, p1, v1 - 0.3, 0.12, col);         // upper panels
+        P(c - 0.1, v0 + 1.06, 0.124, c + 0.1, v1 - 0.3, 0.132, 'glass');                              // glazed slot
+        for (const [a, b, d, e] of [[c - 0.13, v0 + 1.03, c - 0.1, v1 - 0.27], [c + 0.1, v0 + 1.03, c + 0.13, v1 - 0.27], [c - 0.13, v0 + 1.03, c + 0.13, v0 + 1.06], [c - 0.13, v1 - 0.3, c + 0.13, v1 - 0.27]]) P(a, b, 0.105, d, e, 0.12, col);
+        P(l1 - 0.15, v0 + 0.82, 0.075, l1 - 0.125, v0 + 1.3, 0.1, 'brassDoor');                       // pull handle
+        for (const h of [0.86, 1.26]) P(l1 - 0.147, v0 + h - 0.012, 0.09, l1 - 0.128, v0 + h + 0.012, 0.12, 'brassDoor');
+        P(c - 0.16, v0 + 0.93, 0.11, c + 0.16, v0 + 0.985, 0.12, 'brassDoor');                         // letter plate
+        P(c - 0.05, v1 - 0.25, 0.112, c + 0.05, v1 - 0.15, 0.12, 'brassDoor');                         // number plaque
+        P(l0 + 0.03, v0 + 0.02, 0.114, l1 - 0.03, v0 + 0.16, 0.12, 'steel');                          // kick plate
       } else if (o.type === 'door') {
         const g = boxGeom(x0 + 0.04, o.v0, 0.14, x1 - 0.04, o.v1 - 0.04, 0.2); fa.place(g); B.add('door', g);
         const fr = boxGeom(x0, o.v1 - 0.06, 0.1, x1, o.v1, 0.22); fa.place(fr); B.add('frame', fr);

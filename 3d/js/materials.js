@@ -171,6 +171,11 @@ export function makeMaterials(base) {
   M.flowerA = dress({ color: '#f2a7bd', roughness: 0.7 }); M.flowerB = dress({ color: '#ffffff', roughness: 0.7 }); M.flowerC = dress({ color: '#b9a3e3', roughness: 0.7 }); M.flowerD = dress({ color: '#f7d35c', roughness: 0.7 }); M.flowerE = dress({ color: '#e8606a', roughness: 0.7 });
   M.cushion = dress({ color: '#d9cdb8', roughness: 1 }); M.cushionA = dress({ color: '#9aa98c', roughness: 1 }); M.cushionB = dress({ color: '#c99a3b', roughness: 1 });
   M.lanternGlow = dress({ color: '#4a4237', emissive: '#ffcf86', emissiveIntensity: 0.8, roughness: 0.3 });
+  // the flats' front doors (Charlie, 18 Nov: "nicer, they look fake"): painted timber-effect composite doors in a few heritage colours,
+  // brass furniture, a steel kick plate
+  M.doorNavy = dress({ color: '#26364a', roughness: 0.38 }); M.doorSage = dress({ color: '#4c5b4d', roughness: 0.4 }); M.doorCharcoal = dress({ color: '#2b2d30', roughness: 0.36 });
+  M.doorOxblood = dress({ color: '#5a272c', roughness: 0.38 }); M.doorGreen = dress({ color: '#1f3a2e', roughness: 0.38 });
+  M.brassDoor = dress({ color: '#c9a24f', metalness: 1, roughness: 0.28 });
   return M;
 }
 

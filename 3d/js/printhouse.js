@@ -8,9 +8,9 @@
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1794535000';
-import { roomBox } from './building.js?v=1794535000';
-import { roomMaterial, tex } from './materials.js?v=1794535000';
+import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795002100';
+import { roomBox } from './building.js?v=1795002100';
+import { roomMaterial, tex } from './materials.js?v=1795002100';
 
 const FH = PH_FH, NF = 5;
 const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
@@ -44,8 +44,9 @@ export function buildPrintHouse(M, opts = {}) {
   };
   // box in plan coords: u0..u1 along x, v0..v1 -> z = -v
   const box = (u0, v0, u1, v1, ya, yb) => { const g = new THREE.BoxGeometry(Math.max(0.01, u1 - u0), Math.max(0.01, yb - ya), Math.max(0.01, v1 - v0)); g.translate((u0 + u1) / 2, (ya + yb) / 2, -(v0 + v1) / 2); return g; };
+  const V2 = (a, b) => new THREE.Vector2(a, b);
   const EAV = PH_ROOF.TOP + 0.12;         // the garden faces rise to the flat roof (rev B: parapet removed), an aluminium fascia on top
-  const windows = [], roomGeo = {};
+  const windows = [], roomGeo = {}, pots = [];
   // the slate mansard over the top floor: brick to the knee wall, a 58° slope up to the flat roof (PH_ROOF in ph_data.js)
   const R = PH_ROOF, SA = Math.sin(R.PITCH), CA = Math.cos(R.PITCH), RISE = R.TOP - R.KNEE, SL = RISE / SA, RUN = RISE / Math.tan(R.PITCH);
   // ---- walls with openings, per facade: a facade is a line in plan (p0 -> p1) with an outward normal
@@ -102,7 +103,21 @@ export function buildPrintHouse(M, opts = {}) {
         if (o.floor === NF - 1) { const p = rg.attributes.position; for (let i = 0; i < p.count; i++) p.setY(i, Math.min(p.getY(i), Math.max(o.floor * FH + 0.1, phTopY(p.getX(i), -p.getZ(i)) - 0.03))); }   // kept under the mansard
         (roomGeo[o.plot] ||= []).push(rg);
       } else {
-        piece(o.a, o.b, o.y0, o.y1, dIn - 0.05, dIn, 'door');
+        // front doors in heritage colours with raised panels, a glazed slot and a brass handle; a coir mat and a planted pot
+        // outside each one (Charlie, 18 Nov: the doors looked dark and black, they should feel homely)
+        const dk = 'door' + ((o.plot * 7 + o.floor * 3 + Math.round(o.a * 10)) % 4);
+        piece(o.a, o.b, o.y0, o.y1, dIn - 0.05, dIn, dk);
+        piece(o.a + 0.12, o.b - 0.12, o.y0 + 0.16, o.y0 + 0.92, dIn, dIn + 0.014, dk);
+        piece(o.a + 0.12, o.b - 0.12, o.y0 + 1.05, o.y1 - 0.55, dIn, dIn + 0.014, dk);
+        piece(o.a + 0.18, o.b - 0.18, o.y1 - 0.45, o.y1 - 0.14, dIn - 0.02, dIn + 0.004, 'glass');
+        const hx = (o.a + o.b) / 2 > 0 ? o.b - 0.13 : o.a + 0.13;
+        piece(hx - 0.018, hx + 0.018, o.y0 + 0.92, o.y0 + 1.16, dIn, dIn + 0.06, 'brass');
+        piece((o.a + o.b) / 2 - 0.09, (o.a + o.b) / 2 + 0.09, o.y0 + 1.42, o.y0 + 1.52, dIn, dIn + 0.012, 'brass');   // number plate
+        if (o.plot) {
+          piece(o.a - 0.04, o.b + 0.04, o.y0 + 0.03, o.y0 + 0.045, 0.03, 0.62, 'mat');
+          const ps = o.a - 0.42; piece(ps - 0.2, ps + 0.2, o.y0 + 0.03, o.y0 + 0.47, 0.08, 0.48, 'pot');
+          pots.push(at(ps, o.y0 + 0.47, 0.28));
+        }
       }
     }
   };
@@ -149,6 +164,23 @@ export function buildPrintHouse(M, opts = {}) {
     }
     if (f > 0) op(cWalk, { a: 0.9, b: 1.85, y0: y + 0.02, y1: y + 2.15, kind: 'door', floor: f, plot: 0 });   // the 1C's front door, off the landing by the lift
   }
+  // the back of a full-height wall above the roof: where the wall rises past the mansard slope or the flat roof beside it, its
+  // inner face is out in the open, so it is faced in brick there (Charlie, 18 Nov: white triangles at the mansard ends and a
+  // white line round the roofs)
+  const inset = R.TH / Math.sin(R.PITCH), TN = Math.tan(R.PITCH);
+  const cover = (u, v) => { const t = phTopY(u, v); return t >= R.CEIL - 1e-3 ? R.TOP : Math.min(R.TOP, t + inset * TN); };
+  const cheek = (e) => {
+    const n = Math.max(2, Math.ceil(e.len / 0.2)), pts = [];
+    for (let i = 0; i <= n; i++) { const sx = e.len * i / n, u = e.p0[0] + e.d[0] * sx - e.n[0] * 0.6, v = e.p0[1] + e.d[1] * sx - e.n[1] * 0.6; pts.push([sx, Math.min(EAV, cover(u, v) - 0.02)]); }
+    if (pts.every(([, y]) => y >= EAV - 0.005)) return;
+    const sh = new THREE.Shape([V2(e.len, EAV), V2(0, EAV), ...pts.map(([x, y]) => V2(x, y))]);
+    const g = new THREE.ShapeGeometry(sh, 1);   // in the edge frame: x along the edge, y up; turned to face into the building
+    g.applyMatrix4(new THREE.Matrix4().makeBasis(new THREE.Vector3(e.d[0], 0, -e.d[1]), new THREE.Vector3(0, 1, 0), new THREE.Vector3(e.n[0], 0, -e.n[1])).setPosition(e.p0[0] - e.n[0] * 0.352, 0, -(e.p0[1] - e.n[1] * 0.352)));
+    const idx = g.index; if (idx) { for (let i = 0; i < idx.count; i += 3) { const t = idx.getX(i + 1); idx.setX(i + 1, idx.getX(i + 2)); idx.setX(i + 2, t); } }   // flip to face inwards
+    const pp = g.attributes.position, uv = new Float32Array(pp.count * 2);
+    for (let i = 0; i < pp.count; i++) { uv[2 * i] = (pp.getX(i) + pp.getZ(i)) / 2.2; uv[2 * i + 1] = pp.getY(i) / 2.2; }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.computeVertexNormals(); g.userData.brickUV = true; add('brick', g);
+  };
   // ---- walls: street faces stop at the mansard's knee (their top-floor windows become rooflights), the rest rise to the roof
   const shared = new Set([COREE[3], COREE[5]]);                           // the core's walls against the 1C and the side block
   const roofOps = new Map();
@@ -156,7 +188,7 @@ export function buildPrintHouse(M, opts = {}) {
     if (shared.has(e)) continue;
     const list = (ops.get(e) || []).map(o => ({ ...o }));
     if (e.sl) { roofOps.set(e, list.filter(o => o.floor === NF - 1 && o.kind !== 'door' && !o.stair)); facade(e.p0, e.p1, e.n, list, R.KNEE, 'brick'); }
-    else { facade(e.p0, e.p1, e.n, list, EAV, 'brick'); ebox(e, -0.02, e.len + 0.02, -0.02, 0.12, EAV, EAV + 0.1, 'alu'); }   // aluminium fascia
+    else { facade(e.p0, e.p1, e.n, list, EAV, 'brick'); ebox(e, -0.02, e.len + 0.02, -0.02, 0.12, EAV, EAV + 0.1, 'alu'); cheek(e); }   // aluminium fascia
   }
   // arched heads (A817_T_301A): a semicircular fanlight and an arched soldier course over the second-floor narrow casements
   for (const [e, list] of ops) for (const o of list) if (o.arch) {
@@ -200,7 +232,6 @@ export function buildPrintHouse(M, opts = {}) {
   // ---- the slate mansard: per outline, the street edges slope in by RUN to the flat roof, the hips and valleys fall where the
   // offset edges meet; twin rooflights over every window bay on the top floor; the flat roof over the rest
   const isect = (a, da, b, db) => { const cr = da[0] * db[1] - da[1] * db[0]; if (Math.abs(cr) < 1e-6) return b.slice(); const t = ((b[0] - a[0]) * db[1] - (b[1] - a[1]) * db[0]) / cr; return [a[0] + da[0] * t, a[1] + da[1] * t]; };
-  const V2 = (a, b) => new THREE.Vector2(a, b);
   for (const E of [MAINE, COREE, SIDEE]) {
     const off = E.map(e => { const o = e.sl ? RUN : 0; return [e.p0[0] - e.n[0] * o, e.p0[1] - e.n[1] * o]; });
     const Q = E.map((e, i) => { const j = (i + E.length - 1) % E.length; return isect(off[j], E[j].d, off[i], e.d); });
@@ -293,44 +324,83 @@ export function buildPrintHouse(M, opts = {}) {
     const e = edgeOf([a, b, 0]), n = Math.max(1, Math.round(e.len / 4.5));
     for (let i = 0; i <= n; i++) ebox(e, i * e.len / n - 0.09, i * e.len / n + 0.09, 0.02, 0.2, 0, NF * FH, 'steel');   // columns up to the canopy
   }
-  // ---- the plot (A817_T_310A, C_204B): it stands on the lower ground floor's level behind the retained stone boundary wall
-  // along Fletcher Street, a planted strip and a metal railing on top of the wall; the courtyard garden at the same level
+  // ---- the plot: it stands on the lower ground floor's level above Fletcher Street. Charlie, 18 Nov: one even, curving brick
+  // boundary wall round the street sides (no stepped plinths and broken railings), grass and a clipped hedge behind it, a black
+  // railing along the top; the garden opened up and paved now Seaton House's rear annex is gone; a low ramped walkway with rails
+  // up the gap between the side block and Seaton House from Fletcher Street into the garden
   {
-    const outer = (pts, d) => { const E = pts.map((p, i) => edgeOf([p, pts[(i + 1) % pts.length], 0])); const off = E.map(e => [e.p0[0] + e.n[0] * d, e.p0[1] + e.n[1] * d]); return E.map((e, i) => { const j = (i + E.length - 1) % E.length; return isect(off[j], E[j].d, off[i], e.d); }); };
-    const ring = [...MAINE.map(e => e.p0), [P.CORE.u1, D], phSide(S.S, 0), phSide(S.S, S.T), phSide(0, S.T), phSide(0, 0), COREE[0].p0, COREE[1].p0, COREE[2].p0];
-    const site = outer(ring, 0.8), court = [[P.CORE.u1, D], [P.UW + 2.6, D], [P.UW + 2.6, D + 5.0], [21.9, 14.8], [16.0, 16.2], [17.1, 21.1], [17.6, 23.4], [8.1, 25.3], phSide(S.S + 1.6, S.T), phSide(S.S + 1.6, 0)];
-    const slab = (Q) => { const g = new THREE.ExtrudeGeometry(new THREE.Shape(Q.map(([u, v]) => V2(u, v))), { depth: 6, bevelEnabled: false, curveSegments: 1 }); g.rotateX(-Math.PI / 2); g.translate(0, -6, 0); return g; };
-    for (const Q of [site, court]) { const [side, top] = splitBy(slab(Q), (nv) => nv.y > 0.7); add('path', top); const uv = side.attributes.uv; if (uv) { for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / 2.4, uv.getY(i) / 2.4); } add('wallStone', side); }
-    // the stone wall's coping and the railing along the street edges (main block, core and the side block's Fletcher face)
-    const streetEdges = [...MAINE.filter(e => e.sl), COREE[0], SIDEE[0]];
-    for (const e of streetEdges) {
-      const q0 = [e.p0[0] + e.n[0] * 0.8, e.p0[1] + e.n[1] * 0.8], f = { ...e, p0: q0 };
-      ebox(f, -0.4, e.len + 0.4, -0.05, 0.3, -0.02, 0.08, 'sill');                                     // stone coping
-      for (let x = -0.3; x <= e.len + 0.3; x += 0.13) ebox(f, x - 0.01, x + 0.01, 0.09, 0.11, 0.08, 1.05, 'steel');
-      ebox(f, -0.4, e.len + 0.4, 0.08, 0.12, 1.0, 1.06, 'steel'); ebox(f, -0.4, e.len + 0.4, 0.08, 0.12, 0.12, 0.16, 'steel');
-      ebox(f, -0.4, e.len + 0.4, -0.78, -0.05, 0.0, 0.05, 'lawn');                                     // the planted strip behind it
+    const WB = 1.6, Rf = 8.5;                                   // the wall's face, out from the main street face; the corner radius
+    const toPlan = (x, z) => { const dx = x - PH_SITE.origin[0], dz = z - PH_SITE.origin[1]; return [dx * PH_SITE.u[0] + dz * PH_SITE.u[1], dx * PH_SITE.v[0] + dz * PH_SITE.v[1]]; };
+    // the boundary line: along the main street face (v = -WB, running north), round a fillet, then along the side block's Fletcher face
+    const ex = PH_SIDE.ex, ey = PH_SIDE.ey, P1 = phSide(-WB, 0);
+    const cu = P1[0] - ey[0] * ((P1[1] + WB) / ey[1]), corner = [cu, -WB];                       // the two lines meet here
+    const dA = [-1, 0], dB = ey, cosT = -(dA[0] * dB[0] + dA[1] * dB[1]), half = Math.acos(Math.max(-1, Math.min(1, cosT))) / 2;
+    const tl = Rf / Math.tan(half), T0 = [corner[0] + tl, -WB], T1 = [corner[0] + dB[0] * tl, corner[1] + dB[1] * tl];
+    const cen = [T0[0], -WB + Rf];
+    const a0 = Math.atan2(T0[1] - cen[1], T0[0] - cen[0]), a1 = Math.atan2(T1[1] - cen[1], T1[0] - cen[0]);
+    let da = a1 - a0; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+    const tEnd = (S.T + 0.4) - ((T1[0] - P1[0]) * ey[0] + (T1[1] - P1[1]) * ey[1]);              // on along the Fletcher face
+    const line = [[P.WING[2] + 1.0, -WB], T0];
+    for (let k = 1; k < 24; k++) { const a = a0 + da * k / 24; line.push([cen[0] + Rf * Math.cos(a), cen[1] + Rf * Math.sin(a)]); }
+    line.push(T1, [T1[0] + dB[0] * tEnd, T1[1] + dB[1] * tEnd]);
+    // the platform the plot stands on: inside the wall, round to the garden side of the blocks
+    const ret = [phSide(S.S + GAL + 0.3, S.T + 0.4), [P.CORE.u1, D + GAL + 0.3], [P.UW + 2.6, D + GAL + 0.3], [P.UW + 2.6, -WB]];
+    const plat = [...line, ...ret];
+    const slab = (Q, top = 0) => { const g = new THREE.ExtrudeGeometry(new THREE.Shape(Q.map(([u, v]) => V2(u, v))), { depth: 6 + top, bevelEnabled: false, curveSegments: 1 }); g.rotateX(-Math.PI / 2); g.translate(0, -6, 0); return g; };
+    { const [side, top] = splitBy(slab(plat), (nv) => nv.y > 0.7); add('lawn', top); const pp = side.attributes.position, uv = new Float32Array(pp.count * 2); for (let k = 0; k < pp.count; k++) { uv[2 * k] = (pp.getX(k) - pp.getZ(k)) / 2.2; uv[2 * k + 1] = pp.getY(k) / 2.2; } side.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); side.userData.brickUV = true; add('brick', side); }
+    // the wall's parapet above the platform, stone coping, a continuous railing on the coping; grass and a hedge behind
+    for (let k = 0; k < line.length - 1; k++) {
+      const a = line[k], b = line[k + 1], e = edgeOf([a, b, 0]); if (e.len < 0.02) continue;
+      ebox(e, -0.02, e.len + 0.02, 0.0, 0.34, 0, 0.5, 'brick');
+      ebox(e, -0.04, e.len + 0.04, -0.06, 0.4, 0.5, 0.6, 'coping');
+      const nb = Math.max(1, Math.round(e.len / 0.14));
+      for (let q = 0; q < nb; q++) { const x = (q + 0.5) * e.len / nb; ebox(e, x - 0.011, x + 0.011, 0.16, 0.18, 0.6, 1.62, 'steel'); }
+      ebox(e, -0.02, e.len + 0.02, 0.14, 0.2, 1.58, 1.64, 'steel'); ebox(e, -0.02, e.len + 0.02, 0.14, 0.2, 0.7, 0.74, 'steel');
+      ebox(e, -0.01, e.len + 0.01, 0.5, 1.17, 0, 0.82, 'hedge');
+      if (forest && !opts.context) for (let x = 0.45; x < e.len; x += 0.9) { const q = [e.p0[0] + e.d[0] * x + e.n[0] * 0.83, e.p0[1] + e.d[1] * x + e.n[1] * 0.83], [wx, wz] = B.toWorld(...q); forest.add(wx, wz, { h: 0.7, r: 0.5, kind: 'hedge', seed: 7000 + k * 31 + Math.round(x * 10), y: y0 + 0.2 }); }
     }
+    // the ramped walkway up the gap between the side block and Seaton House (from the pavement to the garden level)
+    const sp = opts.seatonPoly;
+    if (sp && groundAt) {
+      const sb0 = phSide(0, S.T), sb1 = phSide(S.S, S.T);                                         // the side block's east face
+      const w0 = toPlan(...sp[3]), w1 = toPlan(...sp[0]);                                      // Seaton's back wall (south, north end)
+      const near = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy); return [a[0] + dx * t, a[1] + dy * t]; };
+      const m0 = sb0.map((c, k) => (c + near(sb0, w0, w1)[k]) / 2), m1 = sb1.map((c, k) => (c + near(sb1, w0, w1)[k]) / 2);
+      const dir = [m1[0] - m0[0], m1[1] - m0[1]], dl = Math.hypot(...dir), du = [dir[0] / dl, dir[1] / dl];
+      const A0 = [m0[0] - du[0] * 2.2, m0[1] - du[1] * 2.2], A1 = [m1[0] + du[0] * 1.2, m1[1] + du[1] * 1.2];
+      const gy = groundAt(...B.toWorld(...A0)) - y0 + 0.05, n = 14, nrm = [-du[1], du[0]];
+      for (let k = 0; k < n; k++) {
+        const t0 = k / n, t1 = (k + 1) / n, ya = gy + (0.04 - gy) * t0, yb = gy + (0.04 - gy) * t1;
+        const pa = [A0[0] + (A1[0] - A0[0]) * t0, A0[1] + (A1[1] - A0[1]) * t0], pb = [A0[0] + (A1[0] - A0[0]) * t1, A0[1] + (A1[1] - A0[1]) * t1];
+        const e = edgeOf([pa, pb, 0]);
+        ebox(e, -0.01, e.len + 0.01, -1.15, 1.15, Math.min(ya, yb) - 1.5, (ya + yb) / 2, 'path');   // the ramp, stepping up the slope
+        for (const sd of [-1.05, 1.05]) {
+          ebox(e, 0, 0.05, sd - 0.025, sd + 0.025, (ya + yb) / 2, (ya + yb) / 2 + 1.0, 'steel');
+          ebox(e, -0.01, e.len + 0.01, sd - 0.03, sd + 0.03, (ya + yb) / 2 + 0.95, (ya + yb) / 2 + 1.0, 'steel');
+          ebox(e, -0.01, e.len + 0.01, sd - 0.02, sd + 0.02, (ya + yb) / 2 + 0.45, (ya + yb) / 2 + 0.48, 'steel');
+        }
+      }
+    }
+    // the residents' garden: paved in sandstone flags right across to Seaton House's back wall, a lawn in the middle
+    const sw = sp ? sp.map(q => toPlan(...q)) : null;
+    const court = [[P.CORE.u1, D], [P.UW + 2.6, D], [P.UW + 2.6, D + 4.6], ...(sw ? [[sw[3][0] - 0.2, sw[3][1] - 0.25], isect([sw[3][0], sw[3][1] - 0.25], [sw[0][0] - sw[3][0], sw[0][1] - sw[3][1]], phSide(S.S + GAL + 0.3, 0), ey)] : [[17.6, 23.4], [8.1, 25.3]]), phSide(S.S + GAL + 0.3, S.T + 0.4), phSide(S.S + GAL + 0.3, 0)];
+    { const [side, top] = splitBy(slab(court), (nv) => nv.y > 0.7); add('path', top); add('wallStone', side); }
   }
-  // ---- residents' garden (as in the CGI): between the walkways and the back of Seaton House, gravel paths and a gravel
-  // clearing, loose naturalistic planting, a low brick wall, chunky timber benches, birches
+  // ---- residents' garden (Charlie, 18 Nov: paved and much nicer): a lawn panel with sandstone paths round it, raised oak-edged
+  // planters along Seaton House's wall and under the walkways, benches, multi-stem birches and an ornamental tree
   {
-    // (Seaton House's rear wing reaches to within 2 m of the walkway at u 16..22, so the garden opens out to the east of it)
-    const beds = [[9.2, D + GAL + 1.5, 15.4, D + 10.4], [15.4, D + GAL + 0.3, 21.4, D + GAL + 1.3]];
-    const gravel = [[8.2, D + GAL + 0.15, 15.4, D + GAL + 1.4], [10.4, D + 5.2, 13.6, D + 8.0], [14.4, D + GAL + 1.4, 15.4, D + 9.0]];
-    for (const [a, b, c, d] of beds) add('lawn', box(a, b, c, d, -0.02, 0.04));
-    for (const [a, b, c, d] of gravel) add('path', box(a, b, c, d, 0.04, 0.065));
-    add('brick', box(8.6, D + 10.6, 14.2, D + 10.9, 0, 0.62)); add('sill', box(8.56, D + 10.56, 14.2, D + 10.94, 0.62, 0.68));
-    for (const [u0, v0, u1, v1] of [[10.6, D + 4.4, 13.2, D + 5.05], [10.9, D + 8.3, 12.9, D + 8.9]]) add('oak', box(u0, v0, u1, v1, 0, 0.46));
+    add('lawn', box(10.6, D + 4.4, 20.2, D + 9.4, 0.0, 0.07));
+    for (const [a, b, c, d] of [[8.6, D + GAL + 0.4, 22.6, D + GAL + 1.3], [24.0, D + GAL + 0.4, 29.6, D + GAL + 1.3]]) { add('oak', box(a, b, c, d, 0, 0.45)); add('soil', box(a + 0.08, b + 0.08, c - 0.08, d - 0.08, 0.45, 0.47)); }
+    const benches = [[12.2, D + 3.3, 14.6, D + 3.8], [16.2, D + 3.3, 18.6, D + 3.8], [13.4, D + 10.0, 15.8, D + 10.5]];
+    for (const [a, b, c, d] of benches) { add('oak', box(a, b, c, d, 0.38, 0.46)); add('steel', box(a + 0.1, b, a + 0.18, d, 0, 0.38)); add('steel', box(c - 0.18, b, c - 0.1, d, 0, 0.38)); }
     if (forest) {
-      const pts = [[14.6, D + 3.4, 7.5], [9.4, D + 8.6, 7], [9.2, D + 3.6, 5.5]];
-      pts.forEach(([u, v, h], i) => { const [x, z] = B.toWorld(u, v); forest.add(x, z, { h, r: 1.9, kind: 'birch', seed: 5100 + i, y: y0 + 0.05 }); });
+      const trees = [[9.0, D + 6.0, 6.5, 'birch'], [22.4, D + 6.8, 6.8, 'birch'], [15.4, D + 6.9, 5.2, 'sycamore'], [26.6, D + 3.2, 5.8, 'birch']];
+      trees.forEach(([u, v, h, kind], k) => { const [x, z] = B.toWorld(u, v); forest.add(x, z, { h, r: kind === 'birch' ? 1.9 : 2.6, kind, seed: 5100 + k, y: y0 + 0.05 }); });
       let sd = 77; const rr = () => ((sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296);
-      const inR = (u, v, [a, b, c, d], m) => u > a - m && u < c + m && v > b - m && v < d + m;
-      if (!opts.context) for (let i = 0; i < 150; i++) {
-        const [a, b, c, d] = beds[rr() < 0.55 ? 0 : 1], u = a + 0.3 + rr() * (c - a - 0.6), v = b + 0.3 + rr() * (d - b - 0.6);
-        if (gravel.some(g => inR(u, v, g, 0.3))) continue;
-        const [x, z] = B.toWorld(u, v); const g = rr() < 0.5;
-        forest.add(x, z, { h: g ? 0.75 : 0.9 + rr() * 0.6, r: g ? 0.45 : 0.55 + rr() * 0.2, kind: g ? 'grass' : 'shrub', seed: 5300 + i, y: y0 + 0.04 });
+      if (!opts.context) {
+        for (let k = 0; k < 90; k++) { const bed = rr() < 0.75 ? [8.7, D + GAL + 0.5, 22.5, D + GAL + 1.2] : [24.1, D + GAL + 0.5, 29.5, D + GAL + 1.2]; const u = bed[0] + rr() * (bed[2] - bed[0]), v = bed[1] + rr() * (bed[3] - bed[1]); const [x, z] = B.toWorld(u, v); const g = rr() < 0.45; forest.add(x, z, { h: g ? 0.7 : 0.8 + rr() * 0.5, r: g ? 0.4 : 0.5, kind: g ? 'grass' : 'shrub', seed: 5300 + k, y: y0 + 0.47 }); }
+        for (let k = 0; k < 26; k++) { const u = 10.8 + rr() * 9.2, v = rr() < 0.5 ? D + 4.5 + rr() * 0.5 : D + 8.8 + rr() * 0.5; const [x, z] = B.toWorld(u, v); forest.add(x, z, { h: 0.55, r: 0.35, kind: rr() < 0.5 ? 'grass' : 'shrub', seed: 5500 + k, y: y0 + 0.07 }); }
+        for (const [u, py, v] of pots) { const [x, z] = B.toWorld(u, v); forest.add(x, z, { h: 0.75, r: 0.32, kind: 'shrub', seed: 5700 + Math.round(u * 13 + py * 7), y: y0 + py }); }
       }
     }
   }
@@ -351,6 +421,13 @@ export function buildPrintHouse(M, opts = {}) {
     alu: new THREE.MeshStandardMaterial({ color: '#2a2d30', roughness: 0.4, metalness: 0.5, clippingPlanes: M.brick?.clippingPlanes }), soldier: M.brick || M.cBrick,
     wallStone: (() => { const T = (n, o) => tex((opts.base || 'assets/') + 'tex/' + n, o); return new THREE.MeshStandardMaterial({ map: T('sandstone_w.jpg'), normalMap: T('sandstone_normal.jpg', { srgb: false }), normalScale: new THREE.Vector2(1.3, 1.3), roughness: 0.92, color: new THREE.Color(0.62, 0.64, 0.7), clippingPlanes: M.brick?.clippingPlanes }); })(),   // the retained stone boundary wall: weathered coursed sandstone
     soil: new THREE.MeshStandardMaterial({ color: '#3b2c22', roughness: 1 }), oak: new THREE.MeshStandardMaterial({ color: '#a5774a', roughness: 0.6 }),
+    door0: new THREE.MeshStandardMaterial({ color: '#26364a', roughness: 0.42, clippingPlanes: M.brick?.clippingPlanes }), door1: new THREE.MeshStandardMaterial({ color: '#4c5b4d', roughness: 0.45, clippingPlanes: M.brick?.clippingPlanes }),
+    door2: new THREE.MeshStandardMaterial({ color: '#5a272c', roughness: 0.42, clippingPlanes: M.brick?.clippingPlanes }), door3: new THREE.MeshStandardMaterial({ color: '#1f3a2e', roughness: 0.42, clippingPlanes: M.brick?.clippingPlanes }),
+    brass: new THREE.MeshStandardMaterial({ color: '#c9a24f', roughness: 0.3, metalness: 1, clippingPlanes: M.brick?.clippingPlanes }),
+    mat: new THREE.MeshStandardMaterial({ color: '#7a6346', roughness: 1, clippingPlanes: M.brick?.clippingPlanes }),
+    pot: new THREE.MeshStandardMaterial({ color: '#3a3d40', roughness: 0.6, metalness: 0.2, clippingPlanes: M.brick?.clippingPlanes }),
+    hedge: new THREE.MeshStandardMaterial({ color: '#3e5a2c', roughness: 0.95 }),
+    coping: new THREE.MeshStandardMaterial({ color: '#9a9a96', roughness: 0.85 }),
   };
   const meshes = {};
   for (const [k, list] of Object.entries(G)) {
@@ -440,10 +517,12 @@ export function buildPrintHouse(M, opts = {}) {
   return { group, meshes, windows, unitRooms, unitHit, floorHit, pick, y0, FH, NF, outlinePlan, outlineWorld, bulbs, toWorld: B.toWorld, local: (u, y, v) => W2(new THREE.Vector3(u, y, -v)), units: PH_UNITS };
 }
 
-// Seaton House, 61 Wellington Street: the retained Victorian frontage (Brik Studios' new HQ), built on its OpenStreetMap
-// footprint with the CGI's street elevation: five big multi-pane windows on each floor, stone sills and heads, a
-// stepped parapet with THE PRINT HOUSE in white letters, and the gabled entrance bay with three arched windows.
-export function buildSeatonHouse(M, poly, groundAt) {
+// Seaton House, 61 Wellington Street: the retained Victorian frontage (Brik Studios' new HQ, the Print House offices), on its
+// OpenStreetMap footprint less the rear annex, with the CGI's street elevation: five big multi-pane windows on each floor, stone
+// sills and heads, a raised parapet with THE PRINT HOUSE centred on it, the gabled entrance bay with three arched windows.
+// Charlie, 18 Nov: two pitched roofs behind a square parapet (it reads flat from the road), larger windows, the logo in the
+// middle, and the offices' proper entrance on the Fletcher Street end with a paved forecourt.
+export function buildSeatonHouse(M, poly, groundAt, opts = {}) {
   const group = new THREE.Group(); group.name = 'seaton';
   const n = poly.length; let cx = 0, cz = 0; for (const [x, z] of poly) { cx += x; cz += z; } cx /= n; cz /= n;
   // the street frontage: the longest edge facing east-ish (Wellington Street)
@@ -458,96 +537,182 @@ export function buildSeatonHouse(M, poly, groundAt) {
   // run the facade from its north end (lower z) to its south end, where the gabled entrance bay is
   let { A: F0, B: F1 } = best; if (F0[1] > F1[1]) [F0, F1] = [F1, F0];
   const L = best.L, dx = (F1[0] - F0[0]) / L, dz = (F1[1] - F0[1]) / L, nx = best.nx, nz = best.nz;
+  let depth = 0; for (const [x, z] of poly) depth = Math.max(depth, -((x - F0[0]) * nx + (z - F0[1]) * nz));
   let gMin = 1e9; for (const [x, z] of poly) gMin = Math.min(gMin, groundAt(x, z));
-  const gF = Math.min(groundAt(...F0), groundAt(...F1)), H = 9.6, top = gF + H, base = gMin - 1.2;
+  const gF = Math.min(groundAt(...F0), groundAt(...F1)), H = 9.6, top = gF + H, base = gMin - 1.2, EV = H - 1.0;   // EV: the eaves inside the parapet
   const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
-  // body
-  {
-    const sh = new THREE.Shape(poly.map(([x, z]) => new THREE.Vector2(x, -z)));
-    const g = new THREE.ExtrudeGeometry(sh, { depth: top - base, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.translate(0, base, 0);
-    add('wall', g);
-    const r = new THREE.ShapeGeometry(sh); r.rotateX(-Math.PI / 2); r.translate(0, top + 0.03, 0); add('roof', r);
-  }
-  // a box on the facade frame: s along the frontage from the north end, y above the street level gF, d out from the wall face
-  // a right-handed frame (s, up, Z); sg says whether Z points out into the street or back into the building
+  // a box in the frontage frame: s along the frontage from the north end, y above gF, d out from the front wall (negative = into the building)
   const M4 = new THREE.Matrix4().makeBasis(new THREE.Vector3(dx, 0, dz), new THREE.Vector3(0, 1, 0), new THREE.Vector3(-dz, 0, dx));
   const sg = (-dz * nx + dx * nz) > 0 ? 1 : -1;
-  const fbox = (k, s0, s1, y0, y1, d0, d1) => { const g = new THREE.BoxGeometry(s1 - s0, y1 - y0, Math.abs(d1 - d0)); g.translate((s0 + s1) / 2, gF + (y0 + y1) / 2, sg * (d0 + d1) / 2); g.applyMatrix4(M4); g.translate(F0[0], 0, F0[1]); add(k, g); };
+  const fbox = (k, s0, s1, y0, y1, d0, d1) => { const g = new THREE.BoxGeometry(Math.max(0.005, s1 - s0), Math.max(0.005, y1 - y0), Math.max(0.005, Math.abs(d1 - d0))); g.translate((s0 + s1) / 2, gF + (y0 + y1) / 2, sg * (d0 + d1) / 2); g.applyMatrix4(M4); g.translate(F0[0], 0, F0[1]); add(k, g); };
+  // body: the walls up to the eaves (a solid block), then a parapet ring round the roofs
+  {
+    const sh = new THREE.Shape(poly.map(([x, z]) => new THREE.Vector2(x, -z)));
+    const g = new THREE.ExtrudeGeometry(sh, { depth: gF + EV - base, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.translate(0, base, 0); add('wall', g);
+    const ring = new THREE.Shape(poly.map(([x, z]) => new THREE.Vector2(x, -z)));
+    const inset = poly.map(([x, z]) => { const ddx = cx - x, ddz = cz - z, l = Math.hypot(ddx, ddz); return [x + ddx / l * 0.42, z + ddz / l * 0.42]; });
+    ring.holes.push(new THREE.Path(inset.map(([x, z]) => new THREE.Vector2(x, -z)).reverse()));
+    const pg = new THREE.ExtrudeGeometry(ring, { depth: H - EV, bevelEnabled: false }); pg.rotateX(-Math.PI / 2); pg.translate(0, gF + EV, 0); add('wall', pg);
+    const cop = new THREE.ExtrudeGeometry(ring, { depth: 0.1, bevelEnabled: false }); cop.rotateX(-Math.PI / 2); cop.translate(0, top, 0); add('stone', cop);
+  }
   // the front wall, 0.4 m proud of the body, with its window holes (so the glass sits in a deep reveal)
-  const holes = [], wins = [];
+  const wins = [];
   const MAIN = Math.min(18.2, L - 6.2), bay = MAIN / 5;
-  for (let i = 0; i < 5; i++) { const c = bay * (i + 0.5); wins.push({ a: c - 1.2, b: c + 1.2, y0: 0.75, y1: 3.3, grid: [3, 3] }, { a: c - 1.15, b: c + 1.15, y0: 4.55, y1: 6.55, grid: [3, 3] }); }
+  for (let i = 0; i < 5; i++) { const c = bay * (i + 0.5); wins.push({ a: c - 1.42, b: c + 1.42, y0: 0.6, y1: 3.35, grid: [3, 3] }, { a: c - 1.36, b: c + 1.36, y0: 4.3, y1: 6.85, grid: [3, 3] }); }
   const gb0 = MAIN, gb1 = L, gc = (gb0 + gb1) / 2;
-  wins.push({ a: gb0 + 0.6, b: gb0 + 1.5, y0: 0.6, y1: 2.9, grid: [1, 2] });                    // ground-floor side light
-  wins.push({ a: gc - 0.75, b: gc + 0.75, y0: 0.05, y1: 2.9, door: true });                      // the front door
-  for (const k of [-1.45, 0, 1.45]) wins.push({ a: gc + k - 0.42, b: gc + k + 0.42, y0: 4.2, y1: 6.5, grid: [1, 3], arch: true });
+  wins.push({ a: gb0 + 0.6, b: gb0 + 1.5, y0: 0.6, y1: 2.9, grid: [1, 2] });
+  wins.push({ a: gc - 0.75, b: gc + 0.75, y0: 0.05, y1: 2.9, door: true });
+  for (const k of [-1.45, 0, 1.45]) wins.push({ a: gc + k - 0.45, b: gc + k + 0.45, y0: 4.1, y1: 6.6, grid: [1, 3], arch: true });
   {
     const sh = new THREE.Shape([new THREE.Vector2(0, base - gF), new THREE.Vector2(L, base - gF), new THREE.Vector2(L, H), new THREE.Vector2(0, H)]);
     for (const w of wins) { const h = new THREE.Path(); h.moveTo(w.a, w.y0); h.lineTo(w.b, w.y0); h.lineTo(w.b, w.y1); h.lineTo(w.a, w.y1); h.lineTo(w.a, w.y0); sh.holes.push(h); }
     const g = new THREE.ExtrudeGeometry(sh, { depth: 0.4, bevelEnabled: false }); g.translate(0, gF, sg > 0 ? 0 : -0.4); g.applyMatrix4(M4); g.translate(F0[0], 0, F0[1]);
     add('wall', g);
   }
-  for (const w of wins) {
+  const winFrames = (w, box) => {
     const fr = 0.07, d0 = 0.02, d1 = 0.1;
-    if (w.door) { fbox('door', w.a, w.b, w.y0, w.y1, 0.02, 0.1); fbox('stone', w.a - 0.3, w.b + 0.3, w.y1, w.y1 + 0.35, 0.3, 0.5); fbox('stone', w.a - 0.3, w.a - 0.05, w.y0, w.y1, 0.3, 0.48); fbox('stone', w.b + 0.05, w.b + 0.3, w.y0, w.y1, 0.3, 0.48); continue; }
-    fbox('glass', w.a, w.b, w.y0, w.y1, 0.0, 0.02);
-    fbox('frame', w.a, w.a + fr, w.y0, w.y1, d0, d1); fbox('frame', w.b - fr, w.b, w.y0, w.y1, d0, d1);
-    fbox('frame', w.a, w.b, w.y0, w.y0 + fr, d0, d1); fbox('frame', w.a, w.b, w.y1 - fr, w.y1, d0, d1);
+    box('glass', w.a, w.b, w.y0, w.y1, 0.0, 0.02);
+    box('frame', w.a, w.a + fr, w.y0, w.y1, d0, d1); box('frame', w.b - fr, w.b, w.y0, w.y1, d0, d1);
+    box('frame', w.a, w.b, w.y0, w.y0 + fr, d0, d1); box('frame', w.a, w.b, w.y1 - fr, w.y1, d0, d1);
     const [cols, rows] = w.grid;
-    for (let i = 1; i < cols; i++) { const t = w.a + (w.b - w.a) * i / cols; fbox('frame', t - 0.03, t + 0.03, w.y0, w.y1, d0, d1 - 0.02); }
-    for (let j = 1; j < rows; j++) { const t = w.y0 + (w.y1 - w.y0) * j / rows; fbox('frame', w.a, w.b, t - 0.025, t + 0.025, d0, d1 - 0.02); }
-    fbox('stone', w.a - 0.12, w.b + 0.12, w.y0 - 0.14, w.y0, 0.3, 0.5);                                   // sill
-    if (w.arch) fbox('stone', w.a - 0.1, w.b + 0.1, w.y1, w.y1 + 0.32, 0.36, 0.46);                       // arch head (keystone band)
-    else if (w.y0 > 4) fbox('stone', w.a - 0.25, w.b + 0.25, w.y1 + 0.05, w.y1 + 0.38, 0.38, 0.5);        // first-floor stone heads
+    for (let i = 1; i < cols; i++) { const t = w.a + (w.b - w.a) * i / cols; box('frame', t - 0.03, t + 0.03, w.y0, w.y1, d0, d1 - 0.02); }
+    for (let j = 1; j < rows; j++) { const t = w.y0 + (w.y1 - w.y0) * j / rows; box('frame', w.a, w.b, t - 0.025, t + 0.025, d0, d1 - 0.02); }
+  };
+  for (const w of wins) {
+    if (w.door) { fbox('door', w.a, w.b, w.y0, w.y1, 0.02, 0.1); fbox('stone', w.a - 0.3, w.b + 0.3, w.y1, w.y1 + 0.35, 0.3, 0.5); fbox('stone', w.a - 0.3, w.a - 0.05, w.y0, w.y1, 0.3, 0.48); fbox('stone', w.b + 0.05, w.b + 0.3, w.y0, w.y1, 0.3, 0.48); continue; }
+    winFrames(w, fbox);
+    fbox('stone', w.a - 0.12, w.b + 0.12, w.y0 - 0.14, w.y0, 0.3, 0.5);
+    if (w.arch) fbox('stone', w.a - 0.1, w.b + 0.1, w.y1, w.y1 + 0.32, 0.36, 0.46);
+    else if (w.y0 > 4) fbox('stone', w.a - 0.22, w.b + 0.22, w.y1 + 0.05, w.y1 + 0.36, 0.38, 0.5);
   }
-  // stone bands: plinth, the band over the ground-floor windows, cornice; the stepped parapet with its coping
+  // stone bands: plinth, the band over the ground-floor windows, cornice; the raised parapet with its coping
   fbox('plinth', 0, L, base - gF, 0.45, 0.38, 0.5);
-  fbox('stone', 0, L, 3.45, 3.75, 0.38, 0.5);
-  fbox('stone', 0, MAIN, 7.25, 7.45, 0.38, 0.52);
-  fbox('brickF', 0, MAIN, 7.45, 7.75, 0.4, 0.5);
-  const p0 = bay * 0.85, p1 = MAIN - bay * 0.85;
-  fbox('brickF', p0, p1, H, H + 0.75, 0.0, 0.4); fbox('stone', p0 - 0.05, p1 + 0.05, H + 0.75, H + 0.85, -0.05, 0.45);
+  fbox('stone', 0, L, 3.5, 3.8, 0.38, 0.5);
+  fbox('stone', 0, MAIN, 7.3, 7.5, 0.38, 0.52);
+  fbox('brickF', 0, MAIN, 7.5, 7.8, 0.4, 0.5);
+  const p0 = bay * 0.55, p1 = MAIN - bay * 0.55;
+  fbox('brickF', p0, p1, H, H + 1.15, 0.0, 0.4); fbox('stone', p0 - 0.05, p1 + 0.05, H + 1.15, H + 1.25, -0.05, 0.45);
   fbox('stone', 0, p0, H - 0.1, H + 0.02, -0.05, 0.45); fbox('stone', p1, MAIN, H - 0.1, H + 0.02, -0.05, 0.45);
+  // two pitched roofs behind the parapet over the main range, ridges along the street, a lead valley between them
+  {
+    const s0 = 0.42, s1 = MAIN - 0.1, d0 = -0.42, d1 = -(depth - 0.42), half = (d1 - d0) / 2, rise = 1.85;
+    const slate = (sa, sb, da, ya, db, yb) => {   // one roof slope between two lines along s
+      const g = new THREE.BufferGeometry(), P = (s, y, d) => new THREE.Vector3(s, gF + y, sg * d).applyMatrix4(M4).add(new THREE.Vector3(F0[0], 0, F0[1]));
+      const a = P(sa, ya, da), b = P(sb, ya, da), c = P(sb, yb, db), e = P(sa, yb, db);
+      const pos = []; const tri = (p, q, r) => { const nrm = new THREE.Vector3().subVectors(q, p).cross(new THREE.Vector3().subVectors(r, p)); if (nrm.y < 0) [q, r] = [r, q]; pos.push(...p.toArray(), ...q.toArray(), ...r.toArray()); };
+      tri(a, b, c); tri(a, c, e);
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
+      const pp = g.attributes.position, uv = new Float32Array(pp.count * 2); for (let k = 0; k < pp.count; k++) { uv[2 * k] = (pp.getX(k) * dx + pp.getZ(k) * dz) / 2.6; uv[2 * k + 1] = pp.getY(k) / 1.4; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+      add('slate', g);
+    };
+    for (const k of [0, 1]) {
+      const da = d0 + k * 2 * half, dm = da + half, db = da + 2 * half;
+      slate(s0, s1, da, EV, dm, EV + rise); slate(s0, s1, db, EV, dm, EV + rise);
+      const gs = new THREE.Shape([new THREE.Vector2(sg * da, EV), new THREE.Vector2(sg * db, EV), new THREE.Vector2(sg * dm, EV + rise)]);
+      for (const ss of [s0, s1]) { const gg = new THREE.ShapeGeometry(gs); gg.rotateY(-Math.PI / 2); gg.translate(ss, gF, 0); gg.applyMatrix4(M4); gg.translate(F0[0], 0, F0[1]); add('brickF', gg); }
+      fbox('lead', s0, s1, EV + rise - 0.02, EV + rise + 0.08, dm - 0.12, dm + 0.12);   // lead ridge
+    }
+    fbox('lead', s0, s1, EV, EV + 0.06, d0 + half * 2 - 0.3, d0 + half * 2 + 0.3);   // the valley gutter
+  }
   // the gabled entrance bay: a pitched roof running back from a brick gable with stone kneelers
   {
-    const w = gb1 - gb0, rise = 2.6, depth = 9;
+    const w = gb1 - gb0, rise = 2.6, dep = Math.min(9, depth - 0.6);
     const sh = new THREE.Shape([new THREE.Vector2(gb0, H - 0.05), new THREE.Vector2(gb1, H - 0.05), new THREE.Vector2(gc, H + rise)]);
-    const g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: false }); g.translate(0, gF, sg > 0 ? -depth + 0.4 : -0.4); g.applyMatrix4(M4); g.translate(F0[0], 0, F0[1]); add('brickF', g);
+    const g = new THREE.ExtrudeGeometry(sh, { depth: dep, bevelEnabled: false }); g.translate(0, gF, sg > 0 ? -dep + 0.4 : -0.4); g.applyMatrix4(M4); g.translate(F0[0], 0, F0[1]); add('brickF', g);
     const ang = Math.atan2(rise, w / 2), len = Math.hypot(rise, w / 2) + 0.2;
     for (const k of [-1, 1]) {
-      const r = new THREE.BoxGeometry(len, 0.12, depth + 0.3); r.rotateZ(-k * ang); r.translate(gc + k * w / 4, gF + H + rise / 2 + 0.08, sg * (-depth / 2 + 0.4)); r.applyMatrix4(M4); r.translate(F0[0], 0, F0[1]); add('slate', r);
+      const r = new THREE.BoxGeometry(len, 0.12, dep + 0.3); r.rotateZ(-k * ang); r.translate(gc + k * w / 4, gF + H + rise / 2 + 0.08, sg * (-dep / 2 + 0.4)); r.applyMatrix4(M4); r.translate(F0[0], 0, F0[1]); add('slate', r);
       const c = new THREE.BoxGeometry(len, 0.14, 0.5); c.rotateZ(-k * ang); c.translate(gc + k * w / 4, gF + H + rise / 2 + 0.12, sg * 0.3); c.applyMatrix4(M4); c.translate(F0[0], 0, F0[1]); add('stone', c);
     }
-    fbox('stone', gc - 0.35, gc + 0.35, 7.3, 8.0, 0.4, 0.5);   // the roundel panel in the gable
+    fbox('stone', gc - 0.35, gc + 0.35, 7.3, 8.0, 0.4, 0.5);
+    fbox('wall', gb0 + 0.3, gb1 - 0.3, EV, H + 0.1, -dep + 0.4, -depth + 0.42);   // filled behind the gable roof
+  }
+  // the other walls: windows on the garden side and on the Fletcher Street end, and the offices' entrance on that end
+  const edgeFrame = (A, Bq) => {   // s along A -> B, d out of the building
+    const ex = Bq[0] - A[0], ez = Bq[1] - A[1], l = Math.hypot(ex, ez), ux = ex / l, uz = ez / l; let ox = uz, oz = -ux;
+    if (((A[0] + Bq[0]) / 2 - cx) * ox + ((A[1] + Bq[1]) / 2 - cz) * oz < 0) { ox = -ox; oz = -oz; }
+    const g0 = Math.min(groundAt(...A), groundAt(...Bq));
+    const rh = (-uz * ox + ux * oz) > 0, sx = rh ? 1 : -1;   // keep the frame right-handed (a mirrored one turns the boxes inside out)
+    const box = (k, s0, s1, y0, y1, d0, d1) => { const g = new THREE.BoxGeometry(Math.max(0.005, s1 - s0), Math.max(0.005, y1 - y0), Math.max(0.005, Math.abs(d1 - d0))); g.translate(sx * (s0 + s1) / 2, (y0 + y1) / 2, (d0 + d1) / 2); g.applyMatrix4(new THREE.Matrix4().makeBasis(new THREE.Vector3(sx * ux, 0, sx * uz), new THREE.Vector3(0, 1, 0), new THREE.Vector3(ox, 0, oz)).setPosition(A[0], 0, A[1])); add(k, g); };
+    return { len: l, g0, box, at: (s, d) => [A[0] + ux * s + ox * d, A[1] + uz * s + oz * d], u: [ux, uz], o: [ox, oz] };
+  };
+  const others = []; for (let i = 0; i < n; i++) { const A = poly[i], Bq = poly[(i + 1) % n]; if ((A === best.A && Bq === best.B) || (A === best.B && Bq === best.A)) continue; others.push([A, Bq]); }
+  // the Fletcher Street end: the edge nearest the side block (lowest z midpoint)
+  others.sort((a, b) => (a[0][1] + a[1][1]) - (b[0][1] + b[1][1]));
+  const [endE, ...rest] = others;
+  {
+    const E = edgeFrame(...endE), y = (v) => E.g0 + v, c = E.len / 2;
+    const wb = (k, s0, s1, y0, y1, d0, d1) => E.box(k, s0, s1, y(y0), y(y1), d0, d1);
+    // the entrance: a pair of glazed doors under a fanlight in a stone surround, a slim steel canopy, wall lanterns, stone steps
+    wb('stone', c - 1.65, c + 1.65, -0.3, 3.75, -0.02, 0.16);
+    wb('glass', c - 1.15, c + 1.15, 0.12, 3.25, 0.16, 0.18); wb('frame', c - 1.2, c + 1.2, 3.25, 3.35, 0.16, 0.24); wb('frame', c - 1.2, c + 1.2, 2.45, 2.52, 0.16, 0.24);
+    for (const x of [c - 1.15, c - 0.03, c + 1.15]) wb('frame', x - 0.05, x + 0.05, 0.12, 3.35, 0.16, 0.24);
+    wb('brass', c - 0.18, c - 0.1, 1.0, 1.4, 0.24, 0.27); wb('brass', c + 0.1, c + 0.18, 1.0, 1.4, 0.24, 0.27);
+    wb('steel', c - 1.9, c + 1.9, 3.82, 3.92, 0.0, 1.5); wb('steel', c - 1.9, c + 1.9, 3.72, 3.82, 1.42, 1.5);
+    for (const sx of [c - 2.15, c + 2.15]) { wb('steel', sx - 0.1, sx + 0.1, 2.2, 2.65, 0.0, 0.22); wb('lamp', sx - 0.07, sx + 0.07, 2.27, 2.58, 0.06, 0.2); }
+    for (let k = 0; k < 3; k++) wb('stone', c - 1.9 - k * 0.15, c + 1.9 + k * 0.15, -0.3, 0.12 - k * 0.14, 0.16, 0.6 + k * 0.32);
+    // a brass name plate beside the door
+    {
+      const cv = document.createElement('canvas'); cv.width = 512; cv.height = 256; const x = cv.getContext('2d');
+      x.fillStyle = '#b8924a'; x.fillRect(0, 0, 512, 256); x.fillStyle = '#2b2116'; x.textAlign = 'center';
+      x.font = '700 64px "Archivo", "Helvetica Neue", Arial, sans-serif'; x.fillText('THE PRINT HOUSE', 256, 112); x.font = '500 40px "Archivo", Arial, sans-serif'; x.fillText('OFFICES · SEATON HOUSE', 256, 182);
+      const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.45), new THREE.MeshStandardMaterial({ map: t, roughness: 0.35, metalness: 0.6 }));
+      const [px, pz] = E.at(c + 2.15, 0.17); m.position.set(px, y(1.45), pz); m.rotation.y = Math.atan2(E.o[0], E.o[1]); group.add(m);
+    }
+    // windows: two each side on the first floor, one each side on the ground floor
+    for (const s0 of [0.9, E.len - 2.6]) { const w = { a: s0, b: s0 + 1.7, y0: 0.9, y1: 3.2, grid: [2, 3] }; winFrames(w, (k, a, b2, y0, y1, d0, d1) => wb(k, a, b2, y0, y1, d0 + 0.0, d1 + 0.0)); wb('stone', s0 - 0.1, s0 + 1.8, 0.76, 0.9, 0, 0.12); }
+    for (const s0 of [0.9, 3.25, E.len - 4.95, E.len - 2.6].filter((v, i, a) => a.indexOf(v) === i)) { const w = { a: s0, b: s0 + 1.7, y0: 4.4, y1: 6.75, grid: [2, 3] }; winFrames(w, (k, a, b2, y0, y1, d0, d1) => wb(k, a, b2, y0, y1, d0, d1)); wb('stone', s0 - 0.1, s0 + 1.8, 4.26, 4.4, 0, 0.12); wb('stone', s0 - 0.15, s0 + 1.85, 6.8, 7.05, 0, 0.12); }
+    // the forecourt: sandstone flags out to the pavement, two planters
+    const fc = [E.at(-0.6, 0.02), E.at(E.len + 0.4, 0.02), E.at(E.len + 0.4, 4.4), E.at(-0.6, 4.4)];
+    const fg = new THREE.PlaneGeometry(1, 1, 10, 6), fp = fg.attributes.position;
+    for (let k = 0; k < fp.count; k++) { const a = fp.getX(k) + 0.5, b = 0.5 - fp.getY(k); const px = fc[0][0] + (fc[1][0] - fc[0][0]) * a + (fc[3][0] - fc[0][0]) * b, pz = fc[0][1] + (fc[1][1] - fc[0][1]) * a + (fc[3][1] - fc[0][1]) * b; fp.setXYZ(k, px, Math.max(groundAt(px, pz), E.g0 - 0.3) + 0.06, pz); }
+    { const uv = fg.attributes.uv; for (let k = 0; k < fp.count; k++) uv.setXY(k, fp.getX(k) / 1.6, fp.getZ(k) / 1.6); }
+    fg.computeVertexNormals(); { const nn = fg.attributes.normal; if (nn.getY(0) < 0) { const idx = fg.index; for (let k = 0; k < idx.count; k += 3) { const t = idx.getX(k + 1); idx.setX(k + 1, idx.getX(k + 2)); idx.setX(k + 2, t); } fg.computeVertexNormals(); } }
+    add('flags', fg);
+    for (const sx of [c - 2.9, c + 2.9]) { wb('pot', sx - 0.45, sx + 0.45, -0.3, 0.6, 0.6, 1.5); if (opts.forest) { const [px, pz] = E.at(sx, 1.05); opts.forest.add(px, pz, { h: 1.6, r: 0.5, kind: 'shrub', seed: 6100 + Math.round(sx * 10), y: y(0.6) }); } }
+  }
+  // the garden side: a regular row of windows on both floors now the garden opens up to it
+  for (const [A, Bq] of rest) {
+    const E = edgeFrame(A, Bq); if (E.len < 6) continue;
+    const nw = Math.floor((E.len - 1) / 3.2), pad = (E.len - nw * 3.2) / 2;
+    for (let k = 0; k < nw; k++) for (const [y0, y1] of [[0.9, 3.2], [4.4, 6.75]]) { const s0 = pad + k * 3.2 + 0.75; const w = { a: s0, b: s0 + 1.7, y0, y1, grid: [2, 3] }; winFrames(w, (kk, a, b2, ya, yb, d0, d1) => E.box(kk, a, b2, E.g0 + ya, E.g0 + yb, d0, d1)); E.box('stone', s0 - 0.1, s0 + 1.8, E.g0 + y0 - 0.14, E.g0 + y0, 0, 0.12); }
   }
   // materials (none of these are cut by the floor section, which belongs to the apartment building)
   const plain = (m, o = {}) => { const c = m.clone(); c.clippingPlanes = null; c.side = THREE.FrontSide; Object.assign(c, o); return c; };
   const brick = plain(M.cBrick || M.brick, { side: THREE.DoubleSide });
   const mats = {
-    wall: brick, brickF: brick, plinth: plain(M.brick2 || M.cBrickOld || brick), stone: plain(M.stone), slate: plain(M.slate || M.cSlate),
-    roof: new THREE.MeshStandardMaterial({ color: '#4c4e51', roughness: 0.92 }),
+    wall: brick, brickF: brick, plinth: plain(M.brick2 || M.cBrickOld || brick), stone: plain(M.stone), slate: plain(M.slate || M.cSlate, { side: THREE.DoubleSide }),
+    lead: new THREE.MeshStandardMaterial({ color: '#3c4043', roughness: 0.55, metalness: 0.35 }),
     glass: new THREE.MeshStandardMaterial({ color: '#20272d', roughness: 0.12, metalness: 0.4, envMapIntensity: 1.4 }),
     frame: new THREE.MeshStandardMaterial({ color: '#2a2827', roughness: 0.5, metalness: 0.3 }),
-    door: new THREE.MeshStandardMaterial({ color: '#1f2226', roughness: 0.45, metalness: 0.2 }),
+    door: new THREE.MeshStandardMaterial({ color: '#1f3a2e', roughness: 0.45, metalness: 0.1 }),
+    steel: new THREE.MeshStandardMaterial({ color: '#1f2225', roughness: 0.42, metalness: 0.6 }),
+    brass: new THREE.MeshStandardMaterial({ color: '#c9a24f', roughness: 0.3, metalness: 1 }),
+    lamp: new THREE.MeshStandardMaterial({ color: '#ffe2b0', emissive: new THREE.Color('#ffcf88'), emissiveIntensity: 0.6, roughness: 0.4 }),
+    pot: new THREE.MeshStandardMaterial({ color: '#33363a', roughness: 0.6, metalness: 0.2 }),
+    flags: (() => { const m = plain(M.paving); m.color = new THREE.Color('#d8cdb8'); return m; })(),
   };
   for (const [k, list] of Object.entries(G)) {
-    const g = mergeGeometries(list, false);
+    const g = mergeGeometries(list.map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false);
+    if (!g) continue;
     if (k === 'wall' || k === 'brickF' || k === 'plinth') {   // brick-sized UVs along each face
       g.computeVertexNormals(); const p = g.attributes.position, nn = g.attributes.normal, uv = new Float32Array(p.count * 2);
       for (let i = 0; i < p.count; i++) { const ax = Math.abs(nn.getX(i)), az = Math.abs(nn.getZ(i)), ay = Math.abs(nn.getY(i)); const hz = ay > 0.7; uv[2 * i] = (hz ? p.getX(i) : ax > az ? p.getZ(i) : p.getX(i)) / 2.2; uv[2 * i + 1] = (hz ? p.getZ(i) : p.getY(i)) / 2.2; }
       g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     }
-    const m = new THREE.Mesh(g, mats[k] || mats.stone); m.castShadow = k !== 'glass'; m.receiveShadow = true; m.name = 'seaton_' + k; group.add(m);
+    const m = new THREE.Mesh(g, mats[k] || mats.stone); m.castShadow = !['glass', 'flags'].includes(k); m.receiveShadow = true; m.name = 'seaton_' + k; group.add(m);
   }
-  // THE PRINT HOUSE in white letters on the raised parapet
+  // THE PRINT HOUSE in white letters, centred on the raised parapet and filling it
   {
-    const c = document.createElement('canvas'); c.width = 1024; c.height = 96; const x = c.getContext('2d');
-    x.fillStyle = '#f2ede4'; x.font = '700 78px "Archivo", "Helvetica Neue", Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText('THE PRINT HOUSE', 512, 52);
+    const c = document.createElement('canvas'); c.width = 2048; c.height = 192; const x = c.getContext('2d');
+    x.fillStyle = '#f2ede4'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    let fs = 150; x.font = `700 ${fs}px "Archivo", "Helvetica Neue", Arial, sans-serif`; const tw = x.measureText('THE PRINT HOUSE').width; if (tw > 1960) { fs = Math.floor(fs * 1960 / tw); x.font = `700 ${fs}px "Archivo", "Helvetica Neue", Arial, sans-serif`; }
+    x.fillText('THE PRINT HOUSE', 1024, 100);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-    const sw = Math.min(9.5, (p1 - p0) * 0.92), m = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * 96 / 1024), new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.2, roughness: 0.7 }));
+    const sw = Math.min((p1 - p0) * 0.9, 0.95 * 2048 / 192), m = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * 192 / 2048), new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.2, roughness: 0.7 }));
     const sc = (p0 + p1) / 2;
-    m.position.set(F0[0] + dx * sc + nx * 0.42, gF + H + 0.36, F0[1] + dz * sc + nz * 0.42); m.rotation.y = Math.atan2(nx, nz); m.name = 'seatonSign';
+    m.position.set(F0[0] + dx * sc + nx * 0.42, gF + H + 0.58, F0[1] + dz * sc + nz * 0.42); m.rotation.y = Math.atan2(nx, nz); m.name = 'seatonSign';
     group.add(m);
   }
   group.userData = { front: { F0, F1, nx, nz, gF, top } };
