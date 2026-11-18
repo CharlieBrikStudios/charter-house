@@ -5,7 +5,7 @@
 // between rooms with the room chips.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FLOOR_H as FH } from './data.js?v=1794931130';
+import { FLOOR_H as FH } from './data.js?v=1794998796';
 import { plankTexture, boxUV } from './finishes.js?v=1794535000';
 
 const RES = 0.05;              // occupancy grid resolution (m)

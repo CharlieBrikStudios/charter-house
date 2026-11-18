@@ -1,7 +1,7 @@
-// Call mode (preview, 15 Nov 2026, Charlie's "go ahead with all those"). Loaded only with ?call in the link.
+// Call mode (built 15 Nov 2026; live on the Charter House link from 18 Nov, started from the phone button by Home).
 // Charlie's stops on one key, proof billboards, the protected council land, the bollards, a see-through St Mary's Gate,
 // the one bed vs two bed compare, an honest live line and the after-call shortlist link. Nothing here changes the live page.
-import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1794931130';
+import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1794998796';
 import { rentFor, PICKS } from './sales.js?v=1794535000';
 
 const BASE = 'assets/';
@@ -66,8 +66,10 @@ function css() {
   body.callmode #ui .tools, body.callmode #views, body.callmode #looks, body.callmode #hint, body.callmode #ui .credit,
   body.callmode #navpad, body.callmode #labels .ltag, body.callmode #disclaimer, body.callmode #acard, body.callmode #btn-fs { display: none !important; }
   body.callmode:not(.cm-units) #panel { display: none !important; }
-  #cm-go { position: fixed; left: 16px; top: 128px; z-index: 60; padding: 11px 16px; border-radius: 999px; border: 1px solid rgba(214,176,106,.6); background: rgba(24,19,16,.88); color: #f3ead9; font: 600 14px/1 var(--f-body); cursor: pointer; }
-  body.callmode #cm-go { display: none; }
+  /* call mode starts from a small phone button in the left-hand pad, under Home (Charlie, 18 Nov) */
+  #navpad #cm-go { color: #d8b476; }
+  #navpad #cm-go:hover { background: rgba(216,180,118,.18); }
+  body.callmode #cm-go, body.callmode #cm-gosep { display: none; }
   #cm-bar { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 70; display: none; align-items: center; gap: 6px; padding: 6px; border-radius: 999px; background: rgba(24,19,16,.9); border: 1px solid rgba(255,255,255,.12); color: #f3ead9; font: 500 13px/1 var(--f-body); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
   body.callmode #cm-bar { display: flex; }
   #cm-bar button { height: 34px; min-width: 34px; padding: 0 12px; border-radius: 999px; border: 0; background: rgba(255,255,255,.08); color: inherit; font: inherit; cursor: pointer; }
@@ -183,7 +185,8 @@ function worldOf(spec) {
 
 function buildUI() {
   css();
-  document.body.appendChild(el(`<button id="cm-go" type="button" title="Start call mode (C)">▶ Start call mode (press C)</button>`));
+  { const pad = $('#navpad'), go = el(`<button id="cm-go" type="button" title="Start call mode (C)" aria-label="Start call mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 3.5h2.6l1.4 4-2 1.3a11 11 0 0 0 6.6 6.6l1.3-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg></button>`);
+    if (pad) { pad.appendChild(el(`<span class="nsep" id="cm-gosep" aria-hidden="true"></span>`)); pad.appendChild(go); } else document.body.appendChild(go); }
   document.body.appendChild(el(`<div id="cm-bar" role="group" aria-label="Call mode">
     <button type="button" data-cm="prev" aria-label="Previous stop">‹</button><span class="n" id="cm-n"></span><span class="dots" id="cm-dots"></span>
     <button type="button" data-cm="next" aria-label="Next stop">›</button><button type="button" data-cm="cmp">Compare</button><button type="button" data-cm="short">Shortlist</button><button type="button" data-cm="exit" aria-label="Leave call mode">✕</button></div>`));
