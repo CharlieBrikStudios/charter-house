@@ -1779,7 +1779,9 @@ function applyViewOffset() {
 }
 function onResize() {
   const w = innerWidth, h = innerHeight;
-  camera.aspect = w / h; if (S.mode !== 'view') camera.fov = baseFov(); applyViewOffset(); camera.updateProjectionMatrix();
+  // a 360 and the walk-through keep their own wide view: resetting it here zoomed a 360 right in with no way back (Charlie, 18 Nov),
+  // and the quality step below resizes too, so it happened on its own
+  camera.aspect = w / h; if (S.mode === 'tour') camera.fov = tour.st.fov; else if (!['view', 'walk', 'entering', 'leaving', 'inside'].includes(S.mode)) camera.fov = baseFov(); applyViewOffset(); camera.updateProjectionMatrix();
   renderer.setSize(w, h, false); composer.setSize(w, h);
   if (gtao) gtao.setSize(w, h);
   bloom.setSize(w, h);
@@ -1933,23 +1935,33 @@ function updateLabels() {
 
 // ------------------------------------------------------------------ adaptive quality
 // Watches the real frame time and steps quality down (then gently back up) to stay smooth on any device.
-let curDPR = DPR, adaptAcc = 0, adaptN = 0, adaptCool = 0, gtaoTried = false;
+let curDPR = DPR, adaptCool = 0, gtaoTried = false, adaptFrom = 0, slowRun = 0, goodRun = 0, upNeed = 3;
+const adaptBuf = [];
 const minDPR = Math.min(DPR, 1.15);   // never drop to a blurry picture
 function setDPR(d) { curDPR = d; renderer.setPixelRatio(d); composer.setPixelRatio(d); onResize(); }
+// Charlie, 18 Nov: the model sometimes opened blurry and stayed blurry until a reload. The first seconds are slow while shaders and
+// textures load, which dropped the sharpness; it only came back above 77 frames a second, which a normal 60 Hz screen never shows.
+// Now: wait 8 s after the model appears, judge on the middle frame of each batch (one hitch from a picture loading does not count),
+// drop only after two slow batches in a row, and step back up whenever the view runs smooth at the screen's own rate.
 function adapt(rawDt) {
   if (!CH || S.mode === 'inside' || document.hidden || rawDt > 0.5) return;
-  adaptAcc += rawDt; adaptN++;
-  if (adaptN < 24) return;
-  const ms = adaptAcc / adaptN * 1000; adaptAcc = 0; adaptN = 0;
+  const now = performance.now();
+  if (!adaptFrom) adaptFrom = now + 8000;
+  if (now < adaptFrom) return;
+  adaptBuf.push(rawDt); if (adaptBuf.length < 30) return;
+  const ms = adaptBuf.sort((a, b) => a - b)[15] * 1000; adaptBuf.length = 0;
   if (adaptCool-- > 0) return;
-  if (ms > 45 && curDPR > 1) { if (gtao) gtao.enabled = false; bloom.enabled = false; setDPR(1); adaptCool = 1; return; }
-  if (ms > 28) {
+  const slow = ms > 28; slowRun = slow ? slowRun + 1 : 0;
+  if (ms < 20) goodRun++; else goodRun = 0;
+  if (slow && slowRun < 2) return;
+  if (ms > 45 && curDPR > 1) { if (gtao) gtao.enabled = false; bloom.enabled = false; setDPR(1); adaptCool = 1; slowRun = 0; upNeed = Math.min(upNeed * 2, 40); return; }
+  if (slow) {
     if (gtao && gtao.enabled) { gtao.enabled = false; }
-    else if (curDPR > minDPR + 0.01) setDPR(Math.max(minDPR, curDPR * 0.8));
+    else if (curDPR > minDPR + 0.01) { setDPR(Math.max(minDPR, curDPR * 0.8)); upNeed = Math.min(upNeed * 2, 40); }
     else if (sun.shadow.mapSize.x > 1024) { sun.shadow.mapSize.set(1024, 1024); sun.shadow.map?.dispose(); sun.shadow.map = null; }
     else if (bloom.enabled && Q !== 'low') bloom.enabled = false;
-    adaptCool = 1;
-  } else if (ms < 13 && curDPR < DPR - 0.01) { setDPR(Math.min(DPR, curDPR * 1.15)); adaptCool = 3; }
+    adaptCool = 1; slowRun = 0;
+  } else if (goodRun >= upNeed && curDPR < DPR - 0.01) { setDPR(Math.min(DPR, Math.max(minDPR, curDPR * 1.25))); goodRun = 0; adaptCool = 2; }
   else if (ms < ((S.mode === 'floor' || S.mode === 'unit') ? 20 : 11) && gtao && !gtao.enabled && !gtaoTried) { gtao.enabled = true; gtaoTried = true; adaptCool = 2; }   // contact shadows in the cut-away whenever there is headroom
 }
 
@@ -2281,7 +2293,7 @@ function updateTourPins() {
     const cur = SPOTS[T.spot];
     const vis = (!panoOn || (cur && cur.plot == null)) && !busy && cur && cur.links.includes(sp.id) && T.door == null && d < 95 && d > 3 && tmpV.z < 1 && Math.abs(tmpV.x) < 1 && tmpV.y > -0.62 && tmpV.y < 0.9;
     el.style.opacity = vis ? 1 : 0; el.style.pointerEvents = vis ? 'auto' : 'none';
-    if (vis) { el.style.transform = `translate(${(tmpV.x + 1) / 2 * w}px, ${(1 - tmpV.y) / 2 * h}px) translate(-50%, -100%) scale(${THREE.MathUtils.clamp(14 / d, 0.62, 1.15)})`; }
+    if (vis) { el.style.transform = `translate(${(tmpV.x + 1) / 2 * w}px, ${(1 - tmpV.y) / 2 * h}px) translate(-50%, -100%) scale(${THREE.MathUtils.clamp(14 / d, 0.82, 1.2)})`; }
   }
   // the windows of a photoreal 360: a pin on each, which opens the real view out of that window
   const sp = SPOTS[T.spot], wins = panoOn && !busy && sp && sp.pano && sp.plot != null ? panoWindows(sp) : [];
@@ -2575,4 +2587,4 @@ if (EDITION === 'ch') {
 }
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.
-if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795000918').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795001300').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));

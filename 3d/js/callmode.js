@@ -426,7 +426,7 @@ function loop() {
   }
   placeBillboards(w, h);
   patchSpots();
-  if (arrowsEl && mapEl) { const S = CH.SPOTS(), cur = CH.S.mode === 'tour' && CH.T ? S[CH.T.spot] : null; updateArrows(cur, S, w, h); updateMap(cur, S); }
+  if (mapEl) { const S = CH.SPOTS(), cur = CH.S.mode === 'tour' && CH.T ? S[CH.T.spot] : null; if (arrowsEl) updateArrows(cur, S, w, h); updateMap(cur, S); }
   if (bollPin && bollPin.visible) { const t = performance.now() / 1000, r2 = bollPin.userData.r2, k = 1 + 0.25 * Math.sin(t * 2.4); r2.scale.set(k, k, 1); }
   // every apartment opened in call mode joins the shortlist
   if (CH.S.mode === 'unit' && CH.S.plot != null) seen.add(CH.S.plot);
@@ -544,7 +544,7 @@ let camd = null;
 function updateMap(cur, S) {
   const show = !!(cur && streetPano(cur) && CH.S.mode === 'tour');
   mapEl.classList.toggle('off', !show);
-  document.body.classList.toggle('cm-street', show);   // the map and arrows replace the row of street buttons under the caption
+  document.body.classList.toggle('cm-street', show);   // the map and the picture pins replace the row of street buttons under the caption
   if (!show) { if (mapBig) mapEl.querySelector('[data-a="big"]').click(); return; }
   const mw = mapEl.querySelector('.mw'), W = mw.clientWidth, sx = MAPB.x1 - MAPB.x0, sz = MAPB.z1 - MAPB.z0;
   const k = mapBig ? W / sx : (innerWidth > 760 ? 3.2 : 2.2);   // pixels per metre: the small map follows you, the big one shows it all
@@ -624,7 +624,7 @@ export function init(api) {
   const ready = () => { const L = $('#loader'); return CH.CHref && CH.CHref() && (!L || getComputedStyle(L).display === 'none' || L.classList.contains('done') || L.classList.contains('off') || +getComputedStyle(L).opacity === 0); };
   const boot = () => {
     if (!ready()) return setTimeout(boot, 400);
-    buildUI(); buildLand(); buildCA(); buildBollards(); buildXray(); enhancePanel(); buildArrows();
+    buildUI(); buildLand(); buildCA(); buildBollards(); buildXray(); enhancePanel();   // no walk arrows: the round picture pins are the way between 360s (Charlie, 18 Nov: the arrows got in the way)
     window.__CALL = { start, stop, go, STOPS, seen, openCompare, openShort };
     for (const [id, b] of bbEls) b.show = ALWAYS.includes(id);
     loop();
