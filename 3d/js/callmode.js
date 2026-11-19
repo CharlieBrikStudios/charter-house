@@ -1,8 +1,8 @@
 // Call mode (built 15 Nov 2026; live on the Charter House link from 18 Nov, started from the phone button by Home).
 // Charlie's stops on one key, proof billboards, the protected council land, the bollards, a see-through St Mary's Gate,
 // the one bed vs two bed compare, an honest live line and the after-call shortlist link. Nothing here changes the live page.
-import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1795002700';
-import { rentFor, PICKS } from './sales.js?v=1795002700';
+import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1795002900';
+import { rentFor, PICKS } from './sales.js?v=1795002900';
 
 const BASE = 'assets/';
 const $ = (s, r = document) => r.querySelector(s);
@@ -44,10 +44,10 @@ const SMG = [[-12.5, 18.8], [-22.5, 18.3], [-22.8, 13.5], [-63.0, 15.2], [-63.8,
 // ---------------------------------------------------------------- Charlie's stops, in his order
 // cam: [x, height above ground, z] -> look at [x, height, z]
 const STOPS = [
-  { k: 'Bearings', t: 'Charter House, on the corner of Churchgate', s: 'The park at the end of the street. The Underbanks start 30 seconds away.', cam: [150, 58, 52], at: [10, 4, 4], bb: ['charter', 'park', 'brewery'] },
-  { k: 'The old town', t: 'Down to the Market Hall, between the churches', s: 'St Mary’s and the 1861 Market Hall, at the top of Churchgate.', cam: [30, 30, -24], at: [-150, 2, -18], bb: ['church', 'hall', 'lofts'] },   // St Mary's Gate solid again (Charlie, 17 Nov)
-  { k: 'The Underbanks', t: 'The last site to be developed in the Underbanks', s: 'A conservation area since 1974. Nothing over four storeys can be built here.', cam: [230, 250, 330], at: [-40, 0, 10], bb: ['ca', 'last'], ca: true },
-  { k: 'The views', t: 'St Mary’s Gate, the car park and the children’s park', s: 'The car park and the park are council-owned. The view stays.', cam: [6, 13.5, -3.5], at: [-30, 1, -30], bb: ['smg'], land: true },
+  { k: 'Bearings', t: 'Charter House, on the corner of Churchgate', s: 'The park at the end of the street. The Underbanks start 30 seconds away.', cam: [98.8, 94.2, -109.9], at: [1.4, 1.4, 14.2], bb: ['charter', 'smg'] },   // Charlie's angle from over the wood, with St Mary's Gate's rents up (19 Nov)
+  { k: 'The old town', t: 'Down to the Market Hall, between the churches', s: 'St Mary’s and the 1861 Market Hall, at the top of Churchgate.', cam: [10, 40, -2], at: [-150, 2, -14], bb: ['church', 'hall', 'lofts'] },   // straight down Churchgate, St Mary's and the Market Hall closer (Charlie, 19 Nov)   // St Mary's Gate solid again (Charlie, 17 Nov)
+  // (the Underbanks conservation-area stop is out: Charlie, 19 Nov)
+  { k: 'The views', t: 'St Mary’s Gate, the car park and the children’s park', s: 'The car park and the park are council-owned. The view stays.', cam: [85, 30, -6], at: [-80, 0, -24], bb: ['smg'], land: true },   // the whole street, from over the bend (Charlie, 19 Nov)
   { k: 'A quiet street', t: 'The bollards', s: 'This was a cut-through to Asda. No traffic now.', cam: [-78, 14, -4], at: [-137, 1, -12], bollards: true },   // down Market Place from the end of Churchgate (17 Nov: the old camera sat on a shop roof)
   { k: 'Round the back', t: 'The courtyard and the walkways', s: 'The residents’ entrances, off the street.', cam: [36, 9.5, 37], at: [14, 5.5, 13] },
   { k: 'Private pre-launch', t: 'Charter House', s: '27 apartments on the corner of Churchgate and Harvey Street.', front: true },   // ends at the front, no shortlist pop-up (Charlie, 17 Nov)
@@ -85,7 +85,7 @@ function css() {
   #cm-cap h2 { margin: 10px 0 8px; font: 600 clamp(28px, 3.4vw, 46px)/1.06 var(--f-display); }
   #cm-cap p { margin: 0; font: 400 clamp(15px, 1.4vw, 19px)/1.45 var(--f-body); color: #f4efe6; }
   #cm-live { position: fixed; right: 18px; bottom: 18px; z-index: 65; display: none; padding: 10px 14px; border-radius: 12px; background: rgba(24,19,16,.86); border: 1px solid rgba(255,255,255,.12); color: #f3ead9; font: 500 13.5px/1.35 var(--f-body); }
-  body.callmode #cm-live { display: block; }
+  /* the live availability pill is off (Charlie, 19 Nov 2026) */
   body.callmode.cm-units #cm-live { right: auto; left: 18px; bottom: auto; top: 64px; }
   #cm-live b { color: #fff; font-weight: 700; }
   #cm-live small { display: block; opacity: .65; font-size: 11.5px; margin-top: 2px; }
@@ -191,7 +191,6 @@ function buildUI() {
     <button type="button" data-cm="prev" aria-label="Previous stop">‹</button><span class="n" id="cm-n"></span><span class="dots" id="cm-dots"></span>
     <button type="button" data-cm="next" aria-label="Next stop">›</button><button type="button" data-cm="cmp">Compare</button><button type="button" data-cm="short">Shortlist</button><button type="button" data-cm="exit" aria-label="Leave call mode">✕</button></div>`));
   document.body.appendChild(el(`<div id="cm-cap" aria-live="polite"><span class="k" id="cm-k"></span><h2 id="cm-t"></h2><p id="cm-s"></p></div>`));
-  document.body.appendChild(el(`<div id="cm-live"></div>`));
   document.body.appendChild(el(`<div id="cm-cmp" role="dialog" aria-label="Compare two apartments"><div class="cm-box"><button class="x" type="button" aria-label="Close">✕</button><h3>One bed or two bed</h3><div class="cm-cols" id="cm-cols"></div></div></div>`));
   document.body.appendChild(el(`<div id="cm-short" role="dialog" aria-label="Shortlist link"><div class="cm-box" style="width:min(620px,calc(100vw - 32px))"><button class="x" type="button" aria-label="Close">✕</button><h3>Their shortlist</h3><p style="margin:0 0 8px">Tick the flats to include. The link opens a page with their plans, prices, rents and views.</p><div class="cm-sl" id="cm-sl"></div><button class="go main" type="button" id="cm-mk">Make the link</button><div class="cm-link" id="cm-lk" hidden><input id="cm-url" readonly><button class="go" type="button" id="cm-cp">Copy</button><a class="go" id="cm-open" target="_blank" rel="noopener">Open</a></div></div></div>`));
   const dots = $('#cm-dots'); STOPS.forEach((s, i) => { const d = document.createElement('i'); d.title = s.t; d.onclick = () => go(i); dots.appendChild(d); });
@@ -396,7 +395,7 @@ function start() {
   if (on) return; on = true; window.__CALL_ON = true;
   document.body.classList.add('callmode');
   window.__noClamp = true; CH.controls.maxDistance = 600; CH.controls.minDistance = 2; CH.controls.autoRotate = false;
-  live(); go(0);
+  go(0);   // no live availability pill (Charlie, 19 Nov 2026)
 }
 function stop() {
   on = false; window.__CALL_ON = false; document.body.classList.remove('callmode', 'cm-units');

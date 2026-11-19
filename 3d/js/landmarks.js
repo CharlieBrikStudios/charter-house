@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1795002700';
+import { boxUV } from './building.js?v=1795002900';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -380,6 +380,34 @@ export function buildMarketHallOSM(L, tex, base, poly, groundAt) {
 // Basilican: nave with clerestory, lean-to aisles, a three-sided apse, no tower. West front: two lancets either side of
 // an ogee-headed door under a crocketed gable, two three-light geometric windows above, a cinquefoil roundel in the gable.
 // Built in its own frame (x from the west front to the apse, z across) and placed on its OpenStreetMap footprint.
+// stained glass for St Joseph's apse (Charlie, 19 Nov: "beautiful windows at the back of the church... stained glass"): three
+// pointed lights of coloured quarries in dark leading, a roundel in the head; the arch shape's UVs are its own metres
+let STAINED = null;
+function stainedGlass() {
+  if (STAINED) return STAINED;
+  const W = 256, H = 864, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+  const pal = ['#1f3f8f', '#9e1b2b', '#d7a531', '#2e6b3a', '#5b2d6e', '#2a5aa8', '#b8452a', '#c9d6e8'];
+  let sd = 7; const R = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  x.fillStyle = '#17120f'; x.fillRect(0, 0, W, H);
+  const lw = W / 3;
+  for (let l = 0; l < 3; l++) {
+    const x0 = l * lw + 6, x1 = (l + 1) * lw - 6;
+    for (let yy = 60; yy < H - 20; yy += 26) for (let xx = x0; xx < x1; xx += 22) {
+      const off = ((yy / 26) % 2) * 11; x.fillStyle = pal[Math.floor(R() * (yy < 300 ? 6 : pal.length))];
+      x.beginPath(); x.moveTo(xx + off, yy); x.lineTo(xx + off + 11, yy + 13); x.lineTo(xx + off, yy + 26); x.lineTo(xx + off - 11, yy + 13); x.closePath(); x.fill();
+    }
+    x.strokeStyle = '#211d1a'; x.lineWidth = 2; for (let yy = 60; yy < H; yy += 13) { x.beginPath(); x.moveTo(x0, yy); x.lineTo(x1, yy); x.stroke(); }
+  }
+  // stone mullions between the lights, and a roundel high in the head
+  x.fillStyle = '#6d6455'; x.fillRect(lw - 6, 0, 12, H); x.fillRect(2 * lw - 6, 0, 12, H);
+  x.beginPath(); x.arc(W / 2, 150, 58, 0, Math.PI * 2); x.fillStyle = '#6d6455'; x.fill();
+  for (let k = 0; k < 8; k++) { x.beginPath(); x.moveTo(W / 2, 150); x.arc(W / 2, 150, 50, k * Math.PI / 4, (k + 1) * Math.PI / 4); x.closePath(); x.fillStyle = pal[k % 6]; x.fill(); }
+  x.beginPath(); x.arc(W / 2, 150, 14, 0, Math.PI * 2); x.fillStyle = '#d7a531'; x.fill();
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  t.repeat.set(1 / 1.6, 1 / 5.4); t.offset.set(0.5, 0);
+  STAINED = new THREE.MeshStandardMaterial({ map: t, emissiveMap: t, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0.32, roughness: 0.25, metalness: 0.1, side: THREE.DoubleSide });
+  return STAINED;
+}
 export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
   const K = new Kit();
   const NX = 26, NW = 5.5, NH = 13, AW = 4.5, AH = 6.6, RIDGE = 19.6;
@@ -429,7 +457,7 @@ export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
     for (let i = 0; i < 3; i++) {
       const a = pts[i + 1 > 3 ? 3 : i], b = pts[i + 1], [mx, mz] = [(pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2];
       const ang = Math.atan2(pts[i + 1][1] - pts[i][1], pts[i + 1][0] - pts[i][0]);
-      const wg = new THREE.ShapeGeometry(archShape(1.6, 4.2, 0.85)); wg.rotateY(-ang - Math.PI / 2 + Math.PI); wg.translate(mx + Math.cos(ang - Math.PI / 2) * -0.03, 5.0, mz + Math.sin(ang - Math.PI / 2) * -0.03); K.add('glass', wg);
+      const wg = new THREE.ShapeGeometry(archShape(1.6, 4.2, 0.85)); wg.rotateY(-ang - Math.PI / 2 + Math.PI); wg.translate(mx + Math.cos(ang - Math.PI / 2) * -0.03, 5.0, mz + Math.sin(ang - Math.PI / 2) * -0.03); K.add('stained', wg);
       const rr = archShape(2.1, 4.2, 0.85); rr.holes.push(archShape(1.6, 4.2, 0.85)); const sg2 = new THREE.ExtrudeGeometry(rr, { depth: 0.16, bevelEnabled: false });
       sg2.rotateY(-ang - Math.PI / 2 + Math.PI); sg2.translate(mx, 5.0, mz); K.add('dress', sg2);
     }
@@ -477,7 +505,7 @@ export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
     const g = mergeGeometries(geos.map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false);
     if (!g) continue;
     if (k === 'grit' || k === 'dress' || k === 'sand' || k === 'stone') boxUV(g, k === 'sand' || k === 'grit' ? 2.4 : 3.0);   // coursed gritstone at its real scale
-    const mat = k === 'door' ? new THREE.MeshStandardMaterial({ color: '#3b2a20', roughness: 0.6 }) : k === 'sand' ? L.grit : k === 'stone' ? L.dress : L[k];
+    const mat = k === 'door' ? new THREE.MeshStandardMaterial({ color: '#3b2a20', roughness: 0.6 }) : k === 'stained' ? stainedGlass() : k === 'sand' ? L.grit : k === 'stone' ? L.dress : L[k];
     const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; grp.add(m);
   }
   grp.rotation.y = rot; grp.position.set(x, y, z);

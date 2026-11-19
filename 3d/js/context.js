@@ -4,8 +4,9 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1795002700';
-import { groundAt, letteringTexture } from './world.js?v=1795002700';
+import { boxGeom, boxUV } from './building.js?v=1795002900';
+import { groundAt, letteringTexture } from './world.js?v=1795002900';
+import { makeFlora } from './flora.js?v=1795002900';
 // split a flat shape into a fine even mesh (no edge longer than about L), so it can follow sloping ground: Churchgate climbs
 // past the play park, and a four-corner quad would cut through the slope and the grass under it would vanish into the
 // terrain. Every triangle is cut into the same n x n pattern, so shared edges split at the same points (no cracks).
@@ -306,7 +307,7 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
   const Cx = (x) => { // arc-length fraction on C nearest to x (C runs along x)
     let best = 0, bd = 1e9; for (let i = 0; i <= 600; i++) { const t = i / 600, p = C.getPointAt(t); const d = Math.abs(p.x - x); if (d < bd) { bd = d; best = t; } } return best;
   };
-  const tHw = Cx(-9.4), tHe = Cx(-1.6), tEnd = Cx(46);
+  const tHw = Cx(-9.4), tHe = Cx(-1.6), tEnd = Cx(108);   // pavements and kerbs now run right round the bend to the top of the road (Charlie, 19 Nov: "get rid of this gap in the pavement")
   for (const [t0, t1] of [[0.012, tHw], [tHe, tEnd]]) {
     B.add('paving', ribbon(C, { off: CW + 1.3, width: 2.6, y: 0.14, t0, t1, uvScale: 2.4 }));
     B.add('kerb', kerb(C, CW, t0, t1));
@@ -329,12 +330,12 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
   }
   // markings: centre line near the site, double yellows the whole way up to Market Place (as the drone footage)
   const line = (curve, o) => B.add(o.yellow ? 'lineYellow' : 'lineWhite', o.dash ? dashed(curve, { y: 0.045, ...o }) : ribbon(curve, { y: 0.045, step: 0.6, ...o }));
-  line(C, { off: 0, width: 0.1, dash: [3, 6], t0: Cx(-40), t1: Cx(44) });
+  line(C, { off: 0, width: 0.1, dash: [3, 6], t0: Cx(-40), t1: Cx(106) });
   line(H, { off: 0, width: 0.1, dash: [3, 6], t0: at(H, 9), t1: 0.5 });
   // double yellows wrap the whole development again: along the Charter House side of Churchgate from the Harvey Street corner
   // past the end of the building, and down Harvey Street (Charlie, 12 Nov; this undoes the 11 Nov gap)
-  for (const o of [CW - 0.3, CW - 0.45]) for (const [t0, t1] of [[0.015, tHw], [tHe, Cx(40)]]) line(C, { off: o, width: 0.075, yellow: true, t0, t1 });
-  for (const o of [-(CW - 0.3), -(CW - 0.45)]) line(C, { off: o, width: 0.075, yellow: true, t0: 0.015, t1: Cx(40) });
+  for (const o of [CW - 0.3, CW - 0.45]) for (const [t0, t1] of [[0.015, tHw], [tHe, Cx(106)]]) line(C, { off: o, width: 0.075, yellow: true, t0, t1 });
+  for (const o of [-(CW - 0.3), -(CW - 0.45)]) line(C, { off: o, width: 0.075, yellow: true, t0: 0.015, t1: Cx(106) });
   for (const o of [3.2 - 0.32, 3.2 - 0.47, -(3.2 - 0.32), -(3.2 - 0.47)]) line(H, { off: o, width: 0.075, yellow: true, t0: at(H, 4), t1: at(H, 30) });
   // give-way lines at the mouth of Harvey St
   for (let i = 0; i < 6; i++) { const g = boxGeom(-8.6 + i * 1.05, 0, -3.05, -8.6 + i * 1.05 + 0.6, 0.012, -2.9); g.translate(0, groundY(-5.6, -3.0) + 0.045, 0); B.add('lineWhite', g); }
@@ -349,6 +350,15 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
       const c = new THREE.SphereGeometry(0.085, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2); c.translate(x, gy + 0.95, z); B.add('timberBlack', c);
       const r = new THREE.TorusGeometry(0.085, 0.012, 6, 14); r.rotateX(Math.PI / 2); r.translate(x, gy + 0.78, z); B.add('brassCtx', r);
     }
+    // a row of the same bollards right across the old cut-through to Asda, between St Mary's and the Market Hall: no through
+    // traffic (Charlie, 19 Nov: "put the bollards in on this street")
+    { const t = Cx(-136), p = C.getPointAt(t), tg = C.getTangentAt(t);
+      for (let off = -CW + 0.5; off <= CW - 0.49; off += 1.4) {
+        const x = p.x - tg.z * off, z = p.z + tg.x * off, gy = groundY(x, z);
+        const g = new THREE.CylinderGeometry(0.075, 0.09, 0.95, 10); g.translate(x, gy + 0.475, z); B.add('timberBlack', g);
+        const c = new THREE.SphereGeometry(0.085, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2); c.translate(x, gy + 0.95, z); B.add('timberBlack', c);
+        const r = new THREE.TorusGeometry(0.085, 0.012, 6, 14); r.rotateX(Math.PI / 2); r.translate(x, gy + 0.78, z); B.add('brassCtx', r);
+      } }
   }
 
   // ---------------- St Mary's Gate (completed, Hall & Co / Ollier Smurthwaite): L-shaped, 4 storeys, from the site plan
@@ -737,7 +747,7 @@ export function buildContext(M, forest, { lampHeads = [], festoon = [] } = {}) {
         const gy = groundY((x0 + x1) / 2, (z0 + z1) / 2), h = 0.48, t = 0.12;
         for (const [a1, b1, c1, d1] of [[x0, z0, x1, z0 + t], [x0, z1 - t, x1, z1], [x0, z0, x0 + t, z1], [x1 - t, z0, x1, z1]]) { const w = boxGeom(a1, gy - 0.1, b1, c1, gy + h, d1); boxUV(w, 1.2); B.add('timber', w); }
         for (let x = x0 + 0.3; x < x1 - 0.15; x += 0.5) forest.add(x, (z0 + z1) / 2 + Math.sin(x * 4) * 0.15, { kind: Math.sin(x * 7) > 0 ? 'shrub' : 'grass', h: 0.6, r: 0.42, y: gy + h - 0.05, seed: 7100 + Math.round(x * 10) });
-        for (let i = 0; i < 26; i++) { const g = new THREE.IcosahedronGeometry(0.03 + fr() * 0.02, 1); g.scale(1, 0.55, 1); g.translate(x0 + t + fr() * (x1 - x0 - 2 * t), gy + h + 0.12 + fr() * 0.18, z0 + t + fr() * (z1 - z0 - 2 * t)); B.add(flm[Math.floor(fr() * flm.length)], g); }
+        B.add('flSoil', boxGeom(x0 + t, gy, z0 + t, x1 - t, gy + h - 0.05, z1 - t)); makeFlora((k, g) => B.add(k, g), 4242 + Math.round(x0 * 10)).bed(x0 + t, z0 + t, x1 - t, z1 - t, gy + h - 0.05, 0.8);   // flowers, not balls (19 Nov)
       }
     }
     forest.add(6, 31.2, { h: 13, r: 5.2, kind: 'sycamore', seed: 72 });
@@ -800,7 +810,9 @@ export function buildCourtyard(M, forest, festoon) {
   const g = new THREE.ShapeGeometry(s); g.rotateX(-Math.PI / 2); g.translate(0, y0, 0); boxUV(g, 4); B.add('pavers', g);
   // raised brick planter + planting
   B.add('brick2', (() => { const b = boxGeom(13.2, y0, 12.6, 19.2, y0 + 0.5, 14.2); boxUV(b); return b; })());
-  B.add('stone', (() => { const b = boxGeom(13.15, y0 + 0.5, 12.55, 19.25, y0 + 0.56, 14.25); boxUV(b, 1.2); return b; })());
+  // stone coping round the rim and dark soil inside (it read as a white bench in the 8K courtyard 360)
+  for (const [a1, b1, c1, d1] of [[13.15, 12.55, 19.25, 12.75], [13.15, 14.05, 19.25, 14.25], [13.15, 12.75, 13.35, 14.05], [19.05, 12.75, 19.25, 14.05]]) { const b = boxGeom(a1, y0 + 0.5, b1, c1, y0 + 0.56, d1); boxUV(b, 1.2); B.add('stone', b); }
+  B.add('flSoil', boxGeom(13.35, y0 + 0.49, 12.75, 19.05, y0 + 0.535, 14.05));
   for (let x = 13.6; x < 19; x += 0.75) forest.add(x, 13.4 + Math.sin(x * 3) * 0.3, { kind: Math.sin(x * 7) > 0 ? 'shrub' : 'grass', h: 0.7, r: 0.5, y: y0 + 0.5, seed: Math.floor(x * 100) });
   // garden bed with grasses and a multi-stem tree
   const bed = new THREE.Shape([[11.9, 16.4], [16.3, 16.4], [16.3, 21.6], [11.9, 21.6]].map(([x, z]) => new THREE.Vector2(x, -z)));
@@ -815,9 +827,15 @@ export function buildCourtyard(M, forest, festoon) {
   const planter = (x0, z0, x1, z1) => {
     const h = 0.55, t = 0.06;
     for (const [a1, b1, c1, d1] of [[x0, z0, x1, z0 + t], [x0, z1 - t, x1, z1], [x0, z0, x0 + t, z1], [x1 - t, z0, x1, z1]]) { const w = boxGeom(a1, y0, b1, c1, y0 + h, d1); boxUV(w, 1.2); B.add('timber', w); }
-    const soil = boxGeom(x0 + t, y0, z0 + t, x1 - t, y0 + h - 0.06, z1 - t); B.add('stone', soil);
+    const soil = boxGeom(x0 + t, y0, z0 + t, x1 - t, y0 + h - 0.06, z1 - t); B.add('flSoil', soil);
     for (let x = x0 + 0.35; x < x1 - 0.2; x += 0.6) for (let z = z0 + 0.35; z < z1 - 0.2; z += 0.6) forest.add(x, z, { kind: (Math.round(x * 3 + z * 5) % 3) ? 'shrub' : 'grass', h: 0.55, r: 0.4, y: y0 + h - 0.06, seed: Math.floor(x * 131 + z * 17) });
     return [x0 + t, z0 + t, x1 - t, z1 - t, y0 + h];
+  };
+  const planterLow = (x0, z0, x1, z1) => {   // a low timber trough against the wall, soil a little below the rim
+    const h = 0.38, t = 0.04;
+    for (const [a1, b1, c1, d1] of [[x0, z0, x1, z0 + t], [x0, z1 - t, x1, z1], [x0, z0, x0 + t, z1], [x1 - t, z0, x1, z1]]) { const w = boxGeom(a1, y0, b1, c1, y0 + h, d1); boxUV(w, 1.2); B.add('timber', w); }
+    B.add('flSoil', boxGeom(x0 + t, y0, z0 + t, x1 - t, y0 + h - 0.05, z1 - t));
+    return [x0 + t, z0 + t, x1 - t, z1 - t, y0 + h + 0.01];
   };
   const beds = [planter(19.3, 16.4, 21.45, 17.3), planter(19.5, 17.3, 20.45, 21.3)];
   // covered seating where the bike store stood (Charlie, 6 Nov): an oak-framed shelter with a boarded timber roof, a built-in
@@ -866,7 +884,7 @@ export function buildCourtyard(M, forest, festoon) {
     // pendant lanterns under the roof
     for (const z of [17.5, 19.6]) { B.add('timberBlack', boxGeom(17.68, y0 + 1.95, z - 0.1, 17.88, y0 + 2.25, z + 0.1)); B.add(glowM, boxGeom(17.7, y0 + 1.98, z - 0.08, 17.86, y0 + 2.22, z + 0.08)); B.add('timberBlack', boxGeom(17.77, y0 + 2.25, z - 0.01, 17.79, y0 + ph + 0.2, z + 0.01)); }
     // planters round it: a long oak trough along the open (north) side either side of the way in, big pots at the corners
-    const trough = (x0, z0, x1, z1) => { tb(x0, y0, z0, x1, y0 + 0.5, z1); B.add('stone', boxGeom(x0 + 0.05, y0 + 0.5, z0 + 0.05, x1 - 0.05, y0 + 0.47, z1 - 0.05));
+    const trough = (x0, z0, x1, z1) => { tb(x0, y0, z0, x1, y0 + 0.5, z1); B.add('flSoil', boxGeom(x0 + 0.05, y0 + 0.5, z0 + 0.05, x1 - 0.05, y0 + 0.47, z1 - 0.05));
       for (let x = x0 + 0.25; x < x1 - 0.1; x += 0.45) for (let z = z0 + 0.2; z < z1 - 0.1; z += 0.4) forest.add(x, z, { kind: (Math.round(x * 7 + z * 3) % 3) ? 'shrub' : 'grass', h: 0.5, r: 0.36, y: y0 + 0.48, seed: Math.floor(x * 211 + z * 37) });
       return [x0 + 0.05, z0 + 0.05, x1 - 0.05, z1 - 0.05, y0 + 0.5]; };
     beds.push(trough(16.3, 15.7, 17.25, 16.05), trough(18.15, 15.7, 19.1, 16.05));
@@ -883,14 +901,14 @@ export function buildCourtyard(M, forest, festoon) {
     B.add('timber', boxGeom(tx0, y0 + 0.72, tz0, tx1, y0 + 0.77, tz1));
     for (const [bz0, bz1] of [[tz0 - 0.5, tz0 - 0.2], [tz1 + 0.2, tz1 + 0.5]]) B.add('timber', boxGeom(tx0, y0 + 0.42, bz0, tx1, y0 + 0.46, bz1));
     for (const x of [tx0 + 0.2, tx1 - 0.25]) { B.add('timber', boxGeom(x, y0, tz0 - 0.45, x + 0.06, y0 + 0.07, tz1 + 0.45)); B.add('timber', boxGeom(x, y0, tz0 + 0.05, x + 0.06, y0 + 0.72, tz1 - 0.05)); } }
-  // flowers: blooms over the planters and the garden bed
-  const FL = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a', '#f6c1a0'].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
-  let fs = 911; const fr = () => ((fs = (fs * 16807) % 2147483647) / 2147483647);
-  // small, flattened blooms sitting in the planting rather than floating over it (15 Nov: they read as coloured dice in the 8K courtyard 360)
-  const bloom = (x, z, y) => { const g = new THREE.IcosahedronGeometry(0.022 + fr() * 0.016, 1); g.scale(1, 0.55, 1); g.translate(x, y, z); B.add(FL[Math.floor(fr() * FL.length)], g); };
-  for (const [x0, z0, x1, z1, yy] of beds) { const n = Math.min(110, Math.round((x1 - x0) * (z1 - z0) * 70) + 12); for (let i = 0; i < n; i++) bloom(x0 + fr() * (x1 - x0), z0 + fr() * (z1 - z0), yy + 0.12 + fr() * 0.2); }
-  for (let i = 0; i < 140; i++) bloom(12.0 + fr() * 4.2, 16.5 + fr() * 5.0, y0 + 0.18 + fr() * 0.22);
-  for (let i = 0; i < 80; i++) bloom(13.3 + fr() * 5.8, 12.7 + fr() * 1.4, y0 + 0.62 + fr() * 0.16);
+  // low planters under the ground-floor windows onto the courtyard (Charlie, 19 Nov): timber troughs, 0.38 m high, below the sills
+  for (const [a, b2] of [[11.75, 12.62], [14.95, 16.45], [16.95, 18.45], [20.8, 22.0]]) beds.push(planterLow(a, 11.05, b2, 11.42, 'x'));
+  beds.push(planterLow(11.72, 14.3, 12.09, 15.7, 'z'));
+  // flowers (Charlie, 19 Nov: "sort these coloured balls out, do flowers"): flowering plants in every planter and through the bed
+  const FLR = makeFlora((k, g) => B.add(k, g), 911);
+  for (const [x0, z0, x1, z1, yy] of beds) FLR.bed(x0, z0, x1, z1, yy - 0.06, 1.1);
+  FLR.bed(13.35, 12.75, 19.05, 14.05, y0 + 0.535, 0.9);
+  for (let i = 0; i < 22; i++) FLR.clump(12.2 + FLR.R() * 3.8, y0 + 0.02, 16.7 + FLR.R() * 4.7, 0.13 + FLR.R() * 0.06, 6 + Math.floor(FLR.R() * 5));
   // boundary walls (existing, retained) and railings
   for (const [a, b, c, d] of [[22.61, 11.03, 22.95, 17.9], [21.5, 17.9, 22.95, 18.2], [21.5, 18.2, 21.8, 21.75], [11.7, 21.75, 21.8, 22.05]]) { const w = boxGeom(a, -1.2, b, c, y0 + 2.0, d); boxUV(w); B.add('brick2', w); }
   // festoon lights across the courtyard (catenaries between the gallery and the boundary)
@@ -955,7 +973,7 @@ export function buildBrickWalls(M, lines, { h = 3.2, gate = null } = {}) {
 
 // the car parks round the brewery and Apsley Street (OpenStreetMap parking areas): a dark tarmac skin following the ground, white
 // bay lines in rows across the lot's long side, and about two thirds of the bays taken (Charlie, 8 Nov: the far left was empty paving)
-export function buildParkingLots(M, polys) {
+export function buildParkingLots(M, polys, { fill = 0.4 } = {}) {
   const group = new THREE.Group(); group.name = 'parking_lots'; const cars = [];
   const tar = new THREE.MeshStandardMaterial({ color: '#2c2d30', roughness: 0.92, polygonOffset: true, polygonOffsetFactor: -1 });
   const paint = new THREE.MeshStandardMaterial({ color: '#e6e3da', roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -2 });
@@ -984,7 +1002,7 @@ export function buildParkingLots(M, polys) {
         for (const e of [-1.25, 1.25]) {   // the white side lines of the bay
           const l = new THREE.BoxGeometry(0.1, 0.02, 4.8); l.rotateY(Math.atan2(vx, vz)); const lx = cx + ux * e, lz = cz + uz * e; l.translate(lx, groundY(lx, lz) + 0.05, lz); lg.push(l);
         }
-        if (R() < 0.4) { const col = R(); cars.push([cx, cz, Math.atan2(-vz, vx) + (R() < 0.5 ? 0 : Math.PI) + (R() - 0.5) * 0.06, col < 0.22 ? 4 : col < 0.4 ? 3 : col < 0.56 ? 1 : col < 0.68 ? 0 : col < 0.76 ? 2 : col < 0.86 ? 7 : col < 0.93 ? 5 : 6]); }
+        if (R() < fill) { const col = R(); cars.push([cx, cz, Math.atan2(-vz, vx) + (R() < 0.5 ? 0 : Math.PI) + (R() - 0.5) * 0.06, col < 0.22 ? 4 : col < 0.4 ? 3 : col < 0.56 ? 1 : col < 0.68 ? 0 : col < 0.76 ? 2 : col < 0.86 ? 7 : col < 0.93 ? 5 : 6]); }
       }
     }
   }

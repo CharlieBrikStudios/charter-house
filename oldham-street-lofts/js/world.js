@@ -3,18 +3,48 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795002900';
+import { buildShopfronts } from './shopfronts.js?v=1795002900';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
 export function setTerrain(t, raw = false) {
   TER = t; TH = new Float32Array(t.h.length); for (let i = 0; i < t.h.length; i++) TH[i] = t.h[i] / 10;
   if (raw) return;   // another town (Hyde): no Stockport street corrections
+  // the ground is now the Environment Agency's 1 m LiDAR (Charlie, 18 Nov: true levels for the Underbanks, Market Place, Hillgate
+  // and the Print House streets), so the two guessed Churchgate slopes below are not needed; the architect's levels round
+  // Charter House itself (Churchgate and Harvey Street pavements, the play park) still apply
+  const lidar = t.src === 'lidar';
   // local knowledge: Churchgate runs gently DOWNHILL from Charter House to St Mary's and the Market Place (the estimated grid had it rising)
   const sm = (v) => { v = Math.max(0, Math.min(1, v)); return v * v * (3 - 2 * v); };
-  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+  if (!lidar) for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
     const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
     const w = sm((10 - x) / 40) * (1 - sm((-260 - x) / 100)) * (1 - sm((Math.abs(z + 10) - 110) / 90));
     if (w > 0) TH[j * t.nx + i] -= w * 0.08 * Math.min(110, Math.max(0, 10 - x));
+  }
+  // St Mary's Gate stretch (Charlie, 6 Nov): Churchgate falls at an even, gentle 3% from Charter House towards St Mary's and
+  // the Market Place instead of rolling up and down, and St Mary's Gate stands on that even slope
+  if (!lidar) for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const w3 = sm((6 - x) / 8) * (1 - sm((-150 - x) / 40)) * (1 - sm((Math.abs(z - 3) - 18) / 12));
+    if (w3 > 0) { const T = -0.03 - 0.03 * Math.max(0, 4 - x); TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w3) + T * w3; }
+  }
+  // Churchgate climbs past Charter House (architect's NE elevation, Charlie 12 Nov): the road follows the pavement line in
+  // data.js (CG_PAVE, less the 0.14 kerb) from the Harvey Street corner to just past the far end of the building, then eases
+  // back into the street levels beyond. Street side only (z < 0.5); the park and the far pavement follow.
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const w4 = sm((x + 4) / 4) * (1 - sm((x - 30) / 25)) * sm((z + 20) / 5) * (1 - sm((z - 0.5) / 2.5));
+    if (w4 > 0) { const T = CG_PAVE(Math.min(x, 30)) - 0.14 - G0; TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w4) + T * w4; }
+  }
+  // Harvey Street falls past Charter House (architect's front elevation, Charlie 12 Nov): the road follows HV_PAVE (less the
+  // kerb) from the Churchgate corner to the SW end of the building, the garden frontage beyond the SW end follows it, and
+  // it eases back into the street levels beyond by the Apsley Street bend. The far side stops short of St Mary's Gate.
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const xe = 0.5 + 11.5 * sm((z - 20.6) / 1.4);
+    const w5 = sm((x + 13.5) / 2) * (1 - sm((x - xe) / 2.5)) * sm((z + 3) / 2.5) * (1 - sm((z - 24) / 12));
+    if (w5 > 0) { const T = HV_PAVE(Math.max(0, Math.min(z, 21.3))) - 0.14 - G0; TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w5) + T * w5; }
   }
   // the play park sits level with Churchgate (no grass bank between the pavement and its railings)
   const jr = Math.round((-6.6 - t.z0) / t.cell);
@@ -108,6 +138,29 @@ export function insetPoly(p, d) {
     if ((b[0] - a[0]) * (qb[0] - qa[0]) + (b[1] - a[1]) * (qb[1] - qa[1]) <= 0) return null;
   }
   return out;
+}
+function cleanPoly(p) {
+  let q = p.slice();
+  for (let pass = 0; pass < 3; pass++) {
+    const out = [];
+    for (let i = 0; i < q.length; i++) {
+      const a = out.length ? out[out.length - 1] : q[q.length - 1], b = q[i], c = q[(i + 1) % q.length];
+      if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 0.35) continue;
+      const e1x = b[0] - a[0], e1z = b[1] - a[1], e2x = c[0] - b[0], e2z = c[1] - b[1], l1 = Math.hypot(e1x, e1z), l2 = Math.hypot(e2x, e2z);
+      if (l2 > 1e-6 && Math.abs(e1x * e2z - e1z * e2x) / (l1 * l2) < 0.12 && e1x * e2x + e1z * e2z > 0) continue;   // in line
+      out.push(b);
+    }
+    if (out.length === q.length || out.length < 3) { q = out.length >= 3 ? out : q; break; }
+    q = out;
+  }
+  return q;
+}
+function hipRoof(pos, d0) {
+  const pc = cleanPoly(pos);
+  for (const d of [d0, d0 * 0.6, 1.0, 0.6]) {
+    for (const P of [pos, pc]) { const q = insetPoly(P, d); if (q) return { pr: P.slice().reverse(), q: q.slice().reverse(), d }; }
+  }
+  return null;
 }
 // minimum-area oriented bounding box: centre, unit axis (long), half lengths
 export function obb(pts) {
@@ -258,15 +311,22 @@ class Wall {
 
 function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFlat) {
   let hip = null;
-  let p = b.p; if (polyArea(p) < 0) p = p.slice().reverse();
+  // walls face out: a positive-area plan (x, z) winds the wall quads inwards, so the walls run round the plan the other way;
+  // insetPoly (the hipped roofs) still wants the positive-area order, and its result is turned to match (Charlie, 16 Nov)
+  const pos = polyArea(b.p) > 0 ? b.p : b.p.slice().reverse();
+  let p = pos.slice().reverse();
   // our winding: model (x, z) with z pointing "down" on the plan; outward normal of edge a->b = (dz, -dx) for CCW in (x, -z)
   const c = centroidOf(p);
   const gC = groundAt(c[0], c[1]);
   let gMin = Infinity; for (const q of p) gMin = Math.min(gMin, groundAt(q[0], q[1]));
   const st = STYLE[b.s] ?? 3;
   const sd = hash(b.id + 0.37);
-  const tint = b.white || ((st === 2 || st === 3) && hash(b.id * 3.3) < 0.18) ? [2, 2, 2] : st === 5 ? [0.55, 0.6, 0.6] : BRICKS[Math.floor(hash(b.id * 1.7) * BRICKS.length)];
-  const H = Math.max(3, b.h);
+  const oldTown = (c[0] < -60 && c[0] > -280 && c[1] > -80 && c[1] < 160) || Math.hypot(c[0] + 52, c[1] - 204) < 170;   // and round the Print House (Victorian brick, 18 Nov)   // brick, not random white render, round Market Place and the Underbanks (Charlie, 18 Nov)
+  const tint = b.white || (!oldTown && (st === 2 || st === 3) && hash(b.id * 3.3) < 0.18) ? [2, 2, 2] : st === 5 ? [0.55, 0.6, 0.6] : BRICKS[Math.floor(hash(b.id * 1.7) * BRICKS.length)];
+  // per-building corrections from Charlie and the drone footage (OSM heights are rough)
+  //  12: the building between St Mary's Gate and the brewery is one storey with its roof as the second (Charlie, 18 Nov)
+  const FIX = { 12: { h: 3.5 } };
+  const H = Math.max(3, FIX[b.id]?.h ?? b.h);
   const yTop = gC + H, y0 = gMin - 1.2;
   // perimeter walls
   let per = 0; for (let k = 0; k < p.length; k++) { const a = p[k], q = p[(k + 1) % p.length]; per += Math.hypot(q[0] - a[0], q[1] - a[1]); }
@@ -278,26 +338,48 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
   // roof
   const ob = obb(p);
   const rect = Math.abs(polyArea(p)) / (4 * ob.h0 * ob.h1);
-  if (b.r === 'gable' && rect > 0.85 && ob.h1 < 9) {
+  // two pitched roofs side by side, ridges along the long side (a single-storey works or warehouse, Charlie 18 Nov)
+  if (b.r === 'twin' && rect > 0.6) {
+    // the works by St Joseph's has its two roofs the other way, ridges across the building (Charlie, 19 Nov: "twist them ninety
+    // degrees")
+    const across = b.id === 129765, oh0 = across ? ob.h1 : ob.h0, oh1 = across ? ob.h0 : ob.h1;
+    const [ux, uz] = across ? [-ob.u[1], ob.u[0]] : ob.u, vx = -uz, vz = ux, o = 0.25, hw = oh1 / 2, rise = Math.min(3.4, hw * 0.62);
+    const P = (s, t, y) => [ob.c[0] + ux * s + vx * t, y, ob.c[1] + uz * s + vz * t];
+    const up = (t0, t1, t2) => { const ax = t1[0] - t0[0], az = t1[2] - t0[2], bx = t2[0] - t0[0], bz = t2[2] - t0[2]; if (az * bx - ax * bz < 0) roofsSlate.push(t0, t2, t1); else roofsSlate.push(t0, t1, t2); };
+    const out = (t0, t1, t2) => { const ax = t1[0] - t0[0], ay = t1[1] - t0[1], az = t1[2] - t0[2], bx = t2[0] - t0[0], by = t2[1] - t0[1], bz = t2[2] - t0[2];
+      const nx = ay * bz - az * by, nz = ax * by - ay * bx; if (nx * (t0[0] - ob.c[0]) + nz * (t0[2] - ob.c[1]) < 0) Wl.tri(t0, t2, t1, gC, H, sd, tint); else Wl.tri(t0, t1, t2, gC, H, sd, tint); };
+    for (const sg of [-1, 1]) {
+      const tc = sg * hw, A = oh0 + o;
+      const e1 = P(-A, tc - hw - (sg < 0 ? o : 0), yTop), e2 = P(A, tc - hw - (sg < 0 ? o : 0), yTop), r1 = P(-A, tc, yTop + rise), r2 = P(A, tc, yTop + rise), e3 = P(A, tc + hw + (sg > 0 ? o : 0), yTop), e4 = P(-A, tc + hw + (sg > 0 ? o : 0), yTop);
+      up(e1, r1, r2); up(e1, r2, e2); up(e3, r2, r1); up(e3, r1, e4);
+      for (const s0 of [-oh0, oh0]) out(P(s0, tc - hw, yTop), P(s0, tc, yTop + rise), P(s0, tc + hw, yTop));   // the gable ends
+    }
+  } else if (b.r === 'gable' && rect > 0.85 && ob.h1 < 9) {
     const [ux, uz] = ob.u, vx = -uz, vz = ux, o = 0.28;
     const rise = ob.h1 * 0.78;
     const P = (s, t, y) => [ob.c[0] + ux * s + vx * t, y, ob.c[1] + uz * s + vz * t];
     const A = ob.h0 + o, Bh = ob.h1 + o;
     const e1 = P(-A, -Bh, yTop - o * 0.78), e2 = P(A, -Bh, yTop - o * 0.78), r1 = P(-A, 0, yTop + rise), r2 = P(A, 0, yTop + rise), e3 = P(A, Bh, yTop - o * 0.78), e4 = P(-A, Bh, yTop - o * 0.78);
-    roofsSlate.push(e1, r1, r2, e1, r2, e2, e3, r2, r1, e3, r1, e4);
+    // every roof slope faces up and every gable end faces out, whichever way the plan's axes run (the roofs could be wound inwards and
+    // then only showed from inside: you saw through them from the street, Charlie 18 Nov)
+    const up = (t0, t1, t2) => { const ux = t1[0] - t0[0], uz = t1[2] - t0[2], vx = t2[0] - t0[0], vz = t2[2] - t0[2]; if (uz * vx - ux * vz < 0) roofsSlate.push(t0, t2, t1); else roofsSlate.push(t0, t1, t2); };
+    up(e1, r1, r2); up(e1, r2, e2); up(e3, r2, r1); up(e3, r1, e4);
     // gable ends (brick, no windows)
     const g1 = P(-ob.h0, -ob.h1, yTop), g2 = P(-ob.h0, ob.h1, yTop), g3 = P(-ob.h0, 0, yTop + rise);
     const g4 = P(ob.h0, ob.h1, yTop), g5 = P(ob.h0, -ob.h1, yTop), g6 = P(ob.h0, 0, yTop + rise);
-    Wl.tri(g1, g3, g2, gC, H, sd, tint); Wl.tri(g4, g6, g5, gC, H, sd, tint);
+    const out = (t0, t1, t2) => { const ax = t1[0] - t0[0], ay = t1[1] - t0[1], az = t1[2] - t0[2], bx = t2[0] - t0[0], by = t2[1] - t0[1], bz = t2[2] - t0[2];
+      const nx = ay * bz - az * by, nz = ax * by - ay * bx; if (nx * (t0[0] - ob.c[0]) + nz * (t0[2] - ob.c[1]) < 0) Wl.tri(t0, t2, t1, gC, H, sd, tint); else Wl.tri(t0, t1, t2, gC, H, sd, tint); };
+    out(g1, g3, g2); out(g4, g6, g5);
     // chimney stacks at the ridge ends
     if (st <= 2) for (const s of [-ob.h0 + 0.5, ob.h0 - 0.5]) {
       const cpos = P(s, 0, 0);
       const g = new THREE.BoxGeometry(0.75, 1.6, 0.55); g.rotateY(Math.atan2(-uz, ux)); g.translate(cpos[0], yTop + rise + 0.3, cpos[2]); chim.push(g);
       for (const d of [-0.18, 0.18]) { const pot = new THREE.CylinderGeometry(0.09, 0.11, 0.4, 8); pot.translate(cpos[0] + ux * d, yTop + rise + 1.3, cpos[2] + uz * d); chim.push(pot); }
     }
-  } else if (b.r === 'gable' && (hip = insetPoly(p, Math.min(3.2, Math.max(1.2, ob.h1 * 0.45))))) {
-    // irregular footprint with a pitched roof: hipped slopes up to an inset ridge platform (reads as slate roofs)
-    const d = Math.min(3.2, Math.max(1.2, ob.h1 * 0.45)), rise = d * 0.75;
+  } else if (b.r === 'gable' && (hip = hipRoof(pos, Math.min(3.2, Math.max(1.2, ob.h1 * 0.45))))) {
+    // irregular footprint with a pitched roof: hipped slopes up to an inset ridge platform (reads as slate roofs). The plan is
+    // tidied first (doubled and in-line points out) and the slope narrowed if it has to be, so awkward footprints still get one
+    const d = hip.d, rise = d * 0.75, p = hip.pr; hip = hip.q;
     for (let k = 0; k < p.length; k++) {
       const a = p[k], c = p[(k + 1) % p.length], qa = hip[k], qc = hip[(k + 1) % p.length];
       let t1 = [[a[0], yTop, a[1]], [c[0], yTop, c[1]], [qc[0], yTop + rise, qc[1]]], t2 = [[a[0], yTop, a[1]], [qc[0], yTop + rise, qc[1]], [qa[0], yTop + rise, qa[1]]];
@@ -341,7 +423,23 @@ export function letteringTexture(text, { w = 4096, h = 256, font = '700 170px "A
 function buildBrewery(M, poly, Wl, roofsFlat, chim, group, bulkPolys = null) {
   // the brewery ranges behind and beside the detailed street front, from a footprint worked out offline (the OSM outline
   // less the front's blocks and its yard), flat felt roofs
-  if (bulkPolys && bulkPolys.length) { bulkPolys.forEach((p, i) => addBuilding(Wl, roofsFlat, [], chim, { p, h: 10.6, r: 'flat', s: 'works', id: 4242 + i * 7 }, 0)); return; }
+  if (bulkPolys && bulkPolys.length) {
+    bulkPolys.forEach((p, i) => addBuilding(Wl, roofsFlat, [], chim, { p, h: 10.6, r: 'flat', s: 'works', id: 4242 + i * 7 }, 0));
+    // slate ridge roofs in rows over the ranges (8 Nov: the flat grey roofs read as more open paving from above)
+    const d = [0.879, 0.477], n = [-0.477, 0.879], ang = Math.atan2(-d[1], d[0]), ridgeG = [];
+    const inP = (pp, x, z) => { let c = false; for (let i = 0, j = pp.length - 1; i < pp.length; j = i++) { const [xi, zi] = pp[i], [xj, zj] = pp[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+    for (const pp of bulkPolys) {
+      let slo = 1e9, shi = -1e9, tlo = 1e9, thi = -1e9;
+      for (const [x, z] of pp) { const s2 = x * d[0] + z * d[1], t2 = x * n[0] + z * n[1]; slo = Math.min(slo, s2); shi = Math.max(shi, s2); tlo = Math.min(tlo, t2); thi = Math.max(thi, t2); }
+      for (let t = tlo + 4.8; t < thi - 3; t += 9.6) for (let s2 = slo + 3; s2 < shi - 2.5; s2 += 5.9) {
+        const x = d[0] * s2 + n[0] * t, z = d[1] * s2 + n[1] * t, ok = (a, b) => inP(pp, d[0] * a + n[0] * b, d[1] * a + n[1] * b);
+        if (!ok(s2, t) || !ok(s2 + 3, t) || !ok(s2 - 3, t) || !ok(s2, t + 4.6) || !ok(s2, t - 4.6)) continue;
+        const g = new THREE.BoxGeometry(6.05, 6.6, 6.6); g.rotateX(Math.PI / 4); g.rotateY(ang); g.translate(x, groundAt(x, z) + 10.6, z); ridgeG.push(g);
+      }
+    }
+    if (ridgeG.length) { const rm = new THREE.Mesh(mergeGeometries(ridgeG, false), M.cSlate); rm.castShadow = rm.receiveShadow = true; rm.name = 'brewery_roofs'; group.add(rm); }
+    return;
+  }
   // The Apsley Street front (Frederic Robinson Ltd offices, the Unicorn Brewery range, the striped turret and the
   // brewhouse tower) is modelled in detail by context.js buildBreweryFront(); here: the brewery yards and ranges
   // behind it on the OSM footprint, cut back so they don't fight the detailed front.
@@ -383,7 +481,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + (opts.splat || 'world_splat.png'), { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795002900'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {
@@ -416,10 +514,14 @@ gWet = S.b;`)
   // ---- buildings
   const Wl = new Wall(), roofsFlat = [], roofsSlate = [], roofsLead = [], chim = [];
   for (const id of (opts.white || [])) { const b = W.bld.find(q => q.id === id); if (b) b.white = true; }
+  // round the Print House the grey flat roofs become slate (Charlie, 18 Nov: "nothing's built like that with a really grey flat
+  // roof"); sheds, canopies and the big works roofs stay flat
+  if (opts.slateNear) { const [cx, cz, rr] = opts.slateNear; for (const b of W.bld) { if (b.r !== 'flat' || ['shed', 'canopy'].includes(b.s)) continue; let x = 0, z = 0; for (const q of b.p) { x += q[0]; z += q[1]; } x /= b.p.length; z /= b.p.length; if (Math.hypot(x - cx, z - cz) < rr) b.r = 'gable'; } }   // every size now, works included (the big flat ones read as empty, Charlie's video 6:20)
   W.bld.forEach((b, i) => addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead));
   if (W.special.brewery) buildBrewery(M, W.special.brewery, Wl, roofsFlat, chim, group, W.special.brewery_bulk);
   const tm = townMaterial(M);
   const wm = new THREE.Mesh(Wl.geometry(), tm); wm.castShadow = true; wm.receiveShadow = true; wm.name = 'town_walls'; group.add(wm);
+  try { group.add(buildShopfronts(groundAt)); } catch (e) { console.warn('shop fronts', e); }   // painted shop fronts on the old town's streets (18 Nov)
   const worldUV = (g, sc) => { const p = g.attributes.position, uv = new Float32Array(p.count * 2); for (let i = 0; i < p.count; i++) { uv[i * 2] = p.getX(i) / sc; uv[i * 2 + 1] = p.getZ(i) / sc; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return g; };
   if (roofsFlat.length) {
     const g = worldUV(mergeGeometries(roofsFlat.map(x => { x = x.index ? x.toNonIndexed() : x; if (!x.attributes.color) x.setAttribute('color', new THREE.BufferAttribute(new Float32Array(x.attributes.position.count * 3).fill(0.75), 3)); return x; }), false), 8);
@@ -535,7 +637,9 @@ gWet = S.b;`)
         if (!pipXZ(x, z, p) || blocked(x, z, 4)) continue;
         if (a.k === 'grass' && R() < 0.5) continue;
         const d = Math.hypot(x - 11, z - 10);
-        forest.add(x, z, { h: 13 + R() * 8, r: 4.5 + R() * 2.2, kind: R() < 0.6 ? 'oak' : 'sycamore', seed: Math.floor(R() * 1e6), density: d > 220 ? 0.4 : 0.75 }); n++;
+        // the wood across Churchgate from Charter House is kept lower (Charlie, 5 Nov) so the hills show over it from the flats
+        const low = a.k === 'wood' && z < -8 && d < 190;
+        forest.add(x, z, { h: low ? 8 + R() * 4 : 13 + R() * 8, r: low ? 3.8 + R() * 1.7 : 4.5 + R() * 2.2, kind: R() < 0.6 ? 'oak' : 'sycamore', seed: Math.floor(R() * 1e6), density: d > 220 ? 0.4 : 0.75 }); n++;
       }
     } else if (a.k === 'garden' && ar > 60 && R() < 0.22) {
       const c = centroidOf(p); if (blocked(c[0], c[1], 2.5)) continue;

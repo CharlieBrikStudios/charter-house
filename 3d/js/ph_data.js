@@ -41,7 +41,7 @@ export const PH_PLAN = {
   D: 11.57, US: 5.02, UW: 28.516, C1: 2.474, CH: 1.08,
   WING: [28.516, 2.586, 30.54, 6.175],
   PW: [5.296, 9.12, 12.944, 16.768, 20.592],          // party walls on the pier centres, 1C | 1B | 1B | 1B | 1B | 2A
-  CORE: { u0: -0.562, u1: 6.1, v1: 12.17 },            // stair and lift core: its street face, the walkway side, the step at the 1C
+  CORE: { u0: 0.35, u1: 6.1, v1: 12.17 },              // stair and lift core: its street face (set back 0.35 m behind the main face, as the CGI: Charlie 19 Nov), the walkway side, the step at the 1C
   SIDE: { o: [-3.57, 16.71], ang: -11.7, S: 9.88, T: 9.69, PW: 4.407 },
   GAL: 1.45,
 };
@@ -96,7 +96,8 @@ export const PH_ROOF = {
   PH_ROOF.main = ring([[0, P.D], [0, P.C1 + P.CH], [P.CH, P.C1], [P.US, P.C1], [P.US, 0], [P.UW, 0], [P.UW, w1], [w2, w1], [w2, w3], [P.UW, w3], [P.UW, P.D]],
     [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0]);
   const sideN = (u) => sd((u - S.o[0]) / PH_SIDE.ex[0], 0);   // the side block's north wall at a given u
-  PH_ROOF.core = ring([[C.u0, sideN(C.u0)[1]], [C.u0, C.v1], [0, C.v1], [0, P.D], [C.u1, P.D], sd(S.S, 0)], [1, 0, 0, 0, 0, 0]);
+  PH_ROOF.core = C.u0 > 0 ? ring([[C.u0, sideN(C.u0)[1]], [C.u0, P.D], [C.u1, P.D], sd(S.S, 0)], [1, 0, 0, 0])   // recessed: the face runs straight down to the main block
+    : ring([[C.u0, sideN(C.u0)[1]], [C.u0, C.v1], [0, C.v1], [0, P.D], [C.u1, P.D], sd(S.S, 0)], [1, 0, 0, 0, 0, 0]);
   PH_ROOF.side = ring([sd(0, S.T), sd(0, 0), sd(S.S, 0), sd(S.S, S.T)], [1, 0, 0, 1]);
   for (const [k, edges] of [['main', PH_ROOF.main], ['core', PH_ROOF.core], ['side', PH_ROOF.side]])
     edges.forEach(([p0, p1, sl], i) => { if (sl) { const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), d = [(p1[0] - p0[0]) / len, (p1[1] - p0[1]) / len]; PH_ROOF.faces.push({ id: k + i, block: k, p0, p1, n: [d[1], -d[0]], len, d }); } });

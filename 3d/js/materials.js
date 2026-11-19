@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { floraMaterials } from './flora.js?v=1795002900';
 
 // Global horizontal section plane used for the floor cut-away. Keeps everything with y <= constant.
 export const CUT = new THREE.Plane(new THREE.Vector3(0, -1, 0), 999);
@@ -176,6 +177,7 @@ export function makeMaterials(base) {
   M.doorNavy = dress({ color: '#26364a', roughness: 0.38 }); M.doorSage = dress({ color: '#4c5b4d', roughness: 0.4 }); M.doorCharcoal = dress({ color: '#2b2d30', roughness: 0.36 });
   M.doorOxblood = dress({ color: '#5a272c', roughness: 0.38 }); M.doorGreen = dress({ color: '#1f3a2e', roughness: 0.38 });
   M.brassDoor = dress({ color: '#c9a24f', metalness: 1, roughness: 0.28 });
+  floraMaterials(M, CUT_PLANES);   // real flowers in place of the coloured balls (Charlie, 19 Nov)
   return M;
 }
 

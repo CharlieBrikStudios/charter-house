@@ -91,7 +91,7 @@ export class Forest {
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', `#include <common>
 attribute float aTile; attribute vec3 aTint; attribute vec3 aCenter;
-uniform float uTime; varying vec3 vTint; varying vec3 vCrownN; varying vec3 vWP;`)
+uniform float uTime, uNear; varying vec3 vTint; varying vec3 vCrownN; varying vec3 vWP; varying float vCamIn;`)
         .replace('#include <uv_vertex>', `#include <uv_vertex>
 #ifdef USE_MAP
 vMapUv = (uv * 0.5) + vec2(mod(aTile, 2.0), floor(aTile / 2.0)) * 0.5;
@@ -109,11 +109,13 @@ vec4 ipn = instanceMatrix * vec4(0.0,0.0,0.0,1.0);
 vec3 cn = normalize(ipn.xyz - aCenter + vec3(0.0, 0.25, 0.0));
 // express the crown normal in the instance's local space so the regular pipeline transforms it
 objectNormal = normalize(mix(objectNormal, (transpose(mat3(instanceMatrix)) * cn), 0.82));
-vTint = aTint; vCrownN = cn; vWP = ipn.xyz;`)
+vTint = aTint; vCrownN = cn; vWP = ipn.xyz;
+// the whole crown dissolves while the camera is inside it (Charlie, 19 Nov), not just the leaves nearest the lens
+vCamIn = smoothstep(uNear * 0.5, uNear * 0.62, length(cameraPosition - aCenter));`)
       ;
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
-uniform vec3 uSunDir; uniform float uTrans, uNear; varying vec3 vTint; varying vec3 vCrownN; varying vec3 vWP;`)
+uniform vec3 uSunDir; uniform float uTrans, uNear; varying vec3 vTint; varying vec3 vCrownN; varying vec3 vWP; varying float vCamIn;`)
         .replace('#include <normal_fragment_begin>', `float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;
 vec3 normal = normalize( vNormal );   // crown normal: deliberately not flipped on back faces
 vec3 nonPerturbedNormal = normal;`)
@@ -127,9 +129,8 @@ float thr = mix(1.01, 0.5, smoothstep(0.12, 0.42, facing));
 if (diffuseColor.a < thr) discard;
 // dissolve leaves close to the camera, so orbiting or flying never puts a wall of foliage in your face
 float camD = length(vViewPosition);
-float keep = smoothstep(uNear * 0.35, uNear, camD);
-float dn = fract(sin(dot(floor(gl_FragCoord.xy), vec2(12.9898, 78.233))) * 43758.5453);
-if (keep < dn) discard;
+// a clean cut, no dithered stipple: the stipple read as grain on screen (Charlie, 19 Nov: "these grainy parts")
+if (camD < uNear * 0.62 || vCamIn < 0.5) discard;
 diffuseColor.a = 1.0;`)
         .replace('#include <opaque_fragment>', `
 // soft translucency: leaves glow when the sun is behind them, inner crown darker

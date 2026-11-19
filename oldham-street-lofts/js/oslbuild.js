@@ -7,10 +7,11 @@
 // which is the engine's plan frame with u = s, v = -t.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { OSL_SITE, OSL_FH, OSL_UNITS, OSL_KEAST } from './osl_data.js?v=1794418836';
-import { roomBox } from './building.js?v=1794418836';
-import { roomMaterial } from './materials.js?v=1794418836';
-import { insetPoly, polyArea } from './world.js?v=1794418836';
+import { OSL_SITE, OSL_FH, OSL_UNITS, OSL_KEAST } from './osl_data.js?v=1795002900';
+import { roomBox } from './building.js?v=1795002900';
+import { roomMaterial } from './materials.js?v=1795002900';
+import { insetPoly, polyArea } from './world.js?v=1795002900';
+import { makeFlora } from './flora.js?v=1795002900';
 
 const FH = OSL_FH, NF = 3;
 const HW = 4.137, HD = 11.17;                   // house plot width and depth
@@ -50,7 +51,10 @@ export function buildOSL(M, opts = {}) {
   const y0 = groundAt(...tw(B1, 0)) + 0.12;
   group.position.set(OSL_SITE.origin[0], y0, OSL_SITE.origin[1]);
   group.userData.y0 = y0;
-  const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
+  // the townhouses' pieces carry '#h' so the floor views can leave the houses whole (Charlie, 19 Nov: "don't split the houses")
+  let HOUSE = false;
+  const G = {}; const add = (k, g) => (G[HOUSE && !k.startsWith('_') ? k + '#h' : k] ||= []).push(g.index ? g.toNonIndexed() : g);
+  const gl = (s, t) => groundAt(...tw(s, t)) - y0;   // the ground, in the block's frame
   const box = (s0, t0, s1, t1, ya, yb) => { const g = new THREE.BoxGeometry(Math.max(0.01, Math.abs(s1 - s0)), Math.max(0.01, yb - ya), Math.max(0.01, Math.abs(t1 - t0))); g.translate((s0 + s1) / 2, (ya + yb) / 2, (t0 + t1) / 2); return g; };
   const windows = [], roomGeo = {};
   // ---- a wall with openings along p0 -> p1 (sheet s, t), outward normal n; openings {a, b, y0, y1, kind, grid, plot, floor}
@@ -221,18 +225,25 @@ export function buildOSL(M, opts = {}) {
   // ---- the courtyard: parking aisle, bins, bikes, the residents' garden
   add('asphalt', box(42.3, FR, 48.2, 16.3, -0.02, 0.0));
   add('pavers', box(B0 + 0.3, FR, 42.3, 16.3, -0.015, 0.005)); add('pavers', box(48.2, FR, WS, 11.2, -0.015, 0.005));
-  add('lawn', box(48.6, 11.3, WS - 0.1, 16.1, 0, 0.04));
+  { const top = Math.max(0.04, ...[[48.6, 11.3], [WS - 0.1, 11.3], [48.6, 16.1], [WS - 0.1, 16.1]].map(([a, b]) => gl(a, b) + 0.05));
+    add('lawn', box(48.6, 11.3, WS - 0.1, 16.1, -0.3, top));
+    // flower beds along the planter edges and round the lawn, so the residents' garden reads green (Charlie, 19 Nov)
+    const FL = makeFlora((k, g) => add(k, g), 5150);
+    FL.bed(48.8, 11.45, WS - 0.3, 12.0, top - 0.02, 1.2); FL.bed(48.75, 12.0, 49.3, 16.0, top - 0.02, 1.2); FL.bed(48.8, 15.5, WS - 0.3, 16.0, top - 0.02, 1.0);
+    for (let i = 0; i < 14; i++) FL.leafBlob(49.5 + FL.R() * (WS - 50.2), top + 0.2, 12.1 + FL.R() * 3.6, 0.22 + FL.R() * 0.18, FL.R() < 0.5 ? 'flLeaf' : 'flLeafDark');
+    for (let i = 0; i < 10; i++) FL.clump(49.6 + FL.R() * (WS - 50.4), top, 12.3 + FL.R() * 3.4, 0.14 + FL.R() * 0.06, 5 + Math.floor(FL.R() * 4)); }
   add('planter', box(48.5, 11.2, WS, 11.35, 0, 0.45)); add('planter', box(48.5, 11.2, 48.65, 16.2, 0, 0.45));
   for (const [s, t] of [[49.6, 12.6], [51.6, 14.4]]) add('bench', box(s - 0.8, t - 0.22, s + 0.8, t + 0.22, 0.42, 0.48));
   for (let s = 48.9; s < 52.6; s += 0.75) { add('steel', box(s - 0.03, 9.9, s + 0.03, 10.75, 0, 0.82)); }   // Sheffield stands, one per apartment
   add('brickLow', box(B0 + 0.3, 8.6, 41.9, 8.8, 0, 1.6)); add('brickLow', box(41.7, 8.6, 41.9, 15.6, 0, 1.6));     // bin store walls
   for (let i = 0; i < 6; i++) { const s = 38.2 + (i % 3) * 1.25, t = 9.6 + Math.floor(i / 3) * 2.6; add('bin', box(s - 0.6, t - 0.5, s + 0.6, t + 0.5, 0, 1.3)); }
   // parking bays (white lines) in the courtyard and the undercroft
-  for (const s of [B0 + 2.6, B0 + 5.1, 48.2 + 2.4]) add('line', box(s - 0.05, 0.6, s + 0.05, FR - 0.6, 0.0, 0.012));
+  // (no painted bay lines: one ran through a door, Charlie 19 Nov)
   // boundary walls: the rear of the site and round the courtyard
   add('brickLow', box(-0.9, 16.3, WS, 16.55, -0.3, 1.9));
   // ======================================================== the townhouses (three groups of three, stepping up westwards)
-  const houseFloors = [];
+  const houseFloors = [], gardens = [];
+  HOUSE = true;
   for (let g = 0; g < 3; g++) {
     const i0 = g * 3, sa = i0 * HW, sb = (i0 + 3) * HW;
     // floor level of the group: the pavement at its middle, plus a step
@@ -246,7 +257,7 @@ export function buildOSL(M, opts = {}) {
       front.push(gy({ a: s0 + 0.42, b: s0 + 1.38, y0: 0.02, y1: 2.25, kind: 'door', plot, floor: 0, mat: 'houseDoor', head: 'stone' }));
       front.push(gy({ a: s0 + 2.05, b: s0 + 3.65, y0: 0.7, y1: 2.25, plot, floor: 0, id: 'H' + plot + 'g', grid: [3, 3], head: 'stone', fy: 0, ch: 2.7 }));
       for (const [a, b] of [[0.55, 1.75], [2.35, 3.55]]) front.push(gy({ a: s0 + a, b: s0 + b, y0: 3.35, y1: 4.85, plot, floor: 0, id: 'H' + plot + 'f' + a, grid: [3, 3], head: 'stone', fy: 2.7, ch: 2.7 }));
-      rear.push(gy({ a: s0 + 0.45, b: s0 + 2.25, y0: 0.02, y1: 2.2, kind: 'door', plot, floor: 0, mat: 'frame', light: false }));
+      rear.push(gy({ a: s0 + 0.85, b: s0 + 1.8, y0: 0.02, y1: 2.15, kind: 'door', plot, floor: 0, mat: 'houseDoor', head: 'stone', light: false }));   // a back door for a person, not a garage door (Charlie, 19 Nov)
       rear.push(gy({ a: s0 + 2.8, b: s0 + 3.7, y0: 0.95, y1: 2.15, plot, floor: 0, id: 'H' + plot + 'r', grid: [2, 2], head: 'stone', fy: 0, ch: 2.7 }));
       for (const [a, b] of [[0.6, 1.6], [2.5, 3.5]]) rear.push(gy({ a: s0 + a, b: s0 + b, y0: 3.4, y1: 4.75, plot, floor: 0, id: 'H' + plot + 'q' + a, grid: [2, 2], head: 'stone', fy: 2.7, ch: 2.7 }));
     }
@@ -282,11 +293,14 @@ export function buildOSL(M, opts = {}) {
     // party walls between the houses, gardens behind with timber fences and a paved patio
     for (let k = 0; k <= 3; k++) { const s = sa + k * HW; if (k > 0 && k < 3) add('plaster', box(s - 0.1, 0.3, s + 0.1, HD - 0.3, y, y + HE)); if (!(g === 0 && k === 0)) add('fence', box(s - 0.04, HD, s + 0.04, 16.35, -0.2, 1.8)); }
     add('pavers', box(W0[0] + 0.3, HD, sb, HD + 2.2, -0.05, y - 0.1 > 0 ? y - 0.1 : 0.0));
-    add('lawn', box(W0[0] + 0.6, HD + 2.2, sb, 16.3, -0.05, 0.03 + Math.max(0, y - 0.3)));
+    { const top = Math.max(0.03 + Math.max(0, y - 0.3), ...[[W0[0] + 0.6, HD + 2.2], [sb, HD + 2.2], [W0[0] + 0.6, 16.3], [sb, 16.3], [(W0[0] + sb) / 2, 13]].map(([a, b]) => gl(a, b) + 0.05));
+      add('lawn', box(W0[0] + 0.6, HD + 2.2, sb, 16.3, -0.3, top));   // green gardens behind every house, above the ground (Charlie, 19 Nov)
+      gardens.push([W0[0] + 0.6, HD + 2.4, sb, 15.2, top]); }
     for (let k = 0; k < 3; k++) { const s = (i0 + k) * HW + 3.3; add('fence', box(s - 0.55, 15.4, s + 0.55, 16.25, -0.1, 1.3)); }   // bin and bike store
   }
   // fence along the courtyard side of plot 9's garden and the gate to Henry Street
   add('fence', box(B0 - 0.05, HD, B0 + 0.05, 16.35, -0.2, 1.8));
+  HOUSE = false;
 
   // ---- painted name, as the launch CGIs: across the Syddall Street front, on Oldham Street, and down the corner
   const signs = [];
@@ -302,31 +316,42 @@ export function buildOSL(M, opts = {}) {
   // ======================================================== assemble
   const clip = M.brick?.clippingPlanes;
   const std = (o) => new THREE.MeshStandardMaterial({ ...o, clippingPlanes: clip });
+  // ground surfaces drawn just in front of the terrain under them, so they never flicker against it (Charlie, 19 Nov)
+  const onTop = (m, f = -2) => { if (!m) return m; const c = m.clone(); c.polygonOffset = true; c.polygonOffsetFactor = f; c.polygonOffsetUnits = f; c.onBeforeCompile = m.onBeforeCompile; c.customProgramCacheKey = m.customProgramCacheKey; return c; };
   const mats = {
     brick: M.brick || M.cBrick, band: M.brick2 || M.cBrickOld, plinth: std({ color: '#3a2a26', roughness: 0.75 }), brickLow: M.cBrick || M.brick,
     frame: std({ color: '#2a2c2e', roughness: 0.42, metalness: 0.35 }),
-    glass: new THREE.MeshPhysicalMaterial({ color: '#273038', roughness: 0.05, metalness: 0.1, envMapIntensity: 1.3, transparent: true, opacity: 0.5, clearcoat: 1, clippingPlanes: clip }),
+    glass: M.glass || new THREE.MeshPhysicalMaterial({ color: '#273038', roughness: 0.05, metalness: 0.1, envMapIntensity: 1.3, transparent: true, opacity: 0.5, clearcoat: 1, clippingPlanes: clip }),   // the shiny Charter House glass (Charlie, 19 Nov)
     sill: M.stone, door: std({ color: '#2b2d30', roughness: 0.45, metalness: 0.3 }), houseDoor: std({ color: '#26332c', roughness: 0.4 }),
     gutter: std({ color: '#2a2b2c', roughness: 0.5, metalness: 0.4 }), slate: M.slate || M.cSlate, roofLead: std({ color: '#4d5154', roughness: 0.85 }),
     rooflight: new THREE.MeshPhysicalMaterial({ color: '#1d2329', roughness: 0.05, metalness: 0.3, clearcoat: 1, clippingPlanes: clip }),
     soffit: std({ color: '#3b3d40', roughness: 0.8 }), steel: std({ color: '#212427', roughness: 0.42, metalness: 0.6 }), deck: std({ color: '#6b6560', roughness: 0.82 }),
-    balGlass: M.balGlass, roof: std({ color: '#2f3134', roughness: 0.7 }), asphalt: M.asphalt || std({ color: '#3c3d3f' }), pavers: M.pavers || M.paving,
-    lawn: M.grass, planter: std({ color: '#7a5a3c', roughness: 0.8 }), bench: std({ color: '#9b7650', roughness: 0.7 }), bin: std({ color: '#2f4a3a', roughness: 0.6 }),
+    balGlass: M.balGlass, roof: std({ color: '#2f3134', roughness: 0.7 }), asphalt: onTop(M.asphalt || std({ color: '#3c3d3f' })), pavers: onTop(M.pavers || M.paving),
+    lawn: onTop(M.grass, -3), planter: std({ color: '#7a5a3c', roughness: 0.8 }), bench: std({ color: '#9b7650', roughness: 0.7 }), bin: std({ color: '#2f4a3a', roughness: 0.6 }),
     line: std({ color: '#ecebe6', roughness: 0.8 }), fence: std({ color: '#6b5440', roughness: 0.9 }), plaster: M.plaster || M.stone,
   };
   const meshes = {};
+  const noClip = new Map();
+  const matFor = (k) => {
+    const [b, h] = k.split('#'), m = mats[b] || M[b] || M.stone; if (!h) return m;
+    if (!noClip.has(b)) { const c = m.clone(); c.clippingPlanes = null; c.onBeforeCompile = m.onBeforeCompile; c.customProgramCacheKey = m.customProgramCacheKey; c.userData = { ...m.userData }; noClip.set(b, c); }
+    return noClip.get(b);
+  };
   for (const [k, list] of Object.entries(G)) {
     if (k.startsWith('_')) continue;
-    for (const gg of list) if (!gg.userData.brickUV && (k === 'brick' || k === 'band' || k === 'brickLow' || k === 'plinth')) {
+    const kb = k.split('#')[0];
+    for (const gg of list) if (!gg.userData.brickUV && (kb === 'brick' || kb === 'band' || kb === 'brickLow' || kb === 'plinth')) {
       gg.computeVertexNormals(); const p = gg.attributes.position, nn = gg.attributes.normal, uv = new Float32Array(p.count * 2);
       for (let i = 0; i < p.count; i++) { const ax = Math.abs(nn.getX(i)), ay = Math.abs(nn.getY(i)); uv[2 * i] = (ay > 0.7 ? p.getX(i) : ax > 0.7 ? p.getZ(i) : p.getX(i)) / 2.2; uv[2 * i + 1] = (ay > 0.7 ? p.getZ(i) : p.getY(i)) / 2.2; }
       gg.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     }
     for (const gg of list) { if (!gg.attributes.uv) gg.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(gg.attributes.position.count * 2), 2)); if (!gg.attributes.normal) gg.computeVertexNormals(); }
     const g = mergeGeometries(list, false); if (!g) { console.warn('osl merge', k); continue; }
-    const m = new THREE.Mesh(g, mats[k] || M.stone); m.castShadow = !['glass', 'balGlass', 'lawn', 'line', 'asphalt', 'pavers'].includes(k); m.receiveShadow = true; m.name = 'osl_' + k;
+    const m = new THREE.Mesh(g, matFor(k)); m.castShadow = !['glass', 'balGlass', 'lawn', 'line', 'asphalt', 'pavers'].includes(kb) && !kb.startsWith('flPetal'); m.receiveShadow = true; m.name = 'osl_' + k;
     group.add(m); meshes[k] = m;
   }
+  // the houses' glass and slate follow the block's when the app hides them (inside a flat)
+  for (const k of ['glass', 'slate']) if (meshes[k] && meshes[k + '#h']) { group.remove(meshes[k + '#h']); meshes[k].add(meshes[k + '#h']); }
   // rooms behind the glass (light up with the floor)
   const roomTex = new THREE.TextureLoader().load((opts.base || 'assets/') + 'tex/room_atlas.jpg'); roomTex.colorSpace = THREE.SRGBColorSpace;
   const unitRooms = new Map();

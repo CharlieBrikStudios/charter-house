@@ -490,7 +490,7 @@ body:has(#buildbar:not([hidden])) #navpad { left: var(--gx); right: auto; }
 .sheet .sh { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 14px; }
 .sheet h2 { margin: 0; font: italic 400 30px/1 var(--f-display); }
 .gview { flex: 1; min-height: 0; display: grid; place-items: center; position: relative; }
-.gview img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.7); }
+.gview img { position: absolute; inset: 0; margin: auto; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.7); }
 .gcap { text-align: center; color: var(--ink-2); padding-top: 12px; font-size: 13px; }
 .gnav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; background: var(--glass-hi); border: 1px solid var(--line); display: grid; place-items: center; }
 .gnav.p { left: 6px; } .gnav.n { right: 6px; }
@@ -751,6 +751,6 @@ input, textarea, #udet .kv, #udet .contact { -webkit-user-select: text; user-sel
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/main.js?v=1795002700"></script>
+<script type="module" src="js/main.js?v=1795002900"></script>
 
 </body></html>

@@ -5,17 +5,18 @@
 // ground (1 m LiDAR). Anything that would fall inside the Print House's walled plot, Seaton House or its forecourt is left out.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { makeFlora } from './flora.js?v=1795002900';
 
 const inPoly = (P, x, z) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) if ((P[i][1] > z) !== (P[j][1] > z) && x < (P[j][0] - P[i][0]) * (z - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) c = !c; return c; };
 
-export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOut = [], blds = [], lampHeads = [] } = {}) {
+export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOut = [], blds = [], lampHeads = [], names = /Fletcher Street|Wellington Street/, pave = false, yellows = true } = {}) {
   const group = new THREE.Group(); group.name = 'phStreets';
   const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
   const near = (x, z) => Math.hypot(x - centre[0], z - centre[1]) < radius;
   const blocked = (x, z) => keepOut.some(P => inPoly(P, x, z));
   const inBld = (x, z) => blds.some(b => b.bb && x > b.bb[0] && x < b.bb[2] && z > b.bb[1] && z < b.bb[3] && inPoly(b.p, x, z));
   for (const b of blds) if (!b.bb) { let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [x, z] of b.p) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); } b.bb = [x0, z0, x1, z1]; }
-  const sel = roads.filter(r => /Fletcher Street|Wellington Street/.test(r.n || '') && r.c.some(([x, z]) => near(x, z)));
+  const sel = roads.filter(r => names.test(r.n || '') && r.c.some(([x, z]) => near(x, z)));
   // junction nodes: ends shared by two or more of the streets (markings stop short of them)
   const ends = []; for (const r of roads) if (!['footway', 'path', 'steps', 'cycleway'].includes(r.k)) ends.push(r.c[0], r.c[r.c.length - 1]);
   const nodeCount = (p) => ends.filter(q => Math.hypot(q[0] - p[0], q[1] - p[1]) < 0.5).length;
@@ -84,7 +85,8 @@ export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOu
     strip(S, 0, hw * 2, 0.012, 'tarmac', 7, false);
     for (const sd of [-1, 1]) {
       kerb(S, sd * hw, sd, me);
-      for (const o of [hw - 0.3, hw - 0.45]) strip(mk, sd * o, 0.08, 0.026, 'yellow', 1);
+      if (yellows) for (const o of [hw - 0.3, hw - 0.45]) strip(mk, sd * o, 0.08, 0.026, 'yellow', 1);
+      if (pave) strip(S, sd * (hw + 1.15), 2.0, 0.11, 'pave', 2.4);   // freshly laid flags behind the kerb (Oldham Street Lofts, Charlie 19 Nov)
     }
     if (/Wellington/.test(r.n)) { const dash = []; let run = []; for (const p of mk) { if (Math.floor(p.s / 6) % 1 === 0 && (p.s % 6) < 3) run.push(p); else if (run.length) { dash.push(run); run = []; } } if (run.length) dash.push(run); dash.forEach(d => strip(d, 0, 0.1, 0.026, 'white', 1)); }
     // give-way lines across Fletcher Street where it meets Wellington Street (double dashed, 0.2 m)
@@ -107,7 +109,8 @@ export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOu
     }
   }
   const tarmac = M.asphalt.clone(); tarmac.color = new THREE.Color('#a4a6ab'); tarmac.roughness = 0.88; tarmac.polygonOffset = true; tarmac.polygonOffsetFactor = -1;
-  const mats = { tarmac, kerb: M.kerb || M.stone, yellow: M.lineYellow, white: M.lineWhite, post: M.timberBlack || new THREE.MeshStandardMaterial({ color: '#1d1f21', roughness: 0.5, metalness: 0.4 }), glow: M.lampGlow };
+  const pv = (M.paving || M.stone).clone(); pv.color = new THREE.Color('#d9d6cf'); pv.polygonOffset = true; pv.polygonOffsetFactor = -1;
+  const mats = { pave: pv, tarmac, kerb: M.kerb || M.stone, yellow: M.lineYellow, white: M.lineWhite, post: M.timberBlack || new THREE.MeshStandardMaterial({ color: '#1d1f21', roughness: 0.5, metalness: 0.4 }), glow: M.lampGlow };
   for (const [k, list] of Object.entries(G)) {
     const g = mergeGeometries(list.map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); return x; }), false); if (!g) continue;
     const m = new THREE.Mesh(g, mats[k]); m.receiveShadow = true; m.castShadow = k === 'post' || k === 'kerb'; m.name = 'phst_' + k; group.add(m);
@@ -141,6 +144,22 @@ export function buildPHExtras(M, groundAt, forest, SP, roads = []) {
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
     const pl = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.25), new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 }));
     const ux = (Bq[0] - A[0]) / C.L, uz = (Bq[1] - A[1]) / C.L; pl.position.set(A[0] - uz * -0.31, gy + 1.3, A[1] + ux * -0.31); pl.rotation.y = Math.atan2(uz, -ux); group.add(pl);
+  }
+  // ---- St Joseph's car park closed off from Fletcher Street (Charlie, 19 Nov: "a low wall and a tree line here and a path that
+  // follows it round"): a low brick wall on the line, a flagged path inside it and a row of small trees between path and bays
+  if (SP.divider && SP.divider.length > 1) {
+    const L = SP.divider, c = SP.dividerIn;   // c: a point inside the car park, so 'in' is known
+    for (let i = 0; i + 1 < L.length; i++) {
+      const A = L[i], Bq = L[i + 1], C = along(A, Bq), ux = (Bq[0] - A[0]) / C.L, uz = (Bq[1] - A[1]) / C.L;
+      let nx = -uz, nz = ux; if ((c[0] - A[0]) * nx + (c[1] - A[1]) * nz < 0) { nx = -nx; nz = -nz; }
+      const sgn = (nx * -uz + nz * ux) > 0 ? 1 : -1;   // which way the box frame's t runs relative to 'in'
+      for (let s = 0; s < C.L; s += 2.0) {
+        const s1 = Math.min(C.L, s + 2.0), mx = A[0] + ux * (s + s1) / 2, mz = A[1] + uz * (s + s1) / 2, gy = groundAt(mx, mz);
+        C.box('brick', s, s1 + 0.01, gy - 0.3, gy + 0.72, -0.13, 0.13); C.box('stone', s, s1 + 0.01, gy + 0.72, gy + 0.8, -0.17, 0.17);
+        const gp = groundAt(mx + nx * 1.1, mz + nz * 1.1); C.box('flags', s, s1 + 0.01, gp - 0.05, gp + 0.05, Math.min(sgn * 0.35, sgn * 1.85), Math.max(sgn * 0.35, sgn * 1.85));
+      }
+      for (let s = 2.2; s < C.L - 1; s += 5.5) { const x = A[0] + ux * s + nx * 2.6, z = A[1] + uz * s + nz * 2.6; forest.add(x, z, { h: 5.5 + (s % 3) * 0.4, r: 1.7, kind: 'birch', seed: Math.floor(x * 31 + z * 7), density: 0.9 }); }
+    }
   }
   // ---- the playground: a green play surface with painted markings, benches along the wall
   if (SP.play && SP.play.length > 2) {
@@ -186,19 +205,18 @@ export function buildPHExtras(M, groundAt, forest, SP, roads = []) {
         if (!nearPath(px, pz, 2.6) && !nearHedge(px, pz, 1.4) && rr() < 0.7) continue;
         forest.add(px, pz, { h: 0.5 + rr() * 0.7, r: 0.35 + rr() * 0.3, kind: rr() < 0.55 ? 'shrub' : 'grass', seed: 8400 + i }); }
     }
-    // flowers in the beds by the paths
-    const FLC = ['#f2a7bd', '#ffffff', '#b9a3e3', '#f7d35c', '#e8606a', '#ff9f5a'];
+    // flowers in the beds by the paths: flowering plants, not coloured balls (Charlie, 19 Nov)
     let fs = 9157; const fr = () => ((fs = (fs * 16807) % 2147483647) / 2147483647);
-    for (let i = 0; i < 900; i++) { const P = GD.grass[i % GD.grass.length]; let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [x, z] of P) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); }
+    const FLR = makeFlora(add, 9157);
+    for (let i = 0; i < 520; i++) { const P = GD.grass[i % GD.grass.length]; let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const [x, z] of P) { x0 = Math.min(x0, x); z0 = Math.min(z0, z); x1 = Math.max(x1, x); z1 = Math.max(z1, z); }
       const px = x0 + fr() * (x1 - x0), pz = z0 + fr() * (z1 - z0); if (!inPoly(P, px, pz) || onStreet(px, pz, 0.6)) continue; const dp = Math.min(...GD.paths.map(L => lineDist(px, pz, L))); if (dp < 0.85 || dp > 1.9) continue;
-      const g = new THREE.IcosahedronGeometry(0.035 + fr() * 0.025, 0); g.scale(1, 0.6, 1); g.translate(px, groundAt(px, pz) + 0.25 + fr() * 0.25, pz); add('fl' + Math.floor(fr() * FLC.length), g); }
-    FLC.forEach((c, i) => { M['phFl' + i] = M['phFl' + i] || new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }); });
+      FLR.clump(px, groundAt(px, pz), pz, 0.14 + fr() * 0.08, 5 + Math.floor(fr() * 5)); }
   }
   const flags = M.paving.clone(); flags.color = new THREE.Color('#cfc6b6'); flags.side = THREE.DoubleSide;
   const mats = { brick: M.cBrickOld || M.brick, stone: M.stone, iron: M.timberBlack, play: new THREE.MeshStandardMaterial({ color: '#3f6b4c', roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -2 }), lineWhite: M.lineWhite, lineYellow: M.lineYellow, flags };
   for (const [k, list] of Object.entries(G)) {
     const g = mergeGeometries(list.map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); if (!x.attributes.normal) x.computeVertexNormals(); return x; }), false); if (!g) continue;
-    const mat = k.startsWith('fl') && k !== 'flags' ? M['phFl' + k.slice(2)] : mats[k];
+    const mat = mats[k] || M[k];
     const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = ['brick', 'stone', 'iron'].includes(k); m.name = 'phx_' + k; group.add(m);
   }
   return group;

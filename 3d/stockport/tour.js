@@ -203,7 +203,8 @@ function loadTex(url) {
 }
 const big = renderer.capabilities.maxTextureSize >= 4096 && !(navigator.connection && navigator.connection.saveData);   // 4K everywhere it fits
 const huge = big && renderer.capabilities.maxTextureSize >= 8192 && innerWidth * Math.min(devicePixelRatio, 2) >= 1600;   // 8K where a stop has one and the screen can use it
-const panoUrl = (stop) => stop.pano + (stop.hd && huge ? '_8k.jpg' : big ? '.jpg' : '_2k.jpg');
+const PV = '?v=1795002900';   // bump when a 360 is re-rendered (19 Nov: Market Place, the hall at street level)
+const panoUrl = (stop) => stop.pano + (stop.hd && huge ? '_8k.jpg' : big ? '.jpg' : '_2k.jpg') + PV;
 
 // ------------------------------------------------------------------ view state
 const V = { yaw: 0, pitch: -0.3, fov: 72, ty: 0, tp: -0.3, tf: 72, spin: false, stop: null, room: null, anim: null, idle: 0, ae: 0 };
@@ -322,7 +323,7 @@ document.getElementById('backApp').onclick = (e) => { if (EMBED) backToApp(e); }
 
 // ------------------------------------------------------------------ the stop bar
 function renderBar() {
-  bar.innerHTML = STOPS.map((s, i) => `<button data-stop="${s.id}" aria-current="${V.stop && V.stop.id === s.id && !V.room}"><img src="${s.pano}_t.jpg" alt=""><em>0${i + 1}</em><span>${s.short}</span></button>`).join('');
+  bar.innerHTML = STOPS.map((s, i) => `<button data-stop="${s.id}" aria-current="${V.stop && V.stop.id === s.id && !V.room}"><img src="${s.pano}_t.jpg${PV}" alt=""><em>0${i + 1}</em><span>${s.short}</span></button>`).join('');
   bar.querySelectorAll('[data-stop]').forEach((b) => (b.onclick = () => goTo(b.dataset.stop)));
 }
 

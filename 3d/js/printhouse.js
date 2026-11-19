@@ -8,9 +8,9 @@
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795002700';
-import { roomBox } from './building.js?v=1795002700';
-import { roomMaterial, tex } from './materials.js?v=1795002700';
+import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795002900';
+import { roomBox } from './building.js?v=1795002900';
+import { roomMaterial, tex } from './materials.js?v=1795002900';
 
 const FH = PH_FH, NF = 5;
 const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
@@ -141,7 +141,7 @@ export function buildPrintHouse(M, opts = {}) {
   };
   // ---- openings, per edge (a, b along the edge from p0)
   const ops = new Map(); const op = (e, o) => { if (!ops.has(e)) ops.set(e, []); ops.get(e).push(o); };
-  const [mEast, , m1C, , mMain, , mWing, , , mGable, mGarden] = MAINE, [cStreet, , , , cWalk] = COREE, [sFletch, , sWalk] = SIDEE;
+  const [mEast, , m1C, , mMain, , mWing, , , mGable, mGarden] = MAINE, cStreet = COREE[0], cWalk = P.CORE.u0 > 0 ? COREE[2] : COREE[4], [sFletch, , sWalk] = SIDEE;
   const slot = (k) => PH_UNITS.find(q => q.slot === k).fp;
   for (let f = 0; f < NF; f++) {
     const y = f * FH, top = f === NF - 1, plotOf = (k) => f * 8 + k + 1;
@@ -187,7 +187,8 @@ export function buildPrintHouse(M, opts = {}) {
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.computeVertexNormals(); g.userData.brickUV = true; add('brick', g);
   };
   // ---- walls: street faces stop at the mansard's knee (their top-floor windows become rooflights), the rest rise to the roof
-  const shared = new Set([COREE[3], COREE[5]]);                           // the core's walls against the 1C and the side block
+  const REC = P.CORE.u0 > 0;   // the core set back behind the main face (4-edge outline)
+  const shared = new Set(REC ? [COREE[1], COREE[3]] : [COREE[3], COREE[5]]);   // the core's walls against the 1C and the side block
   const roofOps = new Map();
   for (const e of [...MAINE, ...COREE, ...SIDEE]) {
     if (shared.has(e)) continue;
@@ -256,11 +257,17 @@ export function buildPrintHouse(M, opts = {}) {
       const sq0 = (Q0[0] - e.p0[0]) * e.d[0] + (Q0[1] - e.p0[1]) * e.d[1], sq1 = (Q1[0] - e.p0[0]) * e.d[0] + (Q1[1] - e.p0[1]) * e.d[1];
       // RL-01..12: twin rooflights, 1.33 x 0.98 m. Where a narrow casement sits too near a hip for the pair (the 2A's wing on the
       // top floor), it gets one single rooflight slid clear of the hip, so its bedroom still has daylight
-      const rlo = sq0 * 1.22 / SL - 0.05, rhi = e.len + (sq1 - e.len) * 1.22 / SL + 0.05;
+      // Charlie, 19 Nov: bigger rooflights (the top-floor CGI): 1.6 m wide pairs, 1.48 m up the slope
+      const RT0 = 0.14, RT1 = 1.62, RW = 1.6, RS = 0.8;
+      // clear of the hips with the frame and the linings inside the roof (Charlie, 19 Nov: a rooflight glitched through the
+      // side of the roof at the end of the side block): a pair that would touch a hip slides along, or becomes a single
+      const rlo = sq0 * (RT1 + 0.07) / SL + 0.38, rhi = e.len + (sq1 - e.len) * (RT1 + 0.07) / SL - 0.38;
       const rw = (roofOps.get(e) || []).map(o => {
-        const c = (o.a + o.b) / 2;
-        if (c - 0.665 > rlo && c + 0.665 < rhi) return { o, c, w: 1.33, t0: 0.24, t1: 1.22 };
-        if (o.b - o.a < 1.2 && rhi - rlo > 0.66 + 0.2) return { o, c: Math.min(Math.max(c, rlo + 0.43), rhi - 0.43), w: 0.66, t0: 0.24, t1: 1.22, single: true };
+        const c = (o.a + o.b) / 2, half = RW / 2 + 0.07;
+        if (c - half > rlo && c + half < rhi) return { o, c, w: RW, t0: RT0, t1: RT1 };
+        const cs = Math.min(Math.max(c, rlo + half), rhi - half);
+        if (rhi - rlo > 2 * half && Math.abs(cs - c) < 0.9) return { o, c: cs, w: RW, t0: RT0, t1: RT1 };
+        if (rhi - rlo > RS + 0.3) return { o, c: Math.min(Math.max(c, rlo + RS / 2 + 0.1), rhi - RS / 2 - 0.1), w: RS, t0: RT0, t1: RT1, single: true };
         return null;
       }).filter(Boolean);
       const sl = new THREE.Shape([V2(0, 0), V2(e.len, 0), V2(sq1, SL), V2(sq0, SL)]);
@@ -355,23 +362,43 @@ export function buildPrintHouse(M, opts = {}) {
     const tEnd = (S.T + 0.4) - ((T1[0] - P1[0]) * ey[0] + (T1[1] - P1[1]) * ey[1]);              // on along the Fletcher face
     const line = [[P.WING[2] + 1.0, -WB], T0];
     for (let k = 1; k < 24; k++) { const a = a0 + da * k / 24; line.push([cen[0] + Rf * Math.cos(a), cen[1] + Rf * Math.sin(a)]); }
-    line.push(T1, [T1[0] + dB[0] * tEnd, T1[1] + dB[1] * tEnd]);
+    // the residents' entrance (ground floor plan: "Residential Entrance" off Fletcher Street, at the core): a 1.8 m opening in the
+    // wall and hedge on the Fletcher run, a flagged path to a door in the core's end wall (Charlie, 19 Nov: "open, with an entrance")
+    const ENT_V = 12.85, along = (vv) => (vv - T1[1]) / dB[1];   // on the line of the core's lower ground entrance door
+    const gA = Math.max(0.3, along(ENT_V - 0.9)), gB = Math.min(tEnd - 0.3, along(ENT_V + 0.9));
+    line.push(T1);
+    const gapK = gB > gA + 0.5 ? line.length : -1;
+    if (gapK > 0) line.push([T1[0] + dB[0] * gA, T1[1] + dB[1] * gA], [T1[0] + dB[0] * gB, T1[1] + dB[1] * gB]);
+    line.push([T1[0] + dB[0] * tEnd, T1[1] + dB[1] * tEnd]);
+    const gapAt = (k) => k === gapK - 1 + 1;   // the segment from the first gap point to the second
     // the platform the plot stands on: inside the wall, round to the garden side of the blocks
     const ret = [phSide(S.S + GAL + 0.3, S.T + 0.4), [P.CORE.u1, D + GAL + 0.3], [P.UW + 2.6, D + GAL + 0.3], [P.UW + 2.6, -WB]];
     const plat = [...line, ...ret];
     group.userData.platform = plat.map(([u, v]) => B.toWorld(u, v));   // the walled plot, kept clear of street furniture
     const slab = (Q, top = 0) => { const g = new THREE.ExtrudeGeometry(new THREE.Shape(Q.map(([u, v]) => V2(u, v))), { depth: 6 + top, bevelEnabled: false, curveSegments: 1 }); g.rotateX(-Math.PI / 2); g.translate(0, -6, 0); return g; };
-    { const [side, top] = splitBy(slab(plat), (nv) => nv.y > 0.7); add('lawn', top); const pp = side.attributes.position, uv = new Float32Array(pp.count * 2); for (let k = 0; k < pp.count; k++) { uv[2 * k] = (pp.getX(k) - pp.getZ(k)) / 2.2; uv[2 * k + 1] = pp.getY(k) / 2.2; } side.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); side.userData.brickUV = true; add('brick', side); }
+    { const [side, top] = splitBy(slab(plat), (nv) => nv.y > 0.7); add('lawn', top); const pp = side.attributes.position, uv = new Float32Array(pp.count * 2); for (let k = 0; k < pp.count; k++) { uv[2 * k] = (pp.getX(k) - pp.getZ(k)) / 2.2; uv[2 * k + 1] = pp.getY(k) / 2.2; } side.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); add('streetStone', side); }   // a light stone wall to the street (the CGIs; Charlie, 19 Nov)
     // the wall's parapet above the platform, stone coping, a continuous railing on the coping; grass and a hedge behind
     for (let k = 0; k < line.length - 1; k++) {
       const a = line[k], b = line[k + 1], e = edgeOf([a, b, 0]); if (e.len < 0.02) continue;
-      ebox(e, -0.02, e.len + 0.02, 0.0, 0.34, 0, 0.5, 'brick');
-      ebox(e, -0.04, e.len + 0.04, -0.06, 0.4, 0.5, 0.6, 'coping');
-      const nb = Math.max(1, Math.round(e.len / 0.14));
-      for (let q = 0; q < nb; q++) { const x = (q + 0.5) * e.len / nb; ebox(e, x - 0.011, x + 0.011, 0.16, 0.18, 0.6, 1.62, 'steel'); }
-      ebox(e, -0.02, e.len + 0.02, 0.14, 0.2, 1.58, 1.64, 'steel'); ebox(e, -0.02, e.len + 0.02, 0.14, 0.2, 0.7, 0.74, 'steel');
-      ebox(e, -0.01, e.len + 0.01, 0.5, 1.17, 0, 0.82, 'hedge');
-      if (forest && !opts.context) for (let x = 0.45; x < e.len; x += 0.9) { const q = [e.p0[0] + e.d[0] * x + e.n[0] * 0.83, e.p0[1] + e.d[1] * x + e.n[1] * 0.83], [wx, wz] = B.toWorld(...q); forest.add(wx, wz, { h: 0.7, r: 0.5, kind: 'hedge', seed: 7000 + k * 31 + Math.round(x * 10), y: y0 + 0.2 }); }
+      // Charlie, 19 Nov (the Fletcher Street CGI): a low light stone wall with a clipped hedge straight on top of it, no railing
+      ebox(e, -0.03, e.len + 0.03, -0.05, 0.42, -0.02, 0.07, 'coping');
+      if (!gapAt(k)) ebox(e, -0.01, e.len + 0.01, 0.06, 0.78, 0.07, 0.86, 'hedge');
+      if (forest && !opts.context && !gapAt(k)) for (let x = 0.45; x < e.len; x += 0.9) { const q = [e.p0[0] + e.d[0] * x + e.n[0] * 0.83, e.p0[1] + e.d[1] * x + e.n[1] * 0.83], [wx, wz] = B.toWorld(...q); forest.add(wx, wz, { h: 0.7, r: 0.5, kind: 'hedge', seed: 7000 + k * 31 + Math.round(x * 10), y: y0 + 0.2 }); }
+    }
+    // the residents' entrance itself: a flagged path from the opening to a glazed door with a canopy in the core's end wall, and
+    // steps down to the pavement where the plot stands above it
+    if (gapK > 0) {
+      const G0 = line[gapK], G1 = line[gapK + 1], gm = [(G0[0] + G1[0]) / 2, (G0[1] + G1[1]) / 2], vm = gm[1], uDoor = P.CORE.u0;
+      const pe = edgeOf([[gm[0] + 0.1, vm], [uDoor - 0.05, vm], 0]);
+      ebox(pe, 0, pe.len, -0.85, 0.85, -0.02, 0.035, 'coping');                                       // the path, in pale flags
+      const de = edgeOf([[uDoor, 13.35], [uDoor, 12.35], 0]);                                         // the core's entrance door (a 2.74-3.74 on its street face)
+      for (const [a1, b1, ya, yb] of [[-0.2, 0.0, 0, 2.55], [1.0, 1.2, 0, 2.55], [-0.2, 1.2, 2.33, 2.55]]) ebox(de, a1, b1, 0.0, 0.06, ya, yb, 'coping');   // stone surround
+      ebox(de, -0.45, 1.45, 0.0, 1.25, 2.55, 2.65, 'steel');                                         // flat steel canopy
+      const hg = y0 - groundAt(...B.toWorld(...gm));
+      if (hg > 0.12) {                                                                                // steps down to the pavement
+        const ns = Math.min(8, Math.ceil(hg / 0.17)), rz = hg / ns, ge = edgeOf([G0, G1, 0]);
+        for (let q = 0; q < ns; q++) ebox(ge, 0.05, ge.len - 0.05, -0.3 * (q + 1), -0.3 * q, -hg - 0.05, -rz * (q + 1) + 0.02, 'coping');
+      }
     }
     // the ramped walkway up the gap between the side block and Seaton House (from the pavement to the garden level)
     const sp = opts.seatonPoly;
@@ -387,8 +414,8 @@ export function buildPrintHouse(M, opts = {}) {
         const t0 = k / n, t1 = (k + 1) / n, ya = gy + (0.04 - gy) * t0, yb = gy + (0.04 - gy) * t1;
         const pa = [A0[0] + (A1[0] - A0[0]) * t0, A0[1] + (A1[1] - A0[1]) * t0], pb = [A0[0] + (A1[0] - A0[0]) * t1, A0[1] + (A1[1] - A0[1]) * t1];
         const e = edgeOf([pa, pb, 0]);
-        ebox(e, -0.01, e.len + 0.01, -1.15, 1.15, Math.min(ya, yb) - 1.5, (ya + yb) / 2, 'path');   // the ramp, stepping up the slope
-        for (const sd of [-1.05, 1.05]) {
+        ebox(e, -0.01, e.len + 0.01, -0.78, 0.78, Math.min(ya, yb) - 1.5, (ya + yb) / 2, 'path');   // the ramp, a person and a bit wide (the plans' gap)
+        for (const sd of [-0.7, 0.7]) {
           ebox(e, 0, 0.05, sd - 0.025, sd + 0.025, (ya + yb) / 2, (ya + yb) / 2 + 1.0, 'steel');
           ebox(e, -0.01, e.len + 0.01, sd - 0.03, sd + 0.03, (ya + yb) / 2 + 0.95, (ya + yb) / 2 + 1.0, 'steel');
           ebox(e, -0.01, e.len + 0.01, sd - 0.02, sd + 0.02, (ya + yb) / 2 + 0.45, (ya + yb) / 2 + 0.48, 'steel');
@@ -424,7 +451,7 @@ export function buildPrintHouse(M, opts = {}) {
     zincWall: new THREE.MeshStandardMaterial({ color: '#34383c', roughness: 0.42, metalness: 0.55, clippingPlanes: M.brick?.clippingPlanes }),
     zincRoof: new THREE.MeshStandardMaterial({ color: '#3a3e42', roughness: 0.38, metalness: 0.6, side: THREE.DoubleSide }),
     frame: new THREE.MeshStandardMaterial({ color: '#25282b', roughness: 0.45, metalness: 0.3, clippingPlanes: M.brick?.clippingPlanes }),
-    glass: new THREE.MeshPhysicalMaterial({ color: '#2b3743', roughness: 0.05, metalness: 0.15, envMapIntensity: 1.3, transparent: true, opacity: 0.55, clearcoat: 1, clippingPlanes: M.brick?.clippingPlanes }), sill: M.stone, door: new THREE.MeshStandardMaterial({ color: '#1e2124', roughness: 0.5, clippingPlanes: M.brick?.clippingPlanes }),
+    glass: M.glass,   // the Charter House glass: reflections of the street, see-through head-on (Charlie, 19 Nov: shiny like Charter House) sill: M.stone, door: new THREE.MeshStandardMaterial({ color: '#1e2124', roughness: 0.5, clippingPlanes: M.brick?.clippingPlanes }),
     room: new THREE.MeshStandardMaterial({ color: '#2a2622', emissive: new THREE.Color('#ffcf98'), emissiveIntensity: 0.0, roughness: 1, clippingPlanes: M.brick?.clippingPlanes }),
     steel: new THREE.MeshStandardMaterial({ color: '#1f2225', roughness: 0.42, metalness: 0.6, clippingPlanes: M.brick?.clippingPlanes }),
     deck: new THREE.MeshStandardMaterial({ color: '#55595d', roughness: 0.8, metalness: 0.2, clippingPlanes: M.brick?.clippingPlanes }),
@@ -440,6 +467,7 @@ export function buildPrintHouse(M, opts = {}) {
     brass: new THREE.MeshStandardMaterial({ color: '#c9a24f', roughness: 0.3, metalness: 1, clippingPlanes: M.brick?.clippingPlanes }),
     mat: new THREE.MeshStandardMaterial({ color: '#7a6346', roughness: 1, clippingPlanes: M.brick?.clippingPlanes }),
     pot: new THREE.MeshStandardMaterial({ color: '#3a3d40', roughness: 0.6, metalness: 0.2, clippingPlanes: M.brick?.clippingPlanes }),
+    streetStone: (() => { const T = (n, o) => tex((opts.base || 'assets/') + 'tex/' + n, o); return new THREE.MeshStandardMaterial({ map: T('sandstone_w.jpg'), color: '#fff8ec', roughness: 0.92, clippingPlanes: M.brick?.clippingPlanes }); })(),
     hedge: new THREE.MeshStandardMaterial({ color: '#3e5a2c', roughness: 0.95 }),
     coping: new THREE.MeshStandardMaterial({ color: '#9a9a96', roughness: 0.85 }),
   };
@@ -526,7 +554,7 @@ export function buildPrintHouse(M, opts = {}) {
   for (const u of [10.0, 13.6]) string(new THREE.Vector3(u, hy, -(D + GAL)), new THREE.Vector3(u, hy - 0.4, -(D + 10.2)), 0.9);
   for (const v of [D + 4.0, D + 7.0]) string(new THREE.Vector3(8.6, hy, -v), new THREE.Vector3(15.2, hy - 0.4, -v), 0.8);
   // building outline (world) for the floor glow: the main block, the core and the side block as one polygon in plan
-  const outlinePlan = [...MAINE.slice(0, 10).map(e => e.p0), MAINE[10].p0, [P.CORE.u1, D], phSide(S.S, 0), phSide(S.S, S.T), phSide(0, S.T), phSide(0, 0), COREE[0].p0, COREE[1].p0, COREE[2].p0].map(([u, v]) => [u, v]);
+  const outlinePlan = [...MAINE.slice(0, 10).map(e => e.p0), MAINE[10].p0, [P.CORE.u1, D], phSide(S.S, 0), phSide(S.S, S.T), phSide(0, S.T), phSide(0, 0), ...(REC ? [COREE[0].p0, COREE[1].p0] : [COREE[0].p0, COREE[1].p0, COREE[2].p0])].map(([u, v]) => [u, v]);
   const outlineWorld = outlinePlan.map(([u, v]) => B.toWorld(u, v));
   return { group, meshes, windows, unitRooms, unitHit, floorHit, pick, y0, FH, NF, outlinePlan, outlineWorld, bulbs, toWorld: B.toWorld, local: (u, y, v) => W2(new THREE.Vector3(u, y, -v)), units: PH_UNITS };
 }
@@ -593,17 +621,34 @@ export function buildSeatonHouse(M, poly, groundAt, opts = {}) {
     for (let i = 1; i < cols; i++) { const t = w.a + (w.b - w.a) * i / cols; box('frame', t - 0.03, t + 0.03, w.y0, w.y1, d0, d1 - 0.02); }
     for (let j = 1; j < rows; j++) { const t = w.y0 + (w.y1 - w.y0) * j / rows; box('frame', w.a, w.b, t - 0.025, t + 0.025, d0, d1 - 0.02); }
   };
+  // a flat shape in the frontage frame (s, y above gF), d0..d1 out from the front wall
+  const fshape = (k, shape, d0, d1) => { const g = new THREE.ExtrudeGeometry(shape, { depth: d1 - d0, bevelEnabled: false, curveSegments: 16 }); g.translate(0, gF, sg > 0 ? d0 : -d1); g.applyMatrix4(M4); g.translate(F0[0], 0, F0[1]); add(k, g); };
+  const archAt = (w) => {
+    const hw = (w.b - w.a) / 2, cxm = (w.a + w.b) / 2, cy = w.y1 - hw, R = hw + 0.15;
+    const fill = new THREE.Shape(); fill.moveTo(w.a, w.y1 + 0.01); fill.lineTo(w.a, cy); fill.absarc(cxm, cy, hw, Math.PI, 0, true); fill.lineTo(w.b, w.y1 + 0.01); fill.lineTo(w.a, w.y1 + 0.01);
+    fshape('wall', fill, 0.03, 0.4);   // brick in the corners above the curve, so the window reads round-headed
+    const ring = new THREE.Shape(); ring.moveTo(cxm - R, cy); ring.absarc(cxm, cy, R, Math.PI, 0, true); ring.lineTo(cxm + hw, cy); ring.absarc(cxm, cy, hw, 0, Math.PI, false); ring.lineTo(cxm - R, cy);
+    fshape('white', ring, 0.4, 0.5);
+    fbox('white', w.a - 0.15, w.a, w.y0, cy, 0.4, 0.5); fbox('white', w.b, w.b + 0.15, w.y0, cy, 0.4, 0.5);
+    fbox('white', cxm - 0.09, cxm + 0.09, w.y1 - 0.02, w.y1 + 0.2, 0.4, 0.54);   // keystone
+  };
   for (const w of wins) {
     if (w.door) { fbox('door', w.a, w.b, w.y0, w.y1, 0.02, 0.1); fbox('stone', w.a - 0.3, w.b + 0.3, w.y1, w.y1 + 0.35, 0.3, 0.5); fbox('stone', w.a - 0.3, w.a - 0.05, w.y0, w.y1, 0.3, 0.48); fbox('stone', w.b + 0.05, w.b + 0.3, w.y0, w.y1, 0.3, 0.48); continue; }
     winFrames(w, fbox);
-    fbox('stone', w.a - 0.12, w.b + 0.12, w.y0 - 0.14, w.y0, 0.3, 0.5);
-    if (w.arch) fbox('stone', w.a - 0.1, w.b + 0.1, w.y1, w.y1 + 0.32, 0.36, 0.46);
-    else if (w.y0 > 4) fbox('stone', w.a - 0.22, w.b + 0.22, w.y1 + 0.05, w.y1 + 0.36, 0.38, 0.5);
+    // white sills and lintels, and white surrounds round the arched windows (Charlie, 19 Nov: "around the curved windows is
+    // like white lintels, looks really nice")
+    fbox('white', w.a - 0.12, w.b + 0.12, w.y0 - 0.14, w.y0, 0.3, 0.52);
+    if (w.arch) archAt(w);
+    else if (w.y0 > 4) fbox('white', w.a - 0.22, w.b + 0.22, w.y1 + 0.05, w.y1 + 0.36, 0.38, 0.52);
   }
   // stone bands: plinth, the band over the ground-floor windows, cornice; the raised parapet with its coping
   fbox('plinth', 0, L, base - gF, 0.45, 0.38, 0.5);
-  fbox('stone', 0, L, 3.5, 3.8, 0.38, 0.5);
-  fbox('stone', 0, MAIN, 7.3, 7.5, 0.38, 0.52);
+  fbox('white', 0, L, 3.5, 3.8, 0.38, 0.52);
+  fbox('white', 0, MAIN, 7.3, 7.5, 0.38, 0.54);
+  // the projecting cornice lip at the top of the wall, returned round both corners (Charlie, 19 Nov: "this lip almost at the
+  // top corner")
+  fbox('white', -0.22, L + 0.22, H - 0.34, H - 0.12, 0.38, 0.72); fbox('white', -0.14, L + 0.14, H - 0.48, H - 0.34, 0.38, 0.6);
+  fbox('white', -0.22, 0.0, H - 0.34, H - 0.12, -1.6, 0.72); fbox('white', L, L + 0.22, H - 0.34, H - 0.12, -1.6, 0.72);
   fbox('brickF', 0, MAIN, 7.5, 7.8, 0.4, 0.5);
   const p0 = bay * 0.55, p1 = MAIN - bay * 0.55;
   fbox('brickF', p0, p1, H, H + 1.15, 0.0, 0.4); fbox('stone', p0 - 0.05, p1 + 0.05, H + 1.15, H + 1.25, -0.05, 0.45);
@@ -613,26 +658,32 @@ export function buildSeatonHouse(M, poly, groundAt, opts = {}) {
   for (let i = 0; i <= 5; i++) { const c = bay * i; fbox('brickF', Math.max(0, c - 0.3), Math.min(MAIN, c + 0.3), base - gF, 7.3, 0.4, 0.49); }
   for (let i = 0; i < 5; i++) for (const k of [0.28, 0.72]) { const c = bay * (i + k); fbox('lead', c - 0.3, c + 0.3, 7.53, 7.73, 0.5, 0.52); }
   for (const [a, b] of [[p0 - 0.75, p0], [p1, p1 + 0.75]]) { fbox('brickF', a, b, H, H + 0.55, 0.0, 0.4); fbox('stone', a - 0.05, b + 0.05, H + 0.55, H + 0.65, -0.05, 0.45); }
-  // two pitched roofs behind the parapet over the main range, ridges along the street, a lead valley between them
+  // one hipped slate roof behind the parapet over the main range, ridge along the street (the D&A's 3D views; Charlie, 19 Nov:
+  // the second, rear roof read as a roof inside the building next door)
   {
-    const s0 = 0.42, s1 = MAIN - 0.1, d0 = -0.42, d1 = -(depth - 0.42), half = (d1 - d0) / 2, rise = 1.85;
-    const slate = (sa, sb, da, ya, db, yb) => {   // one roof slope between two lines along s
-      const g = new THREE.BufferGeometry(), P = (s, y, d) => new THREE.Vector3(s, gF + y, sg * d).applyMatrix4(M4).add(new THREE.Vector3(F0[0], 0, F0[1]));
-      const a = P(sa, ya, da), b = P(sb, ya, da), c = P(sb, yb, db), e = P(sa, yb, db);
-      const pos = []; const tri = (p, q, r) => { const nrm = new THREE.Vector3().subVectors(q, p).cross(new THREE.Vector3().subVectors(r, p)); if (nrm.y < 0) [q, r] = [r, q]; pos.push(...p.toArray(), ...q.toArray(), ...r.toArray()); };
-      tri(a, b, c); tri(a, c, e);
-      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
-      const pp = g.attributes.position, uv = new Float32Array(pp.count * 2); for (let k = 0; k < pp.count; k++) { uv[2 * k] = (pp.getX(k) * dx + pp.getZ(k) * dz) / 2.6; uv[2 * k + 1] = pp.getY(k) / 1.4; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-      add('slate', g);
-    };
-    for (const k of [0, 1]) {
-      const da = d0 + k * 2 * half, dm = da + half, db = da + 2 * half;
-      slate(s0, s1, da, EV, dm, EV + rise); slate(s0, s1, db, EV, dm, EV + rise);
-      const gs = new THREE.Shape([new THREE.Vector2(sg * da, EV), new THREE.Vector2(sg * db, EV), new THREE.Vector2(sg * dm, EV + rise)]);
-      for (const ss of [s0, s1]) { const gg = new THREE.ShapeGeometry(gs); gg.rotateY(-Math.PI / 2); gg.translate(ss, gF, 0); gg.applyMatrix4(M4); gg.translate(F0[0], 0, F0[1]); add('brickF', gg); }
-      fbox('lead', s0, s1, EV + rise - 0.02, EV + rise + 0.08, dm - 0.12, dm + 0.12);   // lead ridge
+    const s0 = 0.42, s1 = MAIN - 0.1, d0 = -0.42, d1 = -(depth - 0.42), half = (d0 - d1) / 2, dm = (d0 + d1) / 2, rise = 2.7;
+    const hs = Math.min(half, (s1 - s0) / 2 - 0.1);
+    const P = (sv, y, d) => new THREE.Vector3(sv, gF + y, sg * d).applyMatrix4(M4).add(new THREE.Vector3(F0[0], 0, F0[1]));
+    const pos = [];
+    const tri = (p, q, r) => { const nrm = new THREE.Vector3().subVectors(q, p).cross(new THREE.Vector3().subVectors(r, p)); if (nrm.y < 0) [q, r] = [r, q]; pos.push(...p.toArray(), ...q.toArray(), ...r.toArray()); };
+    const a = P(s0, EV, d0), b = P(s1, EV, d0), c = P(s1, EV, d1), e = P(s0, EV, d1), r0 = P(s0 + hs, EV + rise, dm), r1 = P(s1 - hs, EV + rise, dm);
+    tri(a, b, r1); tri(a, r1, r0); tri(e, c, r1); tri(e, r1, r0); tri(a, e, r0); tri(b, c, r1);   // two slopes and two hips
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
+    const pp = g.attributes.position, uv = new Float32Array(pp.count * 2); for (let k = 0; k < pp.count; k++) { uv[2 * k] = (pp.getX(k) * dx + pp.getZ(k) * dz) / 2.6; uv[2 * k + 1] = pp.getY(k) / 1.4; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    add('slate', g);
+    fbox('lead', s0 + hs, s1 - hs, EV + rise - 0.02, EV + rise + 0.08, dm - 0.12, dm + 0.12);   // lead ridge
+  }
+  // a pavement along the Wellington Street front (Charlie, 19 Nov: "why does the front have no path?"): flags 2 m wide with a
+  // kerb, stepping with the street, and double yellow lines in the road beside it
+  {
+    const at = (sv, d) => [F0[0] + dx * sv + nx * d, F0[1] + dz * sv + nz * d];
+    for (let sv = -0.6; sv < L + 0.6 - 0.01; sv += 1.0) {
+      const s1v = Math.min(L + 0.6, sv + 1.0), gy = groundAt(...at((sv + s1v) / 2, 2.4)) - gF;
+      fbox('flags', sv, s1v, gy - 0.6, gy + 0.13, 0.02, 2.0);
+      fbox('stone', sv, s1v, gy - 0.6, gy + 0.14, 2.0, 2.16);
+      fbox('yellow', sv, s1v, gy + 0.012, gy + 0.022, 2.3, 2.38); fbox('yellow', sv, s1v, gy + 0.012, gy + 0.022, 2.46, 2.54);
     }
-    fbox('lead', s0, s1, EV, EV + 0.06, d0 + half * 2 - 0.3, d0 + half * 2 + 0.3);   // the valley gutter
+    keep.push([at(-0.6, 0), at(L + 0.6, 0), at(L + 0.6, 2.2), at(-0.6, 2.2)]);
   }
   // the gabled entrance bay: a pitched roof running back from a brick gable with stone kneelers
   {
@@ -727,8 +778,7 @@ export function buildSeatonHouse(M, poly, groundAt, opts = {}) {
       const x1 = Math.min(E.len + 0.4, x + 0.5), xm = (x + x1) / 2; if (Math.abs(xm - dc) < 1.7) continue;
       const [gx, gz] = E.at(xm, 4.45), gy = Math.max(groundAt(gx, gz), E.g0 - 0.3) - E.g0;
       wb('wall', x, x1, gy - 0.3, gy + 0.55, 4.3, 4.6); wb('stone', x - 0.01, x1 + 0.01, gy + 0.55, gy + 0.63, 4.27, 4.63);
-      for (let q = 0; q < 4; q++) { const xb = x + (q + 0.5) * (x1 - x) / 4; wb('steel', xb - 0.012, xb + 0.012, gy + 0.63, gy + 1.45, 4.44, 4.46); }
-      wb('steel', x, x1, gy + 1.38, gy + 1.43, 4.42, 4.48); wb('steel', x, x1, gy + 0.72, gy + 0.75, 4.43, 4.47);
+      // (no railing on top: Charlie, 19 Nov)
     }
   }
   // the garden side and the far end, as the courtyard CGI: tall windows on the ground floor, long low strips of glazing under
@@ -790,9 +840,10 @@ export function buildSeatonHouse(M, poly, groundAt, opts = {}) {
   const plain = (m, o = {}) => { const c = m.clone(); c.clippingPlanes = null; c.side = THREE.FrontSide; Object.assign(c, o); return c; };
   const brick = plain(M.cBrick || M.brick, { side: THREE.DoubleSide });
   const mats = {
-    wall: brick, brickF: brick, plinth: plain(M.brick2 || M.cBrickOld || brick), stone: plain(M.stone), slate: plain(M.slate || M.cSlate, { side: THREE.DoubleSide }),
+    wall: brick, brickF: brick, plinth: plain(M.brick2 || M.cBrickOld || brick), stone: plain(M.stone), white: new THREE.MeshStandardMaterial({ color: '#efebe2', roughness: 0.62 }), slate: plain(M.slate || M.cSlate, { side: THREE.DoubleSide }),
+    yellow: M.lineYellow || new THREE.MeshStandardMaterial({ color: '#e8c33a', roughness: 0.6 }),
     lead: new THREE.MeshStandardMaterial({ color: '#3c4043', roughness: 0.55, metalness: 0.35 }),
-    glass: new THREE.MeshStandardMaterial({ color: '#20272d', roughness: 0.12, metalness: 0.4, envMapIntensity: 1.4 }),
+    glass: M.glass,
     frame: new THREE.MeshStandardMaterial({ color: '#2a2827', roughness: 0.5, metalness: 0.3 }),
     door: new THREE.MeshStandardMaterial({ color: '#1f3a2e', roughness: 0.45, metalness: 0.1 }),
     steel: new THREE.MeshStandardMaterial({ color: '#1f2225', roughness: 0.42, metalness: 0.6 }),

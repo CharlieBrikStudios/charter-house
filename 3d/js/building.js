@@ -1,8 +1,9 @@
 // Charter House: procedural model built from the Ollier Smurthwaite plans and elevations.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1795002700';
-import { roomMaterial, CUT_PLANES } from './materials.js?v=1795002700';
+import { UNITS, FLOOR_H, CG_PAVE } from './data.js?v=1795002900';
+import { roomMaterial, CUT_PLANES } from './materials.js?v=1795002900';
+import { makeFlora } from './flora.js?v=1795002900';
 
 const FH = FLOOR_H;
 const T = 0.4;              // external wall thickness
@@ -674,7 +675,8 @@ function frontDoors(B) {
   const ball = (x, y, z, r, key) => { const g = new THREE.IcosahedronGeometry(r, 2); const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) { const k = 1 + (Math.sin(p.getX(i) * 41 + p.getY(i) * 37) * Math.sin(p.getZ(i) * 43)) * 0.08; p.setXYZ(i, p.getX(i) * k, p.getY(i) * k, p.getZ(i) * k); }
     g.computeVertexNormals(); g.translate(x, y, z); B.add(key, g); };
-  const blooms = (x, y, z, r, n) => { for (let i = 0; i < n; i++) { const a = R() * Math.PI * 2, rr = Math.sqrt(R()) * r; const g = new THREE.IcosahedronGeometry(0.02 + R() * 0.014, 1); g.scale(1, 0.55, 1); g.translate(x + Math.cos(a) * rr, y + R() * 0.06, z + Math.sin(a) * rr); B.add(FL[Math.floor(R() * FL.length)], g); } };
+  const FLR = makeFlora((k, g) => B.add(k, g), 4243);   // real flower heads in place of the coloured balls (Charlie, 19 Nov)
+  const blooms = (x, y, z, r, n) => { for (let i = 0; i < n; i++) { const a = R() * Math.PI * 2, rr = Math.sqrt(R()) * r, yy = y + R() * 0.06; FLR.head(x + Math.cos(a) * rr, yy, z + Math.sin(a) * rr, 0.024 + R() * 0.016, undefined, yy - 0.07); } };
   const cyl = (x, y, z, r0, r1, h, key) => B.add(key, new THREE.CylinderGeometry(r1, r0, h, 16).translate(x, y + h / 2, z));
   const topiary = (x, y, z) => { cyl(x, y, z, 0.15, 0.2, 0.46, 'potCharcoal'); ball(x, y + 0.46 + 0.24, z, 0.25, 'leafDark'); };
   const flowerPot = (x, y, z) => { cyl(x, y, z, 0.12, 0.17, 0.3, 'potClay'); ball(x, y + 0.31, z, 0.17, 'leafLight'); blooms(x, y + 0.36, z, 0.15, 14); };

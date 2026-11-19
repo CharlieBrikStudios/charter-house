@@ -9,32 +9,32 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002700';
-import { buildUBL } from './ublbuild.js?v=1795002700';
-import { buildUBLFitout } from './ublfit.js?v=1795002700';
-import { UBL_LEVELS } from './ubl_data.js?v=1795002700';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002700';
-import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002700';
-import { buildOSL } from './oslbuild.js?v=1795002700';
-import { buildOSLFitout } from './oslfit.js?v=1795002700';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002700';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002700';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002700';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002700';
-import { buildFar, hazeUniforms } from './far.js?v=1795002700';
-import { buildRailway } from './railway.js?v=1795002700';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002700';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002900';
+import { buildUBL } from './ublbuild.js?v=1795002900';
+import { buildUBLFitout } from './ublfit.js?v=1795002900';
+import { UBL_LEVELS } from './ubl_data.js?v=1795002900';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002900';
+import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002900';
+import { buildOSL } from './oslbuild.js?v=1795002900';
+import { buildOSLFitout } from './oslfit.js?v=1795002900';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002900';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002900';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002900';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002900';
+import { buildFar, hazeUniforms } from './far.js?v=1795002900';
+import { buildRailway } from './railway.js?v=1795002900';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002900';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1795002700';
-import { Interior } from './interior.js?v=1795002700';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002700';
-import { buildPHFitout } from './phfit.js?v=1795002700';
-import { PH_PLAN, phSide } from './ph_data.js?v=1795002700';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002700';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002700';
-import { createTour } from './tour.js?v=1795002700';
-import { buildCrowd } from './crowd.js?v=1795002700';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002700';
+import { Forest, windUniforms } from './trees.js?v=1795002900';
+import { Interior } from './interior.js?v=1795002900';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002900';
+import { buildPHFitout } from './phfit.js?v=1795002900';
+import { PH_PLAN, phSide } from './ph_data.js?v=1795002900';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002900';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002900';
+import { createTour } from './tour.js?v=1795002900';
+import { buildCrowd } from './crowd.js?v=1795002900';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002900';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -226,7 +226,7 @@ function updateReflections() {
   const hide = [CH.group, ...(plates ? [...plates.plates, ...plates.walls] : [])];
   const was = hide.map(o => o.visible); hide.forEach(o => o.visible = false);
   const tagWas = unitTagGroup ? unitTagGroup.visible : null; if (unitTagGroup) unitTagGroup.visible = false;
-  if (IS_OSL) cubeCam.position.copy(CH.local(50, 7.5, 6)); else cubeCam.position.set(5.5, 7.5, 4.5);
+  if (IS_OSL) cubeCam.position.copy(CH.local(50, 7.5, 6)); else if (IS_PH) cubeCam.position.copy(CH.local(14, 7.5, -9)); else cubeCam.position.set(5.5, 7.5, 4.5);   // the reflections are of the building's own street
   cubeCam.update(renderer, scene);
   hide.forEach((o, i) => o.visible = was[i]); if (unitTagGroup) unitTagGroup.visible = tagWas;
   if (reflRT) reflRT.dispose();
@@ -256,7 +256,7 @@ const CHURCHGATE = [[-145, -11.5], [-121, -8.9], [-104, -7.5], [-85, -6.8], [-62
 const roadZ = (x) => { for (let i = 0; i < CHURCHGATE.length - 1; i++) { const a = CHURCHGATE[i], b = CHURCHGATE[i + 1]; if (x >= a[0] && x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return null; };
 async function build() {
   if (IS_OSL) return buildOSLScene();
-  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002700')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
+  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002900')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
   setTerrain(W.terrain); setMid(F.mid); wallsData = wallsJson;
   W.bld.push(...(F.bld || []).filter(b => !TOUR_WORLD || ![561905, 561914, 561919].includes(b.id)));   // tour: the station is built by railway.js
   const exchangeBld = TOUR_WORLD ? W.bld.filter(b => EXCHANGE_IDS.includes(b.id)) : [];
@@ -295,7 +295,8 @@ async function build() {
       // playground walled off from the car park, the flats' gated car park across Fletcher Street, their garden planted up
       const SP = W.special.ph;
       if (SP) {
-        if (SP.parking) { const lots = buildParkingLots(M, SP.parking); scene.add(lots); if (lots.userData.cars.length) scene.add(buildCars(M, lots.userData.cars)); }
+        if (SP.parking) { const lots = buildParkingLots(M, SP.parking, { fill: 0.16 }); scene.add(lots);   // fewer cars: the car parks read less busy (Charlie, 19 Nov)
+          if (lots.userData.cars.length) scene.add(buildCars(M, lots.userData.cars)); }
         if (SP.walls_play) scene.add(buildBrickWalls(M, SP.walls_play, { h: 1.9 }));
         if (SP.walls_mini) scene.add(buildBrickWalls(M, SP.walls_mini, { h: 0.8 }));
         scene.add(buildPHExtras(M, groundAt, forest, SP, RJ0.roads));
@@ -360,7 +361,7 @@ async function build() {
   scene.add(contextGroup);
   if (contextGroup.userData.cars && contextGroup.userData.cars.length) scene.add(buildCars(M, contextGroup.userData.cars));   // parked in the Churchgate car park
   worldGroup = buildWorld(W, M, BASE, forest, {
-    tex, ...(TOUR_WORLD ? { splat: 'tour/world_tour_splat.png' } : {}), white: [539188, 539180, 509405], churchgate: CHURCHGATE, ...(IS_PH ? { slateNear: [-45, 215, 170] } : {}),
+    tex, ...(TOUR_WORLD ? { splat: 'tour/world_tour_splat.png' } : {}), white: IS_PH ? [539188, 539180] : [539188, 539180, 509405],   /* round the Print House the white office reads as a white bit sticking out: brick (Charlie, 19 Nov) */ churchgate: CHURCHGATE, ...(IS_PH ? { slateNear: [-45, 215, 170] } : {}),
     exclude: [[-50, -44, 0.5, -11], [-1, -38, 32, -11], [-4, -2, 46, 36], [-66, -2, -8, 40], [-110, -3, -74, 13]],
     keepOut: [PLACES.churchKeep, (x, z) => Math.hypot(x + 156, z - 105) < 24,   // Underbank Lofts' garden is planted by the building itself
       (x, z) => {   // no stray trees inside The Print House plot or Seaton House
@@ -426,6 +427,7 @@ async function build() {
     // over the roofs from behind Seaton House: St Joseph's across Fletcher Street and the 1840 viaduct on the skyline beyond
     VIEWS.church = { pos: CH.local(22, 26, 50), tgt: CH.local(42.2, 12, -25.2) };   // a shallow look west: the horizon (and the viaduct) stays in frame
     const c = CH.local(13, 0, 11); CLAMP.x0 = c.x - 50; CLAMP.x1 = c.x + 50; CLAMP.z0 = c.z - 50; CLAMP.z1 = c.z + 50; CLAMP.y1 = SY() + 30;
+    CLAMP.y0 = Math.min(c.y, groundAt(-28, 212), groundAt(-22, 196)) - 1.5;   // let the camera drop to street level in front of the offices (Charlie, 19 Nov)
   }
   if (IS_UBL) {
     // Underbank Lofts: the CGI's view from High Street over the residents' garden (extension left, the curved corner right),
@@ -451,6 +453,10 @@ async function buildOSLScene() {
   const site = (x, z) => { const s = x * 0.8387 - z * 0.5446, t = x * 0.5446 + z * 0.8387; return s > -3 && s < 66 && t > -1 && t < 18; };
   worldGroup = buildWorld(W, M, BASE, forest, { tex, splat: 'world_osl_splat.png', keepOut: [site], far: false });
   scene.add(worldGroup);
+  // fresh tarmac, granite kerbs and freshly laid pavements both sides on the streets round the site (Charlie, 19 Nov)
+  { const c = CH.local(32, 0, -8), T = (s, t) => [s * 0.8387 + t * 0.5446, -s * 0.5446 + t * 0.8387];
+    const sitePoly = [T(-3, -0.15), T(66, -0.15), T(66, 18), T(-3, 18)];
+    try { scene.add(buildPHStreets(M, W.roads, groundAt, { centre: [c.x, c.z], radius: 95, keepOut: [sitePoly], blds: W.bld, lampHeads, names: /^(Syddall Street|Oldham Street|Henry Street|Church Street|Edna Street|Holme Street)$/, pave: true, yellows: false })); } catch (e) { console.warn('osl streets', e); } }
   // the residents' garden birches
   for (const [s, t, h] of [[49.8, 12.4, 6.5], [51.4, 14.9, 6.0]]) { const p = CH.local(s, 0, -t); forest.add(p.x, p.z, { h, r: 1.9, kind: 'birch', seed: 8800 + s, y: CH.y0 + 0.05 }); }
   treesGroup = forest.build(Q !== 'low');
@@ -778,7 +784,9 @@ function toFloor(f, fly = true) {
 }
 // Charter House plots with their own photoreal rooms (2 Nov, Charlie): the photoreal kitchen/living replaces the real-time walk-around
 function ownPano(plot) {
-  if (IS_PH || IS_UBL || IS_OSL || NO_INSIDE) return -1;
+  // any home with its own photoreal rooms opens on them: the 360 badge on a floor view now does what it shows (Charlie, 19 Nov:
+  // on the Print House split view the 360 icon only flew to the flat)
+  if (NO_INSIDE && !IS_PH) return -1;
   const i = SPOTS.findIndex(x => x.pano && x.plot === plot && /living|kitchen/i.test(x.room || x.name));
   return i >= 0 ? i : SPOTS.findIndex(x => x.pano && x.plot === plot);
 }
@@ -2203,7 +2211,7 @@ function buildSpots() {
   // the street spots with a photoreal 360 get a picture (assets/spots/<id>.jpg, from spot_thumbs.py) in the strip on the landing view
   // and on their chip in the walk-around
   const THUMBS = ['corner', 'park', 'arch', 'courtyard', 'walkway', 'harvey', 'brewery', 'church', 'market', 'junction', 'stjoseph'];   // (smg: its 360 needs re-rendering first)
-  const thumb = (sp) => sp.pano && THUMBS.includes(sp.id) ? `assets/spots/${sp.id}.jpg` : null;
+  const thumb = (sp) => sp.pano && THUMBS.includes(sp.id) ? `assets/spots/${sp.id}.jpg?v=1795002900` : null;
   $('#t-spots').innerHTML = SPOTS.map((sp, i) => `<button data-spot="${i}" aria-pressed="false">${thumb(sp) ? `<img src="${thumb(sp)}" alt="" loading="lazy">` : '<i></i>'}${sp.name}</button>`).join('');
   const looks = SPOTS.map((sp, i) => [sp, i]).filter(([sp]) => thumb(sp));
   $('#lk-row').innerHTML = looks.map(([sp, i]) => `<button data-spot="${i}" title="${sp.note.replace(/"/g, '&quot;')}"><img src="${thumb(sp)}" alt="" loading="lazy"><span>${sp.name}</span></button>`).join('');
@@ -2588,7 +2596,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1795002700').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1795002900').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
@@ -2664,7 +2672,7 @@ function waitForTextures() {
 window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, T, panoOn: () => panoOn, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT, flyTo };
 // Charter House and The Print House (18 Nov, Charlie): the right-hand panel no longer sits open on the building and floor views; it opens
 // only for a flat (its plan, price and the View from the window / Step inside buttons). The panel toggle tab goes with it.
-if (EDITION === 'ch' || EDITION === 'ph') {
+if (EDITION === 'ch' || EDITION === 'ph' || IS_OSL) {   // Oldham Street Lofts too (Charlie, 19 Nov: the same as the Print House and Charter House)
   const P = $('#panel');
   let was = '';
   const keep = () => {
@@ -2685,4 +2693,4 @@ if (EDITION === 'ch' || EDITION === 'ph') {
 }
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.
-if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002700').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002900').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));

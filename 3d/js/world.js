@@ -3,8 +3,8 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1795002700';
-import { buildShopfronts } from './shopfronts.js?v=1795002700';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795002900';
+import { buildShopfronts } from './shopfronts.js?v=1795002900';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
@@ -340,16 +340,19 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
   const rect = Math.abs(polyArea(p)) / (4 * ob.h0 * ob.h1);
   // two pitched roofs side by side, ridges along the long side (a single-storey works or warehouse, Charlie 18 Nov)
   if (b.r === 'twin' && rect > 0.6) {
-    const [ux, uz] = ob.u, vx = -uz, vz = ux, o = 0.25, hw = ob.h1 / 2, rise = hw * 0.62;
+    // the works by St Joseph's has its two roofs the other way, ridges across the building (Charlie, 19 Nov: "twist them ninety
+    // degrees")
+    const across = b.id === 129765, oh0 = across ? ob.h1 : ob.h0, oh1 = across ? ob.h0 : ob.h1;
+    const [ux, uz] = across ? [-ob.u[1], ob.u[0]] : ob.u, vx = -uz, vz = ux, o = 0.25, hw = oh1 / 2, rise = Math.min(3.4, hw * 0.62);
     const P = (s, t, y) => [ob.c[0] + ux * s + vx * t, y, ob.c[1] + uz * s + vz * t];
     const up = (t0, t1, t2) => { const ax = t1[0] - t0[0], az = t1[2] - t0[2], bx = t2[0] - t0[0], bz = t2[2] - t0[2]; if (az * bx - ax * bz < 0) roofsSlate.push(t0, t2, t1); else roofsSlate.push(t0, t1, t2); };
     const out = (t0, t1, t2) => { const ax = t1[0] - t0[0], ay = t1[1] - t0[1], az = t1[2] - t0[2], bx = t2[0] - t0[0], by = t2[1] - t0[1], bz = t2[2] - t0[2];
       const nx = ay * bz - az * by, nz = ax * by - ay * bx; if (nx * (t0[0] - ob.c[0]) + nz * (t0[2] - ob.c[1]) < 0) Wl.tri(t0, t2, t1, gC, H, sd, tint); else Wl.tri(t0, t1, t2, gC, H, sd, tint); };
     for (const sg of [-1, 1]) {
-      const tc = sg * hw, A = ob.h0 + o;
+      const tc = sg * hw, A = oh0 + o;
       const e1 = P(-A, tc - hw - (sg < 0 ? o : 0), yTop), e2 = P(A, tc - hw - (sg < 0 ? o : 0), yTop), r1 = P(-A, tc, yTop + rise), r2 = P(A, tc, yTop + rise), e3 = P(A, tc + hw + (sg > 0 ? o : 0), yTop), e4 = P(-A, tc + hw + (sg > 0 ? o : 0), yTop);
       up(e1, r1, r2); up(e1, r2, e2); up(e3, r2, r1); up(e3, r1, e4);
-      for (const s0 of [-ob.h0, ob.h0]) out(P(s0, tc - hw, yTop), P(s0, tc, yTop + rise), P(s0, tc + hw, yTop));   // the gable ends
+      for (const s0 of [-oh0, oh0]) out(P(s0, tc - hw, yTop), P(s0, tc, yTop + rise), P(s0, tc + hw, yTop));   // the gable ends
     }
   } else if (b.r === 'gable' && rect > 0.85 && ob.h1 < 9) {
     const [ux, uz] = ob.u, vx = -uz, vz = ux, o = 0.28;
@@ -478,7 +481,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795002500'), { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795002900'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {
