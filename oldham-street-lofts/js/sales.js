@@ -292,7 +292,7 @@ export function ublPitch(u) {
   if (u.plot === 1) {
     p.head = 'The largest one-bed at Underbank Lofts, and one of only two homes left.';
     p.points = ['484 sq ft with 2.5 m ceilings in the converted 1872 Institute building.',
-      'Two big original sash windows onto the sunken garden light well: light and privacy below the residents’ garden.',
+      'Two big original sash windows onto the bright planted garden courtyard: light and privacy below the residents’ garden.',
       'Open-plan kitchen and living, a double bedroom, shower room, utility and store.',
       '£195,000 · forecast £1,250 pcm, about 7.7% gross.'];
   } else if (u.plot === 13) {

@@ -8,9 +8,9 @@
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795002900';
-import { roomBox } from './building.js?v=1795002900';
-import { roomMaterial, tex } from './materials.js?v=1795002900';
+import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795111407';
+import { roomBox } from './building.js?v=1795111407';
+import { roomMaterial, tex } from './materials.js?v=1795111407';
 
 const FH = PH_FH, NF = 5;
 const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
@@ -382,8 +382,9 @@ export function buildPrintHouse(M, opts = {}) {
       const a = line[k], b = line[k + 1], e = edgeOf([a, b, 0]); if (e.len < 0.02) continue;
       // Charlie, 19 Nov (the Fletcher Street CGI): a low light stone wall with a clipped hedge straight on top of it, no railing
       ebox(e, -0.03, e.len + 0.03, -0.05, 0.42, -0.02, 0.07, 'coping');
-      if (!gapAt(k)) ebox(e, -0.01, e.len + 0.01, 0.06, 0.78, 0.07, 0.86, 'hedge');
-      if (forest && !opts.context && !gapAt(k)) for (let x = 0.45; x < e.len; x += 0.9) { const q = [e.p0[0] + e.d[0] * x + e.n[0] * 0.83, e.p0[1] + e.d[1] * x + e.n[1] * 0.83], [wx, wz] = B.toWorld(...q); forest.add(wx, wz, { h: 0.7, r: 0.5, kind: 'hedge', seed: 7000 + k * 31 + Math.round(x * 10), y: y0 + 0.2 }); }
+      // Charlie, 19 Nov (call 4): the hedge lower and thinner, so a strip of grass shows between it and the ground floor windows
+      if (!gapAt(k)) ebox(e, -0.01, e.len + 0.01, 0.06, 0.46, 0.07, 0.6, 'hedge');
+      if (forest && !opts.context && !gapAt(k)) for (let x = 0.4; x < e.len; x += 0.7) { const q = [e.p0[0] + e.d[0] * x + e.n[0] * 0.3, e.p0[1] + e.d[1] * x + e.n[1] * 0.3], [wx, wz] = B.toWorld(...q); forest.add(wx, wz, { h: 0.42, r: 0.3, kind: 'hedge', seed: 7000 + k * 31 + Math.round(x * 10), y: y0 + 0.2 }); }
     }
     // the residents' entrance itself: a flagged path from the opening to a glazed door with a canopy in the core's end wall, and
     // steps down to the pavement where the plot stands above it
@@ -765,21 +766,17 @@ export function buildSeatonHouse(M, poly, groundAt, opts = {}) {
       const [px, pz] = E.at(dc, 0.04); m.position.set(px, y(5.15), pz); m.rotation.y = Math.atan2(E.o[0], E.o[1]); m.name = 'seatonSignV'; group.add(m);
     }
     // the forecourt: sandstone flags out to the pavement, two planters
-    const fc = [E.at(-0.6, 0.02), E.at(E.len + 0.4, 0.02), E.at(E.len + 0.4, 4.4), E.at(-0.6, 4.4)];
-    keep.push([E.at(-0.6, 0), E.at(E.len + 0.4, 0), E.at(E.len + 0.4, 4.75), E.at(-0.6, 4.75)]);
+    // flags out to the kerb of Fletcher Street, 1.7 m (Charlie, 19 Nov: the forecourt wall stood in the road)
+    const FD = 1.7;
+    const fc = [E.at(-0.6, 0.02), E.at(E.len + 0.4, 0.02), E.at(E.len + 0.4, FD), E.at(-0.6, FD)];
+    keep.push([E.at(-0.6, 0), E.at(E.len + 0.4, 0), E.at(E.len + 0.4, FD + 0.2), E.at(-0.6, FD + 0.2)]);
     const fg = new THREE.PlaneGeometry(1, 1, 10, 6), fp = fg.attributes.position;
     for (let k = 0; k < fp.count; k++) { const a = fp.getX(k) + 0.5, b = 0.5 - fp.getY(k); const px = fc[0][0] + (fc[1][0] - fc[0][0]) * a + (fc[3][0] - fc[0][0]) * b, pz = fc[0][1] + (fc[1][1] - fc[0][1]) * a + (fc[3][1] - fc[0][1]) * b; fp.setXYZ(k, px, Math.max(groundAt(px, pz), E.g0 - 0.3) + 0.06, pz); }
     { const uv = fg.attributes.uv; for (let k = 0; k < fp.count; k++) uv.setXY(k, fp.getX(k) / 1.6, fp.getZ(k) / 1.6); }
     fg.computeVertexNormals(); { const nn = fg.attributes.normal; if (nn.getY(0) < 0) { const idx = fg.index; for (let k = 0; k < idx.count; k += 3) { const t = idx.getX(k + 1); idx.setX(k + 1, idx.getX(k + 2)); idx.setX(k + 2, t); } fg.computeVertexNormals(); } }
     add('flags', fg);
     for (const sx of [dc - 2.05, dc + 2.05]) { wb('pot', sx - 0.45, sx + 0.45, -0.3, 0.6, 0.6, 1.5); if (opts.forest) { const [px, pz] = E.at(sx, 1.05); opts.forest.add(px, pz, { h: 1.6, r: 0.5, kind: 'shrub', seed: 6100 + Math.round(sx * 10), y: y(0.6) }); } }
-    // a low brick wall with stone coping and railings along the pavement edge, open in front of the door (D&A 3D views)
-    for (let x = -0.6; x < E.len + 0.4 - 0.01; x += 0.5) {
-      const x1 = Math.min(E.len + 0.4, x + 0.5), xm = (x + x1) / 2; if (Math.abs(xm - dc) < 1.7) continue;
-      const [gx, gz] = E.at(xm, 4.45), gy = Math.max(groundAt(gx, gz), E.g0 - 0.3) - E.g0;
-      wb('wall', x, x1, gy - 0.3, gy + 0.55, 4.3, 4.6); wb('stone', x - 0.01, x1 + 0.01, gy + 0.55, gy + 0.63, 4.27, 4.63);
-      // (no railing on top: Charlie, 19 Nov)
-    }
+    // (no low wall along the pavement edge: there is no room before the road, and it stood in Fletcher Street)
   }
   // the garden side and the far end, as the courtyard CGI: tall windows on the ground floor, long low strips of glazing under
   // the eaves on the first floor, a stone band below the parapet

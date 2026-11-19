@@ -203,7 +203,7 @@ function loadTex(url) {
 }
 const big = renderer.capabilities.maxTextureSize >= 4096 && !(navigator.connection && navigator.connection.saveData);   // 4K everywhere it fits
 const huge = big && renderer.capabilities.maxTextureSize >= 8192 && innerWidth * Math.min(devicePixelRatio, 2) >= 1600;   // 8K where a stop has one and the screen can use it
-const PV = '?v=1795002900';   // bump when a 360 is re-rendered (19 Nov: Market Place, the hall at street level)
+const PV = '?v=1795111407';   // bump when a 360 is re-rendered (19 Nov: Market Place, the hall at street level)
 const panoUrl = (stop) => stop.pano + (stop.hd && huge ? '_8k.jpg' : big ? '.jpg' : '_2k.jpg') + PV;
 
 // ------------------------------------------------------------------ view state

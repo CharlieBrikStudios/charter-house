@@ -117,7 +117,7 @@ export function phPitch(u) {
     ];
   }
   if (top && u.type !== '2A') p.points.push('Top floor in the slate mansard: the only floor with 2.65 m ceilings, and nobody above you.');
-  if (lg) p.points.push('Lower ground floor, at garden level: the most affordable way in.');
+  if (lg) p.points.push('Ground floor, at garden level: the most affordable way in.');
   p.points.push('Six and a half to eight minutes’ walk straight down to the station, and 30 seconds to the Underbanks.');
   return p;
 }
@@ -238,7 +238,7 @@ export function rentFor(u, ph) {
   if (ph) {
     r = lo;
     if (u.floor === 4) { r += 50; why.push('top floor'); }
-    if (u.floor === 0) { r -= 50; why.push('lower ground'); }
+    if (u.floor === 0) { r -= 50; why.push('ground floor'); }
     if (u.plot === 37) { r += 25; why.push('viaduct views'); }
     if (u.side) { r += 25; why.push('private side-block landing'); }
     if (u.type === '1C') { r += 25; why.push('corner, two aspects'); }
@@ -292,7 +292,7 @@ export function ublPitch(u) {
   if (u.plot === 1) {
     p.head = 'The largest one-bed at Underbank Lofts, and one of only two homes left.';
     p.points = ['484 sq ft with 2.5 m ceilings in the converted 1872 Institute building.',
-      'Two big original sash windows onto the sunken garden light well: light and privacy below the residents’ garden.',
+      'Two big original sash windows onto the bright planted garden courtyard: light and privacy below the residents’ garden.',
       'Open-plan kitchen and living, a double bedroom, shower room, utility and store.',
       '£195,000 · forecast £1,250 pcm, about 7.7% gross.'];
   } else if (u.plot === 13) {

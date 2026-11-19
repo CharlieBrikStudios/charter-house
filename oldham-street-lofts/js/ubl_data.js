@@ -29,7 +29,7 @@ export const UBL_SITE = {
   aod0: 52.0,
 };
 export const UBL_FLOORS = [
-  { id: 0, name: 'Lower ground floor', short: 'LG', level: 0, note: 'Opens onto the sunken garden light well' },
+  { id: 0, name: 'Lower ground floor', short: 'LG', level: 0, note: 'Opens onto the bright planted garden courtyard' },
   { id: 1, name: 'Ground floor', short: 'G', level: 1 },
   { id: 2, name: 'First floor', short: '1', level: 2 },
   { id: 3, name: 'Second floor', short: '2', level: 3 },
@@ -68,10 +68,10 @@ const units = SCHED.map(([plot, floor, slot, beds, sqft, price, status]) => {
   const u = { plot, floor, slot, beds, sqft, price, status, type, ext, fp: (ext ? EXT : OLD)[slot].slice() };
   u.apt = `${ext ? EXT_NAMES[floor] : UBL_FLOORS[floor].short}.${String(plot).padStart(2, '0')}`;
   u.level = ext ? UBL_EXT_LEVELS[floor] : UBL_LEVELS[floor];
-  u.note = plot === 1 ? 'The largest one bedroom in the building: two big original sash windows onto the garden light well'
+  u.note = plot === 1 ? 'The largest one bedroom in the building: two big original sash windows onto the bright garden courtyard'
     : plot === 13 ? 'Top-floor corner in the roof: vaulted ceilings, four conservation rooflights, 660 sq ft including the eaves'
     : ext ? (slot === 'n' ? 'New-build extension, on High Street' : 'New-build extension, over the courtyard') : slot === 'w' ? 'Corner of St Petersgate and High Street' : 'Converted 1872 building';
-  u.view = plot === 1 ? 'Looks north-east into the planted light well, below the residents’ garden'
+  u.view = plot === 1 ? 'Looks north-east into the planted garden courtyard, below the residents’ garden'
     : plot === 13 ? 'Dual aspect: rooflights over St Petersgate and over the garden towards High Street'
     : ext ? 'High Street and the residents’ garden' : 'St Petersgate and the garden';
   if (plot === 1) u.poly = PLOT1_POLY;
@@ -80,7 +80,7 @@ const units = SCHED.map(([plot, floor, slot, beds, sqft, price, status]) => {
 });
 export const UBL_UNITS = units;
 export const UBL_PITCH = {
-  LG1: 'The largest one bedroom at Underbank Lofts, 484 sq ft: open-plan kitchen and living behind a tall original sash onto the sunken garden light well, a double bedroom with its own big sash, a shower room, utility and store. 2.5 m ceilings in the converted 1872 building.',
+  LG1: 'The largest one bedroom at Underbank Lofts, 484 sq ft: open-plan kitchen and living behind a tall original sash onto the bright planted garden courtyard, a double bedroom with its own big sash, a shower room, utility and store. 2.5 m ceilings in the converted 1872 building.',
   R1: 'Under the roof of the 1872 building on the corner of St Petersgate: vaulted ceilings, four Velux conservation rooflights, an open-plan kitchen and living room in the corner, a double bedroom and an eaves room, two shower rooms. 398 sq ft at full height, 660 sq ft in all.',
   C1: 'A one-bedroom apartment in the converted Institute building: tall sash windows, panelled doors, open-plan living.',
   C2: 'A two-bedroom apartment on the St Petersgate corner of the converted building.',

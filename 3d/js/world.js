@@ -3,8 +3,8 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1795002900';
-import { buildShopfronts } from './shopfronts.js?v=1795002900';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795111407';
+import { buildShopfronts } from './shopfronts.js?v=1795111407';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
@@ -356,7 +356,9 @@ function addBuilding(Wl, roofsFlat, roofsSlate, chim, b, i, roofsLead = roofsFla
     }
   } else if (b.r === 'gable' && rect > 0.85 && ob.h1 < 9) {
     const [ux, uz] = ob.u, vx = -uz, vz = ux, o = 0.28;
-    const rise = ob.h1 * 0.78;
+    // deep blocks (OSM often draws a back-to-back row as one footprint) kept to a normal roof height: at 0.78 of a 9 m half-depth
+    // the roof rose 7 m and read as a huge slab with the walls missing (Charlie, 19 Nov, Oldham Street)
+    const rise = Math.min(ob.h1 * 0.78, 3.6);
     const P = (s, t, y) => [ob.c[0] + ux * s + vx * t, y, ob.c[1] + uz * s + vz * t];
     const A = ob.h0 + o, Bh = ob.h1 + o;
     const e1 = P(-A, -Bh, yTop - o * 0.78), e2 = P(A, -Bh, yTop - o * 0.78), r1 = P(-A, 0, yTop + rise), r2 = P(A, 0, yTop + rise), e3 = P(A, Bh, yTop - o * 0.78), e4 = P(-A, Bh, yTop - o * 0.78);
@@ -481,7 +483,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795002900'), { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795111407'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {

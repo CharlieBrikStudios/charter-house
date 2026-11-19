@@ -9,32 +9,32 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795002900';
-import { buildUBL } from './ublbuild.js?v=1795002900';
-import { buildUBLFitout } from './ublfit.js?v=1795002900';
-import { UBL_LEVELS } from './ubl_data.js?v=1795002900';
-import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795002900';
-import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795002900';
-import { buildOSL } from './oslbuild.js?v=1795002900';
-import { buildOSLFitout } from './oslfit.js?v=1795002900';
-import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795002900';
-import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795002900';
-import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795002900';
-import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795002900';
-import { buildFar, hazeUniforms } from './far.js?v=1795002900';
-import { buildRailway } from './railway.js?v=1795002900';
-import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795002900';
+import { UNITS, FLOORS, STATUS, SITE, INTERIORS, SUN, fmtGBP, sqm, FLOOR_H, IS_PH, START_AREA, IS_OSL, IS_UBL, PLANF } from './site.js?v=1795111407';
+import { buildUBL } from './ublbuild.js?v=1795111407';
+import { buildUBLFitout } from './ublfit.js?v=1795111407';
+import { UBL_LEVELS } from './ubl_data.js?v=1795111407';
+import { buildPrintHouse, buildSeatonSign, buildSeatonHouse } from './printhouse.js?v=1795111407';
+import { buildPHStreets, buildPHExtras } from './phstreets.js?v=1795111407';
+import { buildOSL } from './oslbuild.js?v=1795111407';
+import { buildOSLFitout } from './oslfit.js?v=1795111407';
+import { makeMaterials, CUT, setAniso, tex } from './materials.js?v=1795111407';
+import { buildCharterHouse, buildFloorPlates } from './building.js?v=1795111407';
+import { buildContext, buildCourtyard, groundY, buildBreweryFront, buildCars, buildBrickWalls, buildParkingLots } from './context.js?v=1795111407';
+import { setTerrain, setMid, buildWorld, obb, groundAt, townUniforms, setGroundHole, insetPoly } from './world.js?v=1795111407';
+import { buildFar, hazeUniforms } from './far.js?v=1795111407';
+import { buildRailway } from './railway.js?v=1795111407';
+import { buildExchange, EXCHANGE_IDS } from './exchange.js?v=1795111407';
 const TOUR_WORLD = new URLSearchParams(location.search).get('world') === 'tour';   // the wide world for the Stockport tour renders
-import { Forest, windUniforms } from './trees.js?v=1795002900';
-import { Interior } from './interior.js?v=1795002900';
-import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795002900';
-import { buildPHFitout } from './phfit.js?v=1795002900';
-import { PH_PLAN, phSide } from './ph_data.js?v=1795002900';
-import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795002900';
-import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795002900';
-import { createTour } from './tour.js?v=1795002900';
-import { buildCrowd } from './crowd.js?v=1795002900';
-import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795002900';
+import { Forest, windUniforms } from './trees.js?v=1795111407';
+import { Interior } from './interior.js?v=1795111407';
+import { buildFurniture, LAYOUTS, furnitureMaterials } from './furniture.js?v=1795111407';
+import { buildPHFitout } from './phfit.js?v=1795111407';
+import { PH_PLAN, phSide } from './ph_data.js?v=1795111407';
+import { walkMaterials, buildApartment, Walker } from './walk.js?v=1795111407';
+import { landmarkMaterials, buildStMarys, buildMarketHallOSM, buildStJoseph } from './landmarks.js?v=1795111407';
+import { createTour } from './tour.js?v=1795111407';
+import { buildCrowd } from './crowd.js?v=1795111407';
+import { pitch as chPitch, phPitch, PICKS as CH_PICKS, PH_PICKS, PROOF, RESERVE, CHARLIE, AREA_CARDS as ALL_CARDS, REGEN, AREA_HEADLINE, rentFor, oslPitch, OSL_PICKS, OSL_PROOF, ublPitch, UBL_PICKS, UBL_PROOF } from './sales.js?v=1795111407';
 const pitch = IS_UBL ? ublPitch : IS_OSL ? oslPitch : IS_PH ? phPitch : chPitch, PICKS = IS_UBL ? UBL_PICKS : IS_OSL ? OSL_PICKS : IS_PH ? PH_PICKS : CH_PICKS;
 const RK = IS_UBL ? 'ubl' : IS_OSL ? 'osl' : IS_PH;   // which site's rents
 const PROOFS = IS_UBL ? UBL_PROOF : IS_OSL ? OSL_PROOF : PROOF;
@@ -256,7 +256,7 @@ const CHURCHGATE = [[-145, -11.5], [-121, -8.9], [-104, -7.5], [-85, -6.8], [-62
 const roadZ = (x) => { for (let i = 0; i < CHURCHGATE.length - 1; i++) { const a = CHURCHGATE[i], b = CHURCHGATE[i + 1]; if (x >= a[0] && x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return null; };
 async function build() {
   if (IS_OSL) return buildOSLScene();
-  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795002900')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
+  const [wallsJson, W, F] = await Promise.all([fetch(BASE + 'plans/walls.json').then(r => r.json()), fetch(BASE + (TOUR_WORLD ? 'tour/world_tour.json' : 'world.json?v=1795111407')).then(r => r.json()), fetch(BASE + 'far.json').then(r => r.json())]);
   setTerrain(W.terrain); setMid(F.mid); wallsData = wallsJson;
   W.bld.push(...(F.bld || []).filter(b => !TOUR_WORLD || ![561905, 561914, 561919].includes(b.id)));   // tour: the station is built by railway.js
   const exchangeBld = TOUR_WORLD ? W.bld.filter(b => EXCHANGE_IDS.includes(b.id)) : [];
@@ -536,14 +536,25 @@ const rt = new THREE.WebGLRenderTarget(innerWidth * DPR, innerHeight * DPR, { ty
 const composer = new EffectComposer(renderer, rt);
 composer.setPixelRatio(DPR); composer.setSize(innerWidth, innerHeight);
 composer.addPass(new RenderPass(scene, camera));
-let gtao = null;
-if (Q === 'high') {
+let gtao = null, AO_FIX = true;
+if (Q === 'high' || /[?&]q=high\b/.test(location.search)) {
   gtao = new GTAOPass(scene, camera, innerWidth, innerHeight);
   gtao.output = GTAOPass.OUTPUT.Default;
   gtao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.6, thickness: 1.2, scale: 1.0, samples: 12 });
   gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 });
   gtao.blendIntensity = 0.85;
   gtao.enabled = false;
+  // the contact-shadow pass draws its own depth and normals of the scene: leave out everything see-through (the unit tints,
+  // glows and veils over a cut-away floor, glass). With them in, it shaded the floor under the tints as if covered and left
+  // only the triangle edges red (Charlie's call, 19 Nov: red crosses over the sold flats, a white glow and lag)
+  gtao.overrideVisibility = function () {
+    const cache = this._visibilityCache;
+    this.scene.traverse((o) => {
+      cache.set(o, o.visible);
+      const m = o.material, see = m && (Array.isArray(m) ? m.some(x => x.transparent || x.depthWrite === false) : (m.transparent || m.depthWrite === false || m.blending !== THREE.NormalBlending));
+      if (o.isPoints || o.isLine || o.isSprite || (AO_FIX && see)) o.visible = false;
+    });
+  };
   composer.addPass(gtao);
 }
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.28, 0.55, 0.92);
@@ -735,7 +746,8 @@ function unitView(u, alt = viewAlt) {
   const span = Math.max(x1 - x0, z1 - z0), dir = new THREE.Vector3(out.x - c.x, 0, out.z - c.z).normalize();
   if (alt === 1) dir.negate();
   const pos = c.clone().addScaledVector(dir, span * 0.56); pos.y = c.y + span * 0.95;
-  if (pos.distanceTo(c) < 12) pos.sub(c).setLength(12).add(c);   // the whole flat in view, with a little of its neighbours
+  if (pos.distanceTo(c) < 20) pos.sub(c).setLength(20).add(c);   // the whole flat in view, with its neighbours: closer than this the cut walls
+  // fill the screen and the view reads as a white glare (Charlie's call, 19 Nov: Plot 16)
   return { pos, tgt: c };
 }
 function primaryWindow(u) {
@@ -974,7 +986,7 @@ function viewDirs(u) {
   for (const w of ws) { const k = Math.round(Math.atan2(w.normal.x, w.normal.z) / (Math.PI / 4)); if (!seen.has(k)) seen.set(k, []); seen.get(k).push(w); }
   // The Print House: read the window's face off the plan (n is the plan normal: -v the St Joseph's side, -u Fletcher Street)
   const hint = IS_OSL ? (n, w) => { const [nu, nv] = w.n; return nv > 0.5 ? 'across Syddall Street to the terraces opposite' : nu > 0.5 ? 'over Oldham Street towards Market Street and the Town Hall' : nu < -0.5 ? 'down into the residents’ garden' : 'over the courtyard and the gardens'; }
-    : IS_UBL ? (n, w) => { const [pu, pv] = w.n; return pv > 0.5 ? (u.floor === 0 ? 'into the planted light well, with the garden above' : 'over the residents\u2019 garden to High Street') : pu < -0.5 || (pv > 0.2 && pu < -0.2) ? 'across St Petersgate to the Egerton Arms and the Underbanks' : pu > 0.5 ? 'over the courtyard beside the extension' : 'over the rooftops of the town'; }
+    : IS_UBL ? (n, w) => { const [pu, pv] = w.n; return pv > 0.5 ? (u.floor === 0 ? 'into the bright planted garden courtyard, with the garden above' : 'over the residents\u2019 garden to High Street') : pu < -0.5 || (pv > 0.2 && pu < -0.2) ? 'across St Petersgate to the Egerton Arms and the Underbanks' : pu > 0.5 ? 'over the courtyard beside the extension' : 'over the rooftops of the town'; }
     : IS_PH ? (n, w) => { const [pu, pv] = w.n; return pv < -0.5 ? 'to St Joseph\u2019s Church and the primary school' : pu < -0.5 ? 'along Fletcher Street, over the hedge and cobbled wall' : pu > 0.5 && w.id && w.id[0] === 'S' ? 'out of the quiet end of the block, towards St Joseph\u2019s' : 'over the residents\u2019 garden'; }
     : (n) => n.x < -0.7 ? 'across Harvey Street to St Mary\u2019s Gate, with St Mary\u2019s tower above the rooftops' : n.z < -0.7 ? 'across Churchgate to the play park and the big trees' : 'over the residents\u2019 courtyard garden';
   const out = [...seen.values()].map(list => { const w = list[Math.floor(list.length / 2)]; return { w, label: compassWord(w.normal).replace(/^./, c => c.toUpperCase()), hint: hint(w.normal, w) }; });
@@ -998,6 +1010,9 @@ function seeView(plot, idx = 0, wo = null) {
   const w = wo || (dirs[idx] || {}).w || primaryWindow(u); if (!w) return;
   $('#vw-dirs').innerHTML = dirs.length > 1 ? dirs.map((d, i) => `<button class="chip" data-i="${i}" aria-pressed="${i === idx}">${d.label}</button>`).join('') : '';
   $('#vw-dirs').onclick = (e) => { const b = e.target.closest('[data-i]'); if (b) seeView(plot, +b.dataset.i); };
+  // remember where the camera was, so 'Back to the apartment' returns there and not to a close-up of the cut floor
+  // (Charlie, 19 Nov: back from Plot 16's window it landed right down in the flat, washed out and slow)
+  if (S.mode !== 'view') viewPrev = flight && flight.pos ? { pos: flight.pos.clone(), tgt: flight.target.clone() } : { pos: camera.position.clone(), tgt: controls.target.clone() };
   S.plot = plot; setCut(999); CUT.constant = 999; showPlates(null); clearUnitTags();
   if (clayOn) { clayForView = true; setClay(false); }   // the view from a window always shows the real street
   S.mode = 'view'; controls.enabled = false;
@@ -1023,6 +1038,7 @@ function seeView(plot, idx = 0, wo = null) {
   $('#panel').classList.add('hide'); $('#ui').style.visibility = 'hidden';
   S.view = true; setHash('view-' + plot);
 }
+let viewPrev = null;
 function closeView(quiet = false) {
   if (quiet === 'leave') VIEW_RET.spot = -1;
   if (quiet !== true && VIEW_RET.spot >= 0) return backTo360();   // opened from a photoreal 360: every way out goes back to it
@@ -1030,6 +1046,7 @@ function closeView(quiet = false) {
   $('#ui').style.visibility = ''; $('#labels').style.visibility = ''; $('#panel').classList.remove('hide');
   CH.meshes.glass.visible = true; if (CH.meshes.slate) CH.meshes.slate.visible = true;
   CH.unitRooms.forEach(r => r.visible = true);
+  { const cur = CH.group.getObjectByName('curtains'); if (cur) cur.visible = true; }
   windUniforms.uNear.value = 9;
   camera.fov = baseFov(); camera.near = 0.25; camera.updateProjectionMatrix();
   renderer.toneMappingExposure = PRESETS[tod].exp;
@@ -1037,7 +1054,8 @@ function closeView(quiet = false) {
   if (clayForView) { clayForView = false; setClay(true); }
   if (quiet === true) return;
   toUnit(u.plot, false);
-  const v = unitView(u); camera.position.copy(v.pos); controls.target.copy(v.tgt); controls.enabled = true;
+  const v = unitView(u), back = viewPrev && viewPrev.pos.distanceTo(viewPrev.tgt) > 12 ? viewPrev : v; viewPrev = null;
+  camera.position.copy(back.pos); controls.target.copy(back.tgt); controls.enabled = true;
 }
 function compassWord(n) {
   // model -> geographic bearing (true north from the OpenStreetMap fit: north = (-0.576, -0.818))
@@ -1438,7 +1456,7 @@ const LANDMARKS = IS_OSL ? [
   ['Market Street', [106, 0.8, -52]], ["Residents' garden", [48, 2.5, -14]], ['Hyde Town Hall', [129, 14, -76]], ['Hyde Central station · 9 min walk', [-8, 3, -330]],
 ] : IS_UBL ? [
   ['St Petersgate', [-183, 1, 114]], ['High Street', [-160, 1, 93.5]], ['Residents\u2019 garden', [-154.8, 2.2, 98.6]], ['Egerton Arms', [-187, 7, 99]],
-  ['Sunken light well', [-160, 0.3, 101.4]],
+  ['Garden courtyard', [-160, 0.3, 101.4]],
 ] : IS_PH ? [
   ['Wellington Street', [-18, 1, 214]], ['Fletcher Street', [-45.5, 1, 185.7]], ['Seaton House · Brik Studios HQ', [-32, 12, 212]], ["Residents' garden", [-49, 3, 210]],
   ["St Joseph's Primary School", [-74, 6, 170]], ["St Joseph's Church", [-128, 16, 207]],
@@ -1737,7 +1755,7 @@ const GALLERY = IS_OSL ? [
   ['osl_hero', 'The corner of Syddall Street and Oldham Street'], ['osl_oldham', 'Oldham Street, with the entrance'], ['osl_court', 'The residents’ garden and the covered walkway'],
   ['osl_living', 'Kitchen and living room'], ['osl_shower', 'Shower room'],
 ] : IS_UBL ? [
-  ['ubl_corner', 'The corner of St Petersgate and High Street'], ['ubl_garden', 'The residents’ garden and the extension entrance'], ['ubl_lightwell', 'The garden and the light well outside Plot 1'],
+  ['ubl_corner', 'The corner of St Petersgate and High Street'], ['ubl_garden', 'The residents’ garden and the extension entrance'], ['ubl_lightwell', 'The garden courtyard outside Plot 1'],
   ['ubl_loft', 'Plot 13: kitchen and living under the rooflights'], ['ubl_living', 'Kitchen and living in the converted building'], ['ubl_bed', 'Bedroom'], ['ubl_bath', 'Shower room'],
 ] : IS_PH ? [
   ['ph_front', 'Seaton House on Wellington Street: Brik Studios’ new home'], ['ph_court', 'The residents’ garden and the walkways'], ['ph_kitchen', 'Kitchen and living, ground floor'],
@@ -2188,7 +2206,7 @@ function buildSpots() {
     SPOTS = [
       { id: 'corner', name: 'Churchgate corner', at: eyeAt(-11, -13), look: V3(6, 7, 6), note: 'Across the junction from the corner apartments, which look straight down Churchgate.' },
       { id: 'park', name: 'By the play park', at: eyeAt(16, -15.5), look: V3(14, 6.5, 2), note: 'The park-facing apartments look out over these trees and the new play area.' },
-      { id: 'arch', name: 'The entrance', at: eyeAt(8.9, -3.4), look: V3(8.9, 2.6, 0.6), note: 'The arched entrance on Churchgate, through to the residents’ courtyard.' },
+      { id: 'arch', name: 'The entrance', at: eyeAt(8.9, -3.4), look: V3(8.9, 2.6, 0.6), fovAdd: 6, note: 'The arched entrance on Churchgate, through to the residents’ courtyard.' },
       { id: 'harvey', name: 'Harvey Street', at: eyeAt(-10, 26), look: V3(2, 6.5, 10), note: 'St Mary’s Gate on one side, Charter House on the other.' },
       { id: 'brewery', name: 'Robinsons Brewery', at: eyeAt(-8.2, 33.6), look: V3(-30, 8, 50), note: 'Round the corner from Charter House: Robinsons’ Unicorn Brewery, brewing in Stockport since 1849.', glide: false },
       { id: 'smg', name: 'Outside St Mary’s Gate', at: eyeAt(-21, -2), look: V3(4, 6.5, 8),   // on the Churchgate pavement in front of it (the old point, z 3, was inside the building since it moved back on 6 Nov)
@@ -2207,12 +2225,14 @@ function buildSpots() {
   const LINKS = {"junction": ["wellington", "fletcher"], "wellington": ["junction"], "garden": ["garden2", "walk1", "walktop"], "garden2": ["garden", "walk1"], "walk1": ["garden", "walktop"], "walktop": ["garden", "walk1"], "stjoseph": ["fletcher"], "fletcher": ["stjoseph", "junction"], "roof": [], "corner": ["park", "arch", "harvey", "smg"], "park": ["corner", "arch"], "arch": ["corner", "park"], "harvey": ["smg", "corner", "brewery"], "brewery": ["harvey"], "smg": ["harvey", "corner"], "courtyard": ["walkway"], "walkway": ["courtyard"], "church": [], "market": []};   // the spots you can actually see from each spot (pins never show through walls)
   for (const sp of SPOTS) sp.links = LINKS[sp.id] || [];
   mark360();
-  spotPins = SPOTS.map((sp, i) => { const el = document.createElement('button'); el.className = 'spin'; el.style.opacity = 0; el.style.pointerEvents = 'none'; el.innerHTML = `<span>${sp.name}</span><i></i>`; el.onclick = () => goSpot(i); $('#labels').appendChild(el); return el; });
+  spotPins = SPOTS.map((sp, i) => { const el = document.createElement('button'); el.className = 'spin'; el.style.opacity = 0; el.style.pointerEvents = 'none'; el.innerHTML = `<span>${sp.name}</span><i></i>`; el.onclick = () => goSpot(i, null, true); $('#labels').appendChild(el); return el; });
   // the street spots with a photoreal 360 get a picture (assets/spots/<id>.jpg, from spot_thumbs.py) in the strip on the landing view
   // and on their chip in the walk-around
   const THUMBS = ['corner', 'park', 'arch', 'courtyard', 'walkway', 'harvey', 'brewery', 'church', 'market', 'junction', 'stjoseph'];   // (smg: its 360 needs re-rendering first)
-  const thumb = (sp) => sp.pano && THUMBS.includes(sp.id) ? `assets/spots/${sp.id}.jpg?v=1795002900` : null;
-  $('#t-spots').innerHTML = SPOTS.map((sp, i) => `<button data-spot="${i}" aria-pressed="false">${thumb(sp) ? `<img src="${thumb(sp)}" alt="" loading="lazy">` : '<i></i>'}${sp.name}</button>`).join('');
+  const thumb = (sp) => sp.pano && THUMBS.includes(sp.id) ? `assets/spots/${sp.id}.jpg?v=1795111407` : null;
+  // the strip lists the street and courtyard 360s only: a home's rooms are reached from its own room buttons, never another
+  // home's (Charlie, 19 Nov: "you'd never jump into another apartment's living room on a call")
+  $('#t-spots').innerHTML = SPOTS.map((sp, i) => sp.plot != null ? '' : `<button data-spot="${i}" aria-pressed="false">${thumb(sp) ? `<img src="${thumb(sp)}" alt="" loading="lazy">` : '<i></i>'}${sp.name}</button>`).join('');
   const looks = SPOTS.map((sp, i) => [sp, i]).filter(([sp]) => thumb(sp));
   $('#lk-row').innerHTML = looks.map(([sp, i]) => `<button data-spot="${i}" title="${sp.note.replace(/"/g, '&quot;')}"><img src="${thumb(sp)}" alt="" loading="lazy"><span>${sp.name}</span></button>`).join('');
   LOOKS_ON = looks.length >= 3;
@@ -2222,6 +2242,29 @@ let LOOKS_ON = false, looksShown = null, looksTick = 0;
 let looksMin = false; try { looksMin = localStorage.getItem('ch3d.looksMin') === '1'; } catch (e) {}
 function setLooksMin(m) { looksMin = m; $('#looks').classList.toggle('min', m); const b = $('#lk-min'); b.setAttribute('aria-expanded', String(!m)); b.setAttribute('aria-label', m ? 'Show the 360° views' : 'Hide the 360° views'); try { localStorage.setItem('ch3d.looksMin', m ? '1' : '0'); } catch (e) {} }
 setLooksMin(looksMin);
+// the views stack tucks away the same way (Charlie, 19 Nov: handy on a call when it should not be on the screen)
+{
+  const V = $('#views'), vl = V && V.querySelector('.vl');
+  if (V && vl) {
+    const st = document.createElement('style');
+    st.textContent = `.views .vw-head{display:flex;align-items:center;gap:8px}
+.views .vw-min{display:inline-grid;place-items:center;width:24px;height:24px;padding:0 !important;margin-left:auto;border-radius:50%;background:transparent;border:1px solid var(--line);color:var(--ink);cursor:pointer;flex:none;height:24px !important}
+.views .vw-min:hover,.views .vw-min:focus-visible{border-color:var(--brass)}
+.views .vw-min svg{width:14px;height:14px;transition:transform .25s}
+.views.vmin > :not(.vw-head){display:none !important}
+.views.vmin .vw-min svg{transform:rotate(180deg)}
+@media (max-width: 760px){.views .vw-head .vl{display:none}}`;
+    document.head.appendChild(st);
+    const head = document.createElement('div'); head.className = 'vw-head'; vl.replaceWith(head); head.appendChild(vl);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'vw-min'; b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>';
+    head.appendChild(b);
+    let vmin = false; try { vmin = localStorage.getItem('ch3d.viewsMin') === '1'; } catch (e) {}
+    const setV = (m) => { vmin = m; V.classList.toggle('vmin', m); b.setAttribute('aria-expanded', String(!m)); b.setAttribute('aria-label', m ? 'Show the views' : 'Hide the views'); b.title = m ? 'Show the views' : 'Hide the views'; try { localStorage.setItem('ch3d.viewsMin', m ? '1' : '0'); } catch (e) {} };
+    b.onclick = (e) => { e.stopPropagation(); setV(!vmin); };
+    vl.style.cursor = 'pointer'; vl.onclick = () => setV(!vmin);
+    setV(vmin);
+  }
+}
 $('#looks .lk-head').addEventListener('click', () => setLooksMin(!looksMin));
 $('#lk-row').addEventListener('click', (e) => { const b = e.target.closest('[data-spot]'); if (b) goSpot(+b.dataset.spot); });
 function updateLooks() {   // the strip shows on the landing view (orbiting the building), not over floors, apartments, tours or films
@@ -2272,10 +2315,16 @@ function exitTour(toPlot, toFloorView = false, quiet = false) {
   else { flyTo(P.pos, P.tgt, 1.6, () => { $('#panel').classList.remove('hide'); }); renderPanel(); }
   renderBack();
 }
-function goSpot(i, faceAt = null) {
+function goSpot(i, faceAt = null, fwd = false) {
   if (!enterTour()) return;
   const sp = SPOTS[i]; if (!sp) return;
   const from = SPOTS[T.spot];
+  // stepping between nearby street and courtyard 360s keeps you facing the way you were going, not back where you came from
+  // (Charlie, 19 Nov: from Churchgate corner down towards the Market Hall it turned you round)
+  if (fwd && !faceAt && from && from !== sp && from.plot == null && sp.plot == null && sp.pano && from.pano) {
+    const d = sp.at.clone().sub(from.at); d.y = 0;
+    if (d.length() > 3 && d.length() < 140) { d.normalize(); faceAt = sp.at.clone().addScaledVector(d, 25); faceAt.y = sp.at.y; }
+  }
   const near = from && sp.glide !== false && from.glide !== false && tour.st.pos.distanceTo(sp.at) < 48 && Math.abs(tour.st.pos.y - sp.at.y) < 2;
   T.spot = i; if (!sp.pano) T.door = null;
   document.querySelectorAll('#t-spots [data-spot]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.spot === i));
@@ -2283,7 +2332,7 @@ function goSpot(i, faceAt = null) {
   $('#t-backlbl').textContent = 'Back to the 3D model';
   const sib = sp.pano ? SPOTS.map((x, j) => [x, j]).filter(([x]) => x.pano && x.plot === sp.plot) : [];
   const roomActs = sib.length > 1 ? sib.map(([x, j]) => `<button class="btn ${j === i ? 'brass' : 'ghost'}" data-tact="room" data-spot="${j}">${(x.room || x.name).replace(/^./, ch => ch.toUpperCase())}</button>`).join('') : '';
-  tourCaption(sp.pano ? (sp.plot != null ? `Apartment ${sp.plot} · photoreal 360°` : `Around ${IS_PH ? 'The Print House' : 'Charter House'} · photoreal 360°`) : `360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note, roomActs);
+  tourCaption(sp.pano ? (sp.plot != null ? `Apartment ${sp.plot} · photoreal 360°` : `Around ${EDITION_NAME} · photoreal 360°`) : `360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note, roomActs);
   if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: faceAt || sp.look }], {}); setTimeout(() => { showPano(sp.pano, sp.hd ? sp.pano.replace('.jpg', '_8k.jpg') : null); tour.setFov((innerWidth < innerHeight ? 100 : 92) + (sp.fovAdd || 0)); }, 400); }   // the courtyard opens a little wider and lower (it is tight)
   else { showPano(null); tour.walk([near ? { to: sp.at, speed: 6, look: sp.look } : { to: sp.at, cut: true, look: sp.look }]); }
   stillFrames = Math.max(stillFrames, 4);
@@ -2596,7 +2645,7 @@ function loop() {
   try {
     await build();
     placeLandmarks();
-    try { const j = await fetch(BASE + 'pano/index.json?v=1795002900').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
+    try { const j = await fetch(BASE + 'pano/index.json?v=1795111407').then(r => r.ok ? r.json() : []); PANO_INDEX = (j || []).filter(p => !!p.type === true && (IS_UBL ? p.site === 'ubl' : IS_OSL ? p.site === 'osl' : IS_PH ? p.site === 'ph' : p.site !== 'ph' && p.site !== 'osl' && p.site !== 'ubl')); } catch (e) { PANO_INDEX = []; }
     buildSpots();
   } catch (e) { console.error(e); lmsg.textContent = 'Something went wrong loading the model. Please refresh.'; return; }
   applyTOD('day');
@@ -2669,7 +2718,7 @@ function waitForTextures() {
 }
 
 // expose for testing
-window.__CH = { getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, T, panoOn: () => panoOn, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT, flyTo };
+window.__CH = { gtaoRef: () => gtao, aoFix: (v) => { AO_FIX = v; }, getApartment, UNITS, floorView, SY: () => SY(), FH, crowdRef: () => crowd, showPano, setBuild, openBuild, closeBuild, goSpot, walkToDoor, exitTour, tour, SPOTS: () => SPOTS, toggleArea, flyToCard, setClay, CARD_BY_ID, showCard, farRef: () => farGroup, composer, walker, aptRef: () => apt, goView, forest, CHref: () => CH, ctxRef: () => contextGroup, worldRef: () => worldGroup, PLACES, groundAt, playFilm, endFilm, THREE, M, updateReflections, getRefl: () => reflRT, furniture: () => furniture, unitTagsRef: () => unitTags, jump: (p, t) => { flight = null; camera.position.set(...p); controls.target.set(...t); controls.enabled = true; camera.lookAt(controls.target); controls.update(); }, frames: (n) => { stillFrames = n; }, perf: () => renderer.info.render, S, T, panoOn: () => panoOn, toFloor, toUnit, toExplore, stepInside, seeView, applyTOD, camera, controls, scene, renderer, closeInterior, closeView, CUT, flyTo };
 // Charter House and The Print House (18 Nov, Charlie): the right-hand panel no longer sits open on the building and floor views; it opens
 // only for a flat (its plan, price and the View from the window / Step inside buttons). The panel toggle tab goes with it.
 if (EDITION === 'ch' || EDITION === 'ph' || IS_OSL) {   // Oldham Street Lofts too (Charlie, 19 Nov: the same as the Print House and Charter House)
@@ -2693,4 +2742,4 @@ if (EDITION === 'ch' || EDITION === 'ph' || IS_OSL) {   // Oldham Street Lofts t
 }
 // call mode: live on the Charter House link from 18 Nov 2026 (Charlie), started from the phone button by Home; ?call and /call still load it
 // on the other editions. A failure there never touches the rest of the page.
-if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795002900').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));
+if (EDITION === 'ch' || /[?&]call\b/.test(location.search) || /\/call\/?$/.test(location.pathname)) import('./callmode.js?v=1795111407').then((m) => m.init(window.__CH)).catch((e) => console.warn('call mode', e));

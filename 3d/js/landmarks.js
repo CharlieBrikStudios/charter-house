@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1795002900';
+import { boxUV } from './building.js?v=1795111407';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -25,14 +25,14 @@ class Kit {
   constructor() { this.b = {}; }
   add(k, g) { if (g.index) g = g.toNonIndexed(); (this.b[k] ||= []).push(g); return g; }
   // a window on a wall plane. axis: 'x' wall faces ±z (sign), 'z' wall faces ±x. c = centre along wall, y0 = sill
-  win(axis, sign, wallPos, c, y0, w, hs, { lights = 3, transom = true, k = 0.85, deep = 0.18 } = {}) {
+  win(axis, sign, wallPos, c, y0, w, hs, { lights = 3, transom = true, k = 0.85, deep = 0.18, glass = 'glass' } = {}) {
     const place = (g, off) => {
       if (axis === 'x') { if (sign < 0) g.rotateY(Math.PI); g.translate(c, y0, wallPos + sign * off); }
       else { g.rotateY(sign > 0 ? Math.PI / 2 : -Math.PI / 2); g.translate(wallPos + sign * off, y0, c); }
       return g;
     };
     // dark glass
-    this.add('glass', place(new THREE.ShapeGeometry(archShape(w, hs, k)), 0.02));
+    this.add(glass, place(new THREE.ShapeGeometry(archShape(w, hs, k)), 0.02));
     // moulded surround
     const ring = archShape(w + 0.5, hs, k); ring.holes.push(archShape(w, hs, k));
     const sg = new THREE.ExtrudeGeometry(ring, { depth: deep, bevelEnabled: false }); this.add('stone', place(sg, 0.0));
@@ -434,9 +434,9 @@ export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
       K.add('dress', box(bx - 0.35, 0, sg > 0 ? NW + AW : -NW - AW - 0.6, bx + 0.35, AH - 0.8, sg > 0 ? NW + AW + 0.6 : -NW - AW));
       if (i < 5) {
         const c = bx + (NX - 1.2) / 10;
-        K.win('x', sg, sg * (NW + AW), c - 0.75, 1.9, 0.9, 2.6, { lights: 1, transom: false, k: 0.85, deep: 0.14 });
-        K.win('x', sg, sg * (NW + AW), c + 0.75, 1.9, 0.9, 2.6, { lights: 1, transom: false, k: 0.85, deep: 0.14 });
-        K.win('x', sg, sg * NW, c, 9.4, 2.4, 1.7, { lights: 3, transom: false, k: 0.8, deep: 0.14 });
+        K.win('x', sg, sg * (NW + AW), c - 0.75, 1.9, 0.9, 2.6, { lights: 1, transom: false, k: 0.85, deep: 0.14, glass: 'stained' });
+        K.win('x', sg, sg * (NW + AW), c + 0.75, 1.9, 0.9, 2.6, { lights: 1, transom: false, k: 0.85, deep: 0.14, glass: 'stained' });
+        K.win('x', sg, sg * NW, c, 9.4, 2.4, 1.7, { lights: 3, transom: false, k: 0.8, deep: 0.14, glass: 'stained' });
       }
     }
   }
@@ -479,14 +479,14 @@ export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
     }
     K.add('dress', box(fx - 0.3, RIDGE + 0.8, -0.13, fx, RIDGE + 2.3, 0.13)); K.add('dress', box(fx - 0.3, RIDGE + 1.5, -0.55, fx, RIDGE + 1.75, 0.55));
     // door (pointed, standing in for the ogee head) with a gabled hood, lancets either side
-    K.win('z', -1, fx - 0.35, 0, 0.0, 2.0, 2.6, { lights: 1, transom: false, k: 0.7, deep: 0.3 });
+    K.win('z', -1, fx - 0.35, 0, 0.0, 2.0, 2.6, { lights: 1, transom: false, k: 0.7, deep: 0.3, glass: 'stained' });
     K.add('door', box(fx - 0.3, 0, -0.95, fx - 0.24, 2.6, 0.95));
-    for (const sg of [-1, 1]) K.win('z', -1, fx - 0.35, sg * 2.6, 0.9, 0.85, 3.0, { lights: 1, transom: false, k: 0.9, deep: 0.16 });
-    for (const sg of [-1, 1]) K.win('z', -1, fx - 0.35, sg * 2.4, 6.2, 2.5, 3.0, { lights: 3, transom: false, k: 0.8, deep: 0.18 });
-    const ro = new THREE.CircleGeometry(1.05, 5); ro.rotateY(-Math.PI / 2); ro.translate(fx - 0.48, 15.6, 0); K.add('glass', ro);
+    for (const sg of [-1, 1]) K.win('z', -1, fx - 0.35, sg * 2.6, 0.9, 0.85, 3.0, { lights: 1, transom: false, k: 0.9, deep: 0.16, glass: 'stained' });
+    for (const sg of [-1, 1]) K.win('z', -1, fx - 0.35, sg * 2.4, 6.2, 2.5, 3.0, { lights: 3, transom: false, k: 0.8, deep: 0.18, glass: 'stained' });
+    const ro = new THREE.CircleGeometry(1.05, 5); ro.rotateY(-Math.PI / 2); ro.translate(fx - 0.48, 15.6, 0); K.add('stained', ro);
     const rr = new THREE.RingGeometry(1.05, 1.45, 30); rr.rotateY(-Math.PI / 2); rr.translate(fx - 0.5, 15.6, 0); K.add('dress', rr);
     // aisle ends: lower lean-to walls with a single lancet each
-    for (const sg of [-1, 1]) { K.add('grit', box(fx + 0.6 - 0.35, 0, sg > 0 ? NW : -NW - AW, fx + 0.6, AH, sg > 0 ? NW + AW : -NW)); K.win('z', -1, fx + 0.25, sg * (NW + AW / 2), 2.2, 0.8, 2.3, { lights: 1, transom: false, k: 0.85, deep: 0.12 }); }
+    for (const sg of [-1, 1]) { K.add('grit', box(fx + 0.6 - 0.35, 0, sg > 0 ? NW : -NW - AW, fx + 0.6, AH, sg > 0 ? NW + AW : -NW)); K.win('z', -1, fx + 0.25, sg * (NW + AW / 2), 2.2, 0.8, 2.3, { lights: 1, transom: false, k: 0.85, deep: 0.12, glass: 'stained' }); }
   }
   // two-storey sacristy on the south side
   {
@@ -496,9 +496,9 @@ export function buildStJoseph(L, { x = -143, z = 212.5, y = 0, rot = 0 } = {}) {
     const rg = new THREE.ExtrudeGeometry(g, { depth: sx1 - sx0 + 0.4, bevelEnabled: false }); rg.rotateY(Math.PI / 2); rg.translate(sx0 - 0.2, 7.2, (sz0 + sz1) / 2); K.add('slate', rg);
     // (Charlie, 18 Nov: "add all the windows on this side of the church", the side The Print House looks at) the sacristy's
     // east wall and the aisles' east ends either side of the apse
-    for (const c of [sz0 - 2.0, sz1 + 2.0]) { K.win('z', 1, sx1, c, 1.2, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); K.win('z', 1, sx1, c, 4.4, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); }
-    for (const sg of [-1, 1]) K.win('z', 1, NX - 0.6, sg * (NW + AW / 2), 2.2, 0.8, 2.3, { lights: 1, transom: false, k: 0.85, deep: 0.14 });
-    for (let i = 0; i < 3; i++) { const c = sx0 + 1.8 + i * 3.6; K.win('x', -1, sz1, c, 1.2, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); K.win('x', -1, sz1, c, 4.4, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12 }); }
+    for (const c of [sz0 - 2.0, sz1 + 2.0]) { K.win('z', 1, sx1, c, 1.2, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12, glass: 'stained' }); K.win('z', 1, sx1, c, 4.4, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12, glass: 'stained' }); }
+    for (const sg of [-1, 1]) K.win('z', 1, NX - 0.6, sg * (NW + AW / 2), 2.2, 0.8, 2.3, { lights: 1, transom: false, k: 0.85, deep: 0.14, glass: 'stained' });
+    for (let i = 0; i < 3; i++) { const c = sx0 + 1.8 + i * 3.6; K.win('x', -1, sz1, c, 1.2, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12, glass: 'stained' }); K.win('x', -1, sz1, c, 4.4, 0.9, 1.6, { lights: 1, transom: false, k: 0.9, deep: 0.12, glass: 'stained' }); }
   }
   const grp = new THREE.Group(); grp.name = 'stjoseph';
   for (const [k, geos] of Object.entries(K.b)) {
