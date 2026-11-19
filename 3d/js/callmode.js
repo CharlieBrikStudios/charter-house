@@ -1,8 +1,8 @@
 // Call mode (built 15 Nov 2026; live on the Charter House link from 18 Nov, started from the phone button by Home).
 // Charlie's stops on one key, proof billboards, the protected council land, the bollards, a see-through St Mary's Gate,
 // the one bed vs two bed compare, an honest live line and the after-call shortlist link. Nothing here changes the live page.
-import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1795002600';
-import { rentFor, PICKS } from './sales.js?v=1795002600';
+import { UNITS, SITE, STATUS, FLOORS, fmtGBP } from './site.js?v=1795002700';
+import { rentFor, PICKS } from './sales.js?v=1795002700';
 
 const BASE = 'assets/';
 const $ = (s, r = document) => r.querySelector(s);

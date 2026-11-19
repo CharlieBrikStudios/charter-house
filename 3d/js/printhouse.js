@@ -8,9 +8,9 @@
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795002600';
-import { roomBox } from './building.js?v=1795002600';
-import { roomMaterial, tex } from './materials.js?v=1795002600';
+import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795002700';
+import { roomBox } from './building.js?v=1795002700';
+import { roomMaterial, tex } from './materials.js?v=1795002700';
 
 const FH = PH_FH, NF = 5;
 const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
@@ -254,7 +254,15 @@ export function buildPrintHouse(M, opts = {}) {
       const Y = UP.clone().multiplyScalar(SA).addScaledVector(N3, -CA), Z = N3.clone().multiplyScalar(SA).addScaledVector(UP, CA);
       const Mx = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(e.p0[0], R.KNEE, -e.p0[1]);   // local: s along, t up the slope, -d into it
       const sq0 = (Q0[0] - e.p0[0]) * e.d[0] + (Q0[1] - e.p0[1]) * e.d[1], sq1 = (Q1[0] - e.p0[0]) * e.d[0] + (Q1[1] - e.p0[1]) * e.d[1];
-      const rw = (roofOps.get(e) || []).map(o => ({ o, c: (o.a + o.b) / 2, w: 1.33, t0: 0.24, t1: 1.22 })).filter(r => r.c - r.w / 2 > sq0 * 1.22 / SL - 0.05 && r.c + r.w / 2 < e.len + (sq1 - e.len) * 1.22 / SL + 0.05);   // RL-01..12: twin rooflights, 1.33 x 0.98 m
+      // RL-01..12: twin rooflights, 1.33 x 0.98 m. Where a narrow casement sits too near a hip for the pair (the 2A's wing on the
+      // top floor), it gets one single rooflight slid clear of the hip, so its bedroom still has daylight
+      const rlo = sq0 * 1.22 / SL - 0.05, rhi = e.len + (sq1 - e.len) * 1.22 / SL + 0.05;
+      const rw = (roofOps.get(e) || []).map(o => {
+        const c = (o.a + o.b) / 2;
+        if (c - 0.665 > rlo && c + 0.665 < rhi) return { o, c, w: 1.33, t0: 0.24, t1: 1.22 };
+        if (o.b - o.a < 1.2 && rhi - rlo > 0.66 + 0.2) return { o, c: Math.min(Math.max(c, rlo + 0.43), rhi - 0.43), w: 0.66, t0: 0.24, t1: 1.22, single: true };
+        return null;
+      }).filter(Boolean);
       const sl = new THREE.Shape([V2(0, 0), V2(e.len, 0), V2(sq1, SL), V2(sq0, SL)]);
       for (const r of rw) { const h = new THREE.Path(); h.moveTo(r.c - r.w / 2, r.t0); h.lineTo(r.c + r.w / 2, r.t0); h.lineTo(r.c + r.w / 2, r.t1); h.lineTo(r.c - r.w / 2, r.t1); h.lineTo(r.c - r.w / 2, r.t0); sl.holes.push(h); }
       const g = new THREE.ExtrudeGeometry(sl, { depth: R.TH, bevelEnabled: false, curveSegments: 1 }); g.translate(0, 0, -R.TH);
@@ -273,16 +281,16 @@ export function buildPrintHouse(M, opts = {}) {
         const a = r.c - r.w / 2, b = r.c + r.w / 2;
         lbox(a - 0.07, b + 0.07, r.t0 - 0.07, r.t0 + 0.05, -0.05, 0.06, 'frame'); lbox(a - 0.07, b + 0.07, r.t1 - 0.05, r.t1 + 0.07, -0.05, 0.06, 'frame');
         lbox(a - 0.07, a + 0.05, r.t0, r.t1, -0.05, 0.06, 'frame'); lbox(b - 0.05, b + 0.07, r.t0, r.t1, -0.05, 0.06, 'frame');
-        lbox(r.c - 0.05, r.c + 0.05, r.t0, r.t1, -0.04, 0.06, 'frame');
+        if (!r.single) lbox(r.c - 0.05, r.c + 0.05, r.t0, r.t1, -0.04, 0.06, 'frame');
         lbox(a, b, r.t0, r.t1, 0.03, 0.04, 'glass');
         lbox(a, b, r.t0, r.t0 + 0.02, 0.06, R.TH + 0.01, 'sash'); lbox(a, b, r.t1 - 0.02, r.t1, 0.06, R.TH + 0.01, 'sash');
         lbox(a, a + 0.02, r.t0, r.t1, 0.06, R.TH + 0.01, 'sash'); lbox(b - 0.02, b, r.t0, r.t1, 0.06, R.TH + 0.01, 'sash');
-        for (const [sa, sb] of [[a, r.c - 0.04], [r.c + 0.04, b]]) {
+        for (const [sa, sb] of (r.single ? [[a, b]] : [[a, r.c - 0.04], [r.c + 0.04, b]])) {
           lbox(sa, sb, r.t0, r.t0 + 0.07, 0.05, 0.11, 'sash'); lbox(sa, sb, r.t1 - 0.07, r.t1, 0.05, 0.11, 'sash');
           lbox(sa, sa + 0.06, r.t0, r.t1, 0.05, 0.11, 'sash'); lbox(sb - 0.06, sb, r.t0, r.t1, 0.05, 0.11, 'sash');
           lbox(sa, sb, r.t1 - 0.32, r.t1 - 0.27, 0.05, 0.1, 'sash');
         }
-        lbox(r.c - 0.06, r.c + 0.06, r.t0, r.t1, 0.05, 0.115, 'sash');
+        if (!r.single) lbox(r.c - 0.06, r.c + 0.06, r.t0, r.t1, 0.05, 0.115, 'sash');
         const lp = Pq(r.c, 0.6); windows.push({ id: r.o.id, plot: r.o.plot, floor: r.o.floor, local: new THREE.Vector3(lp[0], TF + 1.5, -lp[1]), n: [e.n[0], e.n[1]], w: r.w, h: r.t1 - r.t0, roof: true });
       }
     });
