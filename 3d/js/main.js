@@ -2185,7 +2185,7 @@ function buildSpots() {
       { id: 'brewery', name: 'Robinsons Brewery', at: eyeAt(-8.2, 33.6), look: V3(-30, 8, 50), note: 'Round the corner from Charter House: Robinsons’ Unicorn Brewery, brewing in Stockport since 1849.', glide: false },
       { id: 'smg', name: 'Outside St Mary’s Gate', at: eyeAt(-21, -2), look: V3(4, 6.5, 8),   // on the Churchgate pavement in front of it (the old point, z 3, was inside the building since it moved back on 6 Nov)
       note: 'Brik sold every apartment in St Mary’s Gate. It is fully let, above its rent forecast.' },
-      { id: 'courtyard', name: 'Residents’ courtyard', at: V3(18.6, 1.6, 15.4), look: V3(12, 4.8, 11.4), note: 'The private courtyard, with the walkways to every front door.', glide: false },
+      { id: 'courtyard', name: 'Residents’ courtyard', at: V3(18.6, 1.6, 15.4), look: V3(12, 2.3, 11.4), fovAdd: 10, note: 'The private courtyard, with the walkways to every front door.', glide: false },
       { id: 'walkway', name: 'Top-floor walkway', at: V3(20.2, 3 * F + 1.65, 11.8), look: V3(12.5, 3 * F + 1.3, 11.9), note: 'Townhouse-style front doors off an open walkway, not a hotel corridor.', glide: false },
       { id: 'church', name: 'Down Churchgate from St Mary’s', at: eyeAt(-95, -7.4), look: V3(8, 7, 2), note: 'Stockport’s oldest church behind you, Charter House at the end of the street.', glide: false },
       { id: 'market', name: 'Market Place', at: eyeAt(-127, -13), look: V3(-152, 5.5, -9), note: 'The 1861 Market Hall, two minutes’ walk from your front door.', glide: false },
@@ -2276,7 +2276,7 @@ function goSpot(i, faceAt = null) {
   const sib = sp.pano ? SPOTS.map((x, j) => [x, j]).filter(([x]) => x.pano && x.plot === sp.plot) : [];
   const roomActs = sib.length > 1 ? sib.map(([x, j]) => `<button class="btn ${j === i ? 'brass' : 'ghost'}" data-tact="room" data-spot="${j}">${(x.room || x.name).replace(/^./, ch => ch.toUpperCase())}</button>`).join('') : '';
   tourCaption(sp.pano ? (sp.plot != null ? `Apartment ${sp.plot} · photoreal 360°` : `Around ${IS_PH ? 'The Print House' : 'Charter House'} · photoreal 360°`) : `360° walk-around · ${i + 1} of ${SPOTS.length}`, sp.name, sp.note, roomActs);
-  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: faceAt || sp.look }], {}); setTimeout(() => { showPano(sp.pano, sp.hd ? sp.pano.replace('.jpg', '_8k.jpg') : null); tour.setFov(innerWidth < innerHeight ? 100 : 92); }, 400); }
+  if (sp.pano) { tour.walk([{ to: sp.at, cut: true, look: faceAt || sp.look }], {}); setTimeout(() => { showPano(sp.pano, sp.hd ? sp.pano.replace('.jpg', '_8k.jpg') : null); tour.setFov((innerWidth < innerHeight ? 100 : 92) + (sp.fovAdd || 0)); }, 400); }   // the courtyard opens a little wider and lower (it is tight)
   else { showPano(null); tour.walk([near ? { to: sp.at, speed: 6, look: sp.look } : { to: sp.at, cut: true, look: sp.look }]); }
   stillFrames = Math.max(stillFrames, 4);
 }
