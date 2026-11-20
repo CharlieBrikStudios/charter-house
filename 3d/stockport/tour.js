@@ -451,6 +451,8 @@ function toggleLabels() { labels = !labels; spotsEl.classList.toggle('off', !lab
 function toggleFull() { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) {} }
 document.getElementById('tSpin').onclick = toggleSpin;
 document.getElementById('tLabels').onclick = toggleLabels;
+// Screenshot mode (Charlie, 20 Nov): the mouse in the top third of the screen hides the circles; moving it down brings them back
+addEventListener('pointermove', (e) => { if (e.pointerType !== 'touch') document.body.classList.toggle('pins-off', e.clientY < innerHeight / 3); }, { passive: true });
 document.getElementById('tFull').onclick = toggleFull;
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
 

@@ -2433,6 +2433,14 @@ addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') tour.turn(0.3); else if (e.key === 'ArrowRight') tour.turn(-0.3);
   else if (e.key === 'Escape') exitTour(T.door, backFromPano());
 });
+// Screenshot mode (Charlie, 20 Nov): with the mouse in the top third of the screen the 360 pins fade out, so a clean shot can be
+// taken for a client; they come back as soon as the mouse moves below that. Mouse and pen only, so phones and tablets are unchanged.
+{
+  const st = document.createElement('style');
+  st.textContent = 'body.pins-off #labels .spin, body.pins-off #labels .wpin { opacity: 0 !important; pointer-events: none !important; }';
+  document.head.appendChild(st);
+  addEventListener('pointermove', (e) => { if (e.pointerType !== 'touch') document.body.classList.toggle('pins-off', e.clientY < innerHeight / 3); }, { passive: true });
+}
 function updateTourPins() {
   const w = innerWidth, h = innerHeight, busy = tour.busy();
   for (let i = 0; i < SPOTS.length; i++) {
