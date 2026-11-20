@@ -8,9 +8,10 @@
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795189300';
-import { roomBox } from './building.js?v=1795189300';
-import { roomMaterial, tex } from './materials.js?v=1795189300';
+import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795200000';
+import { roomBox } from './building.js?v=1795200000';
+import { roomMaterial, tex } from './materials.js?v=1795200000';
+import { makeFlora, floraMaterials } from './flora.js?v=1795200000';
 
 const FH = PH_FH, NF = 5;
 const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
@@ -60,17 +61,21 @@ export function buildPrintHouse(M, opts = {}) {
     const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), dir = [(p1[0] - p0[0]) / len, (p1[1] - p0[1]) / len];
     const sh = new THREE.Shape([new THREE.Vector2(0, yBase), new THREE.Vector2(len, yBase), new THREE.Vector2(len, yTop), new THREE.Vector2(0, yTop)]);
     for (const o of openings) { const h = new THREE.Path(); h.moveTo(o.a, o.y0); h.lineTo(o.b, o.y0); h.lineTo(o.b, o.y1); if (o.arch) h.absarc((o.a + o.b) / 2, o.y1, (o.b - o.a) / 2, 0, Math.PI, false); else h.lineTo(o.a, o.y1); h.lineTo(o.a, o.y0); sh.holes.push(h); }
-    const g = new THREE.ExtrudeGeometry(sh, { depth: 0.35, bevelEnabled: false, curveSegments: 10 });
+    // in two layers: the outer 0.12 m brick (the reveal out to the window frame), the inner 0.23 m plastered, so inside each window
+    // sits in a white plastered reveal rather than a raw brick hole (Charlie, 19 Nov: "got a hole in the wall")
+    const g = new THREE.ExtrudeGeometry(sh, { depth: 0.12, bevelEnabled: false, curveSegments: 10 }); g.translate(0, 0, 0.23);
+    const gIn = new THREE.ExtrudeGeometry(sh, { depth: 0.23, bevelEnabled: false, curveSegments: 10 });
     // map: local x along dir, y up, extrude z outward along the normal
     const m = new THREE.Matrix4().makeBasis(new THREE.Vector3(dir[0], 0, -dir[1]), new THREE.Vector3(0, 1, 0), new THREE.Vector3(n[0], 0, -n[1]));
     m.setPosition(p0[0] - n[0] * 0.35, 0, -(p0[1] - n[1] * 0.35));
-    g.applyMatrix4(m);
+    g.applyMatrix4(m); gIn.applyMatrix4(m);
     // brick-sized UVs
     const p = g.attributes.position, uv = new Float32Array(p.count * 2);
     for (let i = 0; i < p.count; i++) { uv[2 * i] = (p.getX(i) + p.getZ(i)) / 2.2; uv[2 * i + 1] = p.getY(i) / 2.2; }
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-    const [outer, inner] = splitBy(g, (nv) => nv.x * n[0] - nv.z * n[1] < -0.7); outer.userData.brickUV = true;
-    add(mat, outer); if (inner.attributes.position.count) add('plasterIn', inner);
+    const [outer] = splitBy(g, (nv) => nv.x * n[0] - nv.z * n[1] < -0.7); outer.userData.brickUV = true;
+    add(mat, outer);
+    const [inner] = splitBy(gIn, (nv) => nv.x * n[0] - nv.z * n[1] > 0.7); if (inner.attributes.position.count) add('plasterIn', inner);   // all but its (hidden) outer face
     // frames, glass, sills for each opening
     for (const o of openings) {
       const w = o.b - o.a, h = o.y1 - o.y0, c = (o.a + o.b) / 2;
@@ -426,22 +431,53 @@ export function buildPrintHouse(M, opts = {}) {
     // the residents' garden: paved in sandstone flags right across to Seaton House's back wall, a lawn in the middle
     const sw = sp ? sp.map(q => toPlan(...q)) : null;
     const court = [[P.CORE.u1, D], [P.UW + 2.6, D], [P.UW + 2.6, D + 4.6], ...(sw ? [[sw[3][0] - 0.2, sw[3][1] - 0.25], isect([sw[3][0], sw[3][1] - 0.25], [sw[0][0] - sw[3][0], sw[0][1] - sw[3][1]], phSide(S.S + GAL + 0.3, 0), ey)] : [[17.6, 23.4], [8.1, 25.3]]), phSide(S.S + GAL + 0.3, S.T + 0.4), phSide(S.S + GAL + 0.3, 0)];
-    { const [side, top] = splitBy(slab(court), (nv) => nv.y > 0.7); add('path', top); add('wallStone', side); }
+    { const [side, top] = splitBy(slab(court), (nv) => nv.y > 0.7); add('garden', top); add('wallStone', side); }   // the Charter House courtyard's pavers (Charlie, 19 Nov)
   }
-  // ---- residents' garden (Charlie, 18 Nov: paved and much nicer): a lawn panel with sandstone paths round it, raised oak-edged
-  // planters along Seaton House's wall and under the walkways, benches, multi-stem birches and an ornamental tree
+  // ---- residents' garden (Charlie, 19 Nov video: "paved with planters and stuff, like the Charter House one, not just open grey
+  // paving with trees"). The garden proper runs between the side block's walkway and Seaton House's back wall (u 9.6-16.4,
+  // v 14.6-24): Charter House courtyard pavers, a smaller lawn edged with flowers, a raised brick planter with a stone coping and
+  // a multi-stem birch along Seaton House's wall, oak planters full of flowers under the walkways, a picnic table, benches
   {
-    add('lawn', box(10.6, D + 4.4, 20.2, D + 9.4, 0.0, 0.07));
-    for (const [a, b, c, d] of [[8.6, D + GAL + 0.4, 22.6, D + GAL + 1.3], [24.0, D + GAL + 0.4, 29.6, D + GAL + 1.3]]) { add('oak', box(a, b, c, d, 0, 0.45)); add('soil', box(a + 0.08, b + 0.08, c - 0.08, d - 0.08, 0.45, 0.47)); }
-    const benches = [[12.2, D + 3.3, 14.6, D + 3.8], [16.2, D + 3.3, 18.6, D + 3.8], [13.4, D + 10.0, 15.8, D + 10.5]];
+    const LAWN = [10.8, 17.0, 14.4, 21.0];
+    add('lawn', box(LAWN[0], LAWN[1], LAWN[2], LAWN[3], 0.0, 0.07));
+    for (const [a, b, c, d] of [[LAWN[0] - 0.08, LAWN[1] - 0.08, LAWN[2] + 0.08, LAWN[1]], [LAWN[0] - 0.08, LAWN[3], LAWN[2] + 0.08, LAWN[3] + 0.08], [LAWN[0] - 0.08, LAWN[1], LAWN[0], LAWN[3]], [LAWN[2], LAWN[1], LAWN[2] + 0.08, LAWN[3]]]) add('sill', box(a, b, c, d, 0, 0.09));   // stone edging
+    // oak planters under the walkways (as before) and a raised brick planter with a stone coping along Seaton House's wall
+    const OAK = [[8.6, D + GAL + 0.4, 22.6, D + GAL + 1.3], [24.0, D + GAL + 0.4, 29.6, D + GAL + 1.3]];
+    for (const [a, b, c, d] of OAK) { add('oak', box(a, b, c, d, 0, 0.45)); add('soil', box(a + 0.08, b + 0.08, c - 0.08, d - 0.08, 0.45, 0.47)); }
+    const RB = [14.9, 16.9, 15.9, 22.4], RH = 0.5;
+    add('band', box(RB[0], RB[1], RB[2], RB[3], 0, RH));
+    for (const [a, b, c, d] of [[RB[0] - 0.05, RB[1] - 0.05, RB[2] + 0.05, RB[1] + 0.12], [RB[0] - 0.05, RB[3] - 0.12, RB[2] + 0.05, RB[3] + 0.05], [RB[0] - 0.05, RB[1] + 0.12, RB[0] + 0.12, RB[3] - 0.12], [RB[2] - 0.12, RB[1] + 0.12, RB[2] + 0.05, RB[3] - 0.12]]) add('sill', box(a, b, c, d, RH, RH + 0.06));
+    add('soil', box(RB[0] + 0.12, RB[1] + 0.12, RB[2] - 0.12, RB[3] - 0.12, RH - 0.04, RH - 0.01));
+    // benches facing the lawn, and a picnic table at the far end
+    const benches = [[11.2, 15.0, 13.6, 15.5], [16.6, 15.0, 19.0, 15.5]];
     for (const [a, b, c, d] of benches) { add('oak', box(a, b, c, d, 0.38, 0.46)); add('steel', box(a + 0.1, b, a + 0.18, d, 0, 0.38)); add('steel', box(c - 0.18, b, c - 0.1, d, 0, 0.38)); }
+    { const u0 = 11.0, u1 = 12.8, v0 = 22.3;   // picnic table: a top and two bench boards on A-frame legs
+      add('oak', box(u0, v0 + 0.45, u1, v0 + 1.25, 0.72, 0.77));
+      for (const vb of [v0, v0 + 1.4]) add('oak', box(u0, vb, u1, vb + 0.3, 0.42, 0.46));
+      for (const ul of [u0 + 0.2, u1 - 0.28]) { add('oak', box(ul, v0, ul + 0.08, v0 + 1.7, 0.38, 0.42)); add('oak', box(ul, v0 + 0.55, ul + 0.08, v0 + 1.15, 0, 0.72)); }
+    }
+    // dark steel pots with clipped bay balls either side of the picnic table and at the lawn corners
+    const potsG = [[10.4, 22.1], [13.3, 22.1], [10.3, 16.6], [14.9, 15.9]];
+    for (const [u, v] of potsG) add('pot', box(u - 0.22, v - 0.22, u + 0.22, v + 0.22, 0, 0.5));
+    if (!opts.context) {   // flowers: in every planter, round the lawn and in the pots (the Charter House flora)
+      floraMaterials(M, M.brick?.clippingPlanes);
+      const FLR = makeFlora((k, g) => add(k, g), 4711);
+      const bedUV = (u0, v0, u1, v1, y, dens) => FLR.bed(u0, -v1, u1, -v0, y, dens);
+      for (const [a, b, c, d] of OAK) bedUV(a + 0.1, b + 0.1, c - 0.1, d - 0.1, 0.47, 0.8);
+      bedUV(RB[0] + 0.14, RB[1] + 0.14, RB[2] - 0.14, RB[3] - 0.14, RH - 0.01, 1.0);
+      const RR = FLR.R;
+      for (let u = LAWN[0] + 0.15; u < LAWN[2]; u += 0.42) for (const v of [LAWN[1] + 0.16, LAWN[3] - 0.16]) FLR.clump(u + (RR() - 0.5) * 0.12, 0.07, -(v + (RR() - 0.5) * 0.1), 0.12 + RR() * 0.05, 5 + Math.floor(RR() * 4));
+      for (const [u, v] of potsG) FLR.clump(u, 0.5, -v, 0.17, 9);
+    }
     if (forest) {
-      const trees = [[9.0, D + 6.0, 6.5, 'birch'], [22.4, D + 6.8, 6.8, 'birch'], [15.4, D + 6.9, 5.2, 'sycamore'], [26.6, D + 3.2, 5.8, 'birch']];
-      trees.forEach(([u, v, h, kind], k) => { const [x, z] = B.toWorld(u, v); forest.add(x, z, { h, r: kind === 'birch' ? 1.9 : 2.6, kind, seed: 5100 + k, y: y0 + 0.05 }); });
+      // multi-stem birches (the CGIs), not big round trees: one in the raised planter, one by the side walkway, one in the strip
+      // by the main block's east end
+      const trees = [[15.4, 19.6, 6.8, 'birch', RH], [10.1, 19.6, 5.6, 'birch', 0.05], [26.6, D + 3.2, 5.8, 'birch', 0.05]];
+      trees.forEach(([u, v, h, kind, ty], k) => { const [x, z] = B.toWorld(u, v); forest.add(x, z, { h, r: 1.7, kind, seed: 5100 + k, y: y0 + ty }); });
       let sd = 77; const rr = () => ((sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296);
       if (!opts.context) {
-        for (let k = 0; k < 90; k++) { const bed = rr() < 0.75 ? [8.7, D + GAL + 0.5, 22.5, D + GAL + 1.2] : [24.1, D + GAL + 0.5, 29.5, D + GAL + 1.2]; const u = bed[0] + rr() * (bed[2] - bed[0]), v = bed[1] + rr() * (bed[3] - bed[1]); const [x, z] = B.toWorld(u, v); const g = rr() < 0.45; forest.add(x, z, { h: g ? 0.7 : 0.8 + rr() * 0.5, r: g ? 0.4 : 0.5, kind: g ? 'grass' : 'shrub', seed: 5300 + k, y: y0 + 0.47 }); }
-        for (let k = 0; k < 26; k++) { const u = 10.8 + rr() * 9.2, v = rr() < 0.5 ? D + 4.5 + rr() * 0.5 : D + 8.8 + rr() * 0.5; const [x, z] = B.toWorld(u, v); forest.add(x, z, { h: 0.55, r: 0.35, kind: rr() < 0.5 ? 'grass' : 'shrub', seed: 5500 + k, y: y0 + 0.07 }); }
+        for (let k = 0; k < 60; k++) { const bed = rr() < 0.75 ? OAK[0] : OAK[1]; const u = bed[0] + 0.1 + rr() * (bed[2] - bed[0] - 0.2), v = bed[1] + 0.1 + rr() * (bed[3] - bed[1] - 0.2); const [x, z] = B.toWorld(u, v); const g = rr() < 0.5; forest.add(x, z, { h: g ? 0.6 : 0.7 + rr() * 0.3, r: g ? 0.35 : 0.42, kind: g ? 'grass' : 'shrub', seed: 5300 + k, y: y0 + 0.47 }); }
+        for (let k = 0; k < 10; k++) { const u = RB[0] + 0.3 + rr() * 0.4, v = RB[1] + 0.4 + rr() * (RB[3] - RB[1] - 0.8); const [x, z] = B.toWorld(u, v); forest.add(x, z, { h: 0.7, r: 0.35, kind: rr() < 0.5 ? 'grass' : 'shrub', seed: 5500 + k, y: y0 + RH }); }
         for (const [u, py, v] of pots) { const [x, z] = B.toWorld(u, v); forest.add(x, z, { h: 0.75, r: 0.32, kind: 'shrub', seed: 5700 + Math.round(u * 13 + py * 7), y: y0 + py }); }
       }
     }
@@ -452,7 +488,7 @@ export function buildPrintHouse(M, opts = {}) {
     zincWall: new THREE.MeshStandardMaterial({ color: '#34383c', roughness: 0.42, metalness: 0.55, clippingPlanes: M.brick?.clippingPlanes }),
     zincRoof: new THREE.MeshStandardMaterial({ color: '#3a3e42', roughness: 0.38, metalness: 0.6, side: THREE.DoubleSide }),
     frame: new THREE.MeshStandardMaterial({ color: '#25282b', roughness: 0.45, metalness: 0.3, clippingPlanes: M.brick?.clippingPlanes }),
-    glass: M.glass,   // the Charter House glass: reflections of the street, see-through head-on (Charlie, 19 Nov: shiny like Charter House) sill: M.stone, door: new THREE.MeshStandardMaterial({ color: '#1e2124', roughness: 0.5, clippingPlanes: M.brick?.clippingPlanes }),
+    glass: M.glass, sill: M.stone, door: new THREE.MeshStandardMaterial({ color: '#1e2124', roughness: 0.5, clippingPlanes: M.brick?.clippingPlanes }),   // the Charter House glass: reflections of the street, see-through head-on (Charlie, 19 Nov: shiny like Charter House)
     room: new THREE.MeshStandardMaterial({ color: '#2a2622', emissive: new THREE.Color('#ffcf98'), emissiveIntensity: 0.0, roughness: 1, clippingPlanes: M.brick?.clippingPlanes }),
     steel: new THREE.MeshStandardMaterial({ color: '#1f2225', roughness: 0.42, metalness: 0.6, clippingPlanes: M.brick?.clippingPlanes }),
     deck: new THREE.MeshStandardMaterial({ color: '#55595d', roughness: 0.8, metalness: 0.2, clippingPlanes: M.brick?.clippingPlanes }),
@@ -470,8 +506,10 @@ export function buildPrintHouse(M, opts = {}) {
     pot: new THREE.MeshStandardMaterial({ color: '#3a3d40', roughness: 0.6, metalness: 0.2, clippingPlanes: M.brick?.clippingPlanes }),
     streetStone: (() => { const T = (n, o) => tex((opts.base || 'assets/') + 'tex/' + n, o); return new THREE.MeshStandardMaterial({ map: T('sandstone_w.jpg'), color: '#fff8ec', roughness: 0.92, clippingPlanes: M.brick?.clippingPlanes }); })(),
     hedge: new THREE.MeshStandardMaterial({ color: '#3e5a2c', roughness: 0.95 }),
+    garden: M.pavers || M.paving,
     coping: new THREE.MeshStandardMaterial({ color: '#9a9a96', roughness: 0.85 }),
   };
+  for (const k of Object.keys(G)) if (k.startsWith('fl') && M[k]) mats[k] = M[k];   // the flower materials (floraMaterials)
   const meshes = {};
   for (const [k, list] of Object.entries(G)) {
     // every box gets the same UVs; the facade walls already carry brick-scaled ones, so map the plain boxes per face
@@ -487,8 +525,9 @@ export function buildPrintHouse(M, opts = {}) {
     }
     let g = mergeGeometries(list, false); if (!g) continue;
     if (!g.attributes.uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+    if (k === 'garden') { const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 4, p.getZ(i) / 4); }
     if (k === 'roof') { const [top, under] = splitBy(g, (nv) => nv.y < -0.7); g = top; (G.soffit ||= []).push(under); }
-    const m = new THREE.Mesh(g, mats[k] || M.stone); m.castShadow = !['glass', 'balGlass', 'room', 'lawn', 'path'].includes(k); m.receiveShadow = true; m.name = 'ph_' + k;
+    const m = new THREE.Mesh(g, mats[k] || M.stone); m.castShadow = !['glass', 'balGlass', 'room', 'lawn', 'path', 'garden'].includes(k); m.receiveShadow = true; m.name = 'ph_' + k;
     group.add(m); meshes[k] = m;
   }
   // per-apartment rooms behind the glass

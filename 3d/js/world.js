@@ -3,8 +3,8 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1795189300';
-import { buildShopfronts } from './shopfronts.js?v=1795189300';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795200000';
+import { buildShopfronts } from './shopfronts.js?v=1795200000';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
@@ -46,12 +46,43 @@ export function setTerrain(t, raw = false) {
     const w5 = sm((x + 13.5) / 2) * (1 - sm((x - xe) / 2.5)) * sm((z + 3) / 2.5) * (1 - sm((z - 24) / 12));
     if (w5 > 0) { const T = HV_PAVE(Math.max(0, Math.min(z, 21.3))) - 0.14 - G0; TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w5) + T * w5; }
   }
+  // the service lanes behind Charter House (Charlie, 19 Nov: "flatten out the road behind, it's all on an angle"): on the 4 m
+  // grid they tipped sideways off the SW end of the building and kinked up at the bend. Each lane is now level across its
+  // width and follows its own smoothed centre line, so it runs at an even grade (OSM service ways, roads.json 870, 872-874)
+  const LANES = [[[-6.0, 18.5], [-30.8, 17.4]], [[-6.0, 24.0], [0.2, 23.8], [4.8, 23.9], [9.9, 24.4], [12.2, 25.1], [13.5, 27.5]],
+    [[8.4, 30.0], [13.5, 27.5], [17.9, 25.4]], [[14.8, 47.8], [17.8, 42.7], [22.8, 33.9]]];
+  const LHW = 2.1, prof = LANES.map((c) => {   // centre-line heights every metre, then two passes of a 12 m running mean
+    const pts = []; for (let k = 0; k < c.length - 1; k++) {
+      const [x0, z0] = c[k], [x1, z1] = c[k + 1], L = Math.hypot(x1 - x0, z1 - z0), n = Math.max(1, Math.round(L));
+      for (let q = (k ? 1 : 0); q <= n; q++) pts.push([x0 + (x1 - x0) * q / n, z0 + (z1 - z0) * q / n]);
+    }
+    let h = pts.map(([x, z]) => terrainH(x, z));
+    for (let pass = 0; pass < 2; pass++) h = h.map((_, i) => { let s = 0, m = 0; for (let k = Math.max(0, i - 6); k <= Math.min(h.length - 1, i + 6); k++) { s += h[k]; m++; } return s / m; });
+    return { pts, h };
+  });
+  const laneH = [];
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    if (x < -36 || x > 28 || z < 12 || z > 52) continue;
+    let sw = 0, sh = 0, wm = 0;
+    for (const P of prof) {
+      let best = 1e9, bh = 0;
+      for (let k = 0; k < P.pts.length; k++) { const d = Math.hypot(P.pts[k][0] - x, P.pts[k][1] - z); if (d < best) { best = d; bh = P.h[k]; } }
+      const w = 1 - sm((best - LHW - 1.5) / 2);
+      if (w > 0) { sw += w; sh += w * bh; wm = Math.max(wm, w); }
+    }
+    if (wm > 0) laneH.push([j * t.nx + i, wm, sh / sw]);
+  }
+  for (const [k, w, h] of laneH) TH[k] = TH[k] * (1 - w) + h * w;
   // under Charter House itself the ground stays just below its ground floor: on the LiDAR the ground rises with Churchgate past
   // the building and came up through the ground-floor flats as a grey slope in the cut-away (Charlie, 19 Nov). Both wings.
   for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
     const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
     const inCG = x > 1 && x < 22 && z > 1 && z < 10.5, inHV = x > 1 && x < 11 && z > 1 && z < 21;   // grid points inside the walls only
     if (inCG || inHV) TH[j * t.nx + i] = Math.min(TH[j * t.nx + i], -0.12 - G0);
+    // the residents' courtyard (and the grid line just past its east wall): the LiDAR rises towards Churchgate's high end and the
+    // ground came up through the paving by the picnic table, up to 0.8 m (the courtyard 360, 20 Nov); the walls hide the step
+    else if (x > 11 && x < 25 && z > 11 && z < 21) TH[j * t.nx + i] = Math.min(TH[j * t.nx + i], -0.2 - G0);
   }
   // the play park sits level with Churchgate (no grass bank between the pavement and its railings)
   const jr = Math.round((-6.6 - t.z0) / t.cell);
@@ -490,7 +521,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795189300'), { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795200000'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {

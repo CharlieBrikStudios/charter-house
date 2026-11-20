@@ -50,7 +50,10 @@ export class Forest {
     const ch = (h - trunkH) * 0.55;
     if (!low) this.crowns.push([x, crownC.y, z, cr, ch]);
     const nClump = Math.round((kind === 'pot' ? 7 : kind === 'shrub' ? 5 : kind === 'grass' ? 3 : kind === 'hedge' ? 4 : 9 + r * 1.8) * density);
-    const cardSize = kind === 'pot' ? 0.36 : kind === 'grass' ? 0.9 : kind === 'shrub' ? 1.1 : kind === 'hedge' ? 1.1 : kind === 'birch' ? 1.6 : 2.6 + r * 0.06;
+    // small planter plants (r under 0.6 m) get leaf cards and clumps in proportion: at full size they read as one big bush that
+    // swallowed the planter (Charlie, 19 Nov: "the trees are just like a big bush everywhere"); hedges and street shrubs unchanged
+    const small = (kind === 'shrub' || kind === 'grass') && r < 0.6, kS = small ? Math.max(0.45, r / 0.6) : 1;
+    const cardSize = (kind === 'pot' ? 0.36 : kind === 'grass' ? 0.9 : kind === 'shrub' ? 1.1 : kind === 'hedge' ? 1.1 : kind === 'birch' ? 1.6 : 2.6 + r * 0.06) * kS;
     const perClump = kind === 'pot' ? 10 : kind === 'grass' ? 7 : kind === 'shrub' ? 9 : kind === 'hedge' ? 10 : 11;
     const baseTint = tint || (kind === 'birch' ? [1.08, 1.12, 0.92] : kind === 'grass' ? [1.15, 1.08, 0.75] : [1, 1, 1]);
     for (let c = 0; c < nClump; c++) {
@@ -61,9 +64,9 @@ export class Forest {
       const cx = x + Math.sin(ph) * Math.cos(th) * cr * rad;
       const cz = z + Math.sin(ph) * Math.sin(th) * cr * rad;
       const cy = crownC.y + Math.cos(ph) * ch * rad - (low ? 0 : ch * 0.15);
-      const clumpR = kind === 'pot' ? 0.14 : kind === 'grass' ? 0.35 : kind === 'shrub' || kind === 'hedge' ? 0.5 : cr * 0.32;
+      const clumpR = (kind === 'pot' ? 0.14 : kind === 'grass' ? 0.35 : kind === 'shrub' || kind === 'hedge' ? 0.5 : cr * 0.32) * kS;
       for (let k = 0; k < perClump; k++) {
-        const px = cx + (R() - 0.5) * 2 * clumpR, py = kind === 'pot' ? gy + 0.18 + R() * h * 0.8 : (kind === 'shrub' || kind === 'grass' || kind === 'hedge') ? gy + 0.3 + R() * h * 0.8 : cy + (R() - 0.5) * 2 * clumpR * 0.8, pz = cz + (R() - 0.5) * 2 * clumpR;
+        const px = cx + (R() - 0.5) * 2 * clumpR, py = kind === 'pot' ? gy + 0.18 + R() * h * 0.8 : (kind === 'shrub' || kind === 'grass' || kind === 'hedge') ? gy + 0.3 * kS + R() * h * 0.8 : cy + (R() - 0.5) * 2 * clumpR * 0.8, pz = cz + (R() - 0.5) * 2 * clumpR;
         const s = cardSize * (0.75 + R() * 0.5);
         const tile = Math.floor(R() * 4);
         const tv = 0.85 + R() * 0.3;

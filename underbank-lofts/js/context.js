@@ -4,9 +4,9 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { boxGeom, boxUV } from './building.js?v=1795189300';
-import { groundAt, letteringTexture } from './world.js?v=1795189300';
-import { makeFlora } from './flora.js?v=1795189300';
+import { boxGeom, boxUV } from './building.js?v=1795200000';
+import { groundAt, letteringTexture } from './world.js?v=1795200000';
+import { makeFlora } from './flora.js?v=1795200000';
 // split a flat shape into a fine even mesh (no edge longer than about L), so it can follow sloping ground: Churchgate climbs
 // past the play park, and a four-corner quad would cut through the slope and the grass under it would vanish into the
 // terrain. Every triangle is cut into the same n x n pattern, so shared edges split at the same points (no cracks).
@@ -819,7 +819,7 @@ export function buildCourtyard(M, forest, festoon) {
   const bg = new THREE.ShapeGeometry(bed); bg.rotateX(-Math.PI / 2); bg.translate(0, y0 + 0.02, 0); B.add('grass', bg);
   for (let i = 0; i < 26; i++) { const x = 12.2 + (i * 0.618 % 1) * 3.8, z = 16.8 + ((i * 0.371) % 1) * 4.6; forest.add(x, z, { kind: i % 3 ? 'grass' : 'shrub', h: 0.6 + (i % 4) * 0.12, r: 0.5, y: y0, seed: 300 + i }); }
   forest.add(13.8, 19.2, { kind: 'birch', h: 7.5, r: 3.2, y: y0, seed: 311 });
-  forest.add(21.9, 12.4, { kind: 'birch', h: 6.5, r: 2.6, y: y0, seed: 312 });
+  forest.add(22.0, 14.6, { kind: 'birch', h: 4.6, r: 1.6, y: y0, seed: 312 });   // smaller, and off the corner window so its light gets in (Charlie, 19 Nov)
   // bench
   B.add('timber', (() => { const b = boxGeom(15.0, y0 + 0.42, 16.9, 15.45, y0 + 0.48, 18.6); boxUV(b, 1); return b; })());
   for (const z of [17.1, 18.4]) B.add('steel', boxGeom(15.1, y0, z - 0.04, 15.35, y0 + 0.42, z + 0.04));
@@ -910,7 +910,7 @@ export function buildCourtyard(M, forest, festoon) {
   FLR.bed(13.35, 12.75, 19.05, 14.05, y0 + 0.535, 0.9);
   for (let i = 0; i < 22; i++) FLR.clump(12.2 + FLR.R() * 3.8, y0 + 0.02, 16.7 + FLR.R() * 4.7, 0.13 + FLR.R() * 0.06, 6 + Math.floor(FLR.R() * 5));
   // boundary walls (existing, retained) and railings
-  for (const [a, b, c, d] of [[22.61, 11.03, 22.95, 17.9], [21.5, 17.9, 22.95, 18.2], [21.5, 18.2, 21.8, 21.75], [11.7, 21.75, 21.8, 22.05]]) { const w = boxGeom(a, -1.2, b, c, y0 + 2.0, d); boxUV(w); B.add('brick2', w); }
+  for (const [a, b, c, d] of [[22.61, 11.03, 22.95, 17.9], [21.5, 17.9, 22.95, 18.2], [21.5, 18.2, 21.8, 21.75], [11.7, 21.75, 21.8, 22.05]]) { const w = boxGeom(a, -2.6, b, c, y0 + 2.0, d); boxUV(w); B.add('brick2', w); }   // footings down past the levelled lane behind
   // festoon lights across the courtyard (catenaries between the gallery and the boundary)
   const spans = [[[13.15, 11.4, 12.45], [21.5, 6.6, 20.4]], [[13.15, 8.4, 15.4], [22.5, 5.2, 15.2]], [[16.9, 11.0, 12.45], [16.4, 5.6, 21.4]]];
   for (const [[ax, ay, az], [bx, by, bz]] of spans) {

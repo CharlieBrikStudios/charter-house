@@ -5,7 +5,7 @@
 // Built in each landmark's own frame (x = geographic east, z = geographic south) then rotated into site coordinates.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { boxUV } from './building.js?v=1795189300';
+import { boxUV } from './building.js?v=1795200000';
 
 const box = (x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return g; };
 
@@ -104,7 +104,7 @@ export function landmarkMaterials(tex, base) {
 }
 
 // ---------------------------------------------------------------- St Mary's Church
-export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Math.PI / 4, clip = null, front = null } = {}) {
+export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Math.PI / 4, clip = null, front = null, entry = null } = {}) {
   const K = new Kit();
   const H0 = 0;  // church floor level in its frame
   // raised churchyard: grass plinth with a low sandstone retaining wall and coping. On the Churchgate side the wall follows the back
@@ -115,8 +115,18 @@ export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Mat
   // the yard runs right out to it and one straight wall follows it; without, the old rectangle with its own south wall.
   const bMax = (a) => { let b = front ? 60 : 12; if (clip) while (b > -10 && !clip(...W(a, b + 0.7))) b -= 0.25; return b; };
   const STEP = front ? 0.5 : 1.0, A0 = -36, A1 = 30;
+  // entrance steps at the west corner, up from the pavement into the churchyard (Charlie, 19 Nov: "this bit of the wall
+  // opens up as an entrance here to get in, with steps"): a 3 m gap in the wall, stone steps between sandstone cheeks,
+  // capped piers either side and black handrails. entry.paveY: the pavement's world level at the corner
+  const E = front && entry ? (() => {
+    const a0 = -36, a1 = -33, bF = Math.min(bMax(a0), bMax(a0 + 1.5), bMax(a1)) + 0.7, pv = entry.paveY - y, top = H0 - 0.05;
+    if (top - pv < 0.15) return null;   // the yard is not raised here: no steps needed
+    const n = Math.ceil((top - pv) / 0.165), r = (top - pv) / n;
+    return { a0, a1, bF, pv, n, r, bTop: bF - n * 0.3 };
+  })() : null;
   for (let a = A0; a < A1 - 1e-6; a += STEP) {
     const a1 = Math.min(A1, a + STEP), bm = Math.min(bMax(a), bMax(a1));
+    if (front && E && a >= E.a0 - 1e-6 && a1 <= E.a1 + 1e-6) { K.add('wall', box(a, -7, -22, a1, H0 - 0.05, E.bTop)); continue; }   // the yard stops behind the top step
     if (front) { K.add('wall', box(a, -7, -22, a1, H0 - 0.05, bm + 0.7)); continue; }
     K.add('wall', box(a, -7, -22, a1, H0 - 0.05, bm));
     K.add('sand', box(a, -7, bm, a1, H0 + 0.9, bm + 0.7)); K.add('stone', box(a - 0.02, H0 + 0.9, bm - 0.05, a1 + 0.02, H0 + 1.05, bm + 0.78));
@@ -129,12 +139,40 @@ export function buildStMarys(L, grassMat, { x = -75, z = -23, y = 4.2, rot = Mat
       const [ac, bc] = toL((x0 + x1) / 2 + nx * 0.35, (z0 + z1) / 2 + nz * 0.35);
       const da = dxw * cs - dzw * sn, db = dxw * sn + dzw * cs, phi = Math.atan2(-db, da), east = Math.abs(dxw) < 0.3;
       const seg = (h0, h1, d, k, extra = 0) => { const g = new THREE.BoxGeometry(len + extra, h1 - h0, d); g.rotateY(phi); g.translate(ac, (h0 + h1) / 2, bc); K.add(k, g); };
-      seg(-7, H0 + 0.9, 0.7, 'sand', 0.7); seg(H0 + 0.9, H0 + 1.05, 0.8, 'stone', 0.8);
+      if (E) {   // the wall in short pieces, leaving the gap for the steps
+        const np = Math.max(1, Math.ceil(len / 0.5));
+        for (let k = 0; k < np; k++) {
+          const f0 = k / np, f1 = (k + 1) / np, mx = x0 + (x1 - x0) * (f0 + f1) / 2 + nx * 0.35, mz = z0 + (z1 - z0) * (f0 + f1) / 2 + nz * 0.35, [pa, pb] = toL(mx, mz);
+          if (pa > E.a0 - 0.05 && pa < E.a1 + 0.05) continue;
+          const pl = len / np;
+          for (const [h0, h1, d, k2, ex] of [[-7, H0 + 0.9, 0.7, 'sand', 0.06], [H0 + 0.9, H0 + 1.05, 0.8, 'stone', 0.08]]) { const g = new THREE.BoxGeometry(pl + ex, h1 - h0, d); g.rotateY(phi); g.translate(pa, (h0 + h1) / 2, pb); K.add(k2, g); }
+        }
+      } else { seg(-7, H0 + 0.9, 0.7, 'sand', 0.7); seg(H0 + 0.9, H0 + 1.05, 0.8, 'stone', 0.8); }
       if (east) {   // black railings on the wall along the car park end
         const n = Math.round(len / 0.13);
         for (let k = 0; k <= n; k++) { const f = k / n, [pa, pb] = toL(x0 + (x1 - x0) * f + nx * 0.35, z0 + (z1 - z0) * f + nz * 0.35); K.add('clockBlack', box(pa - 0.012, H0 + 1.05, pb - 0.012, pa + 0.012, H0 + 2.15, pb + 0.012)); }
         for (const hh of [H0 + 1.12, H0 + 2.08]) seg(hh, hh + 0.04, 0.05, 'clockBlack');
       }
+    }
+  }
+  if (E) {
+    const { a0, a1, bF, pv, n, r, bTop } = E;
+    for (let i = 0; i < n; i++) {   // stone treads, each a solid block down into the ground, with a slight nosing
+      const t = pv + (i + 1) * r, b1 = bF - i * 0.3 + (i ? 0 : 0.6);
+      K.add('sand', box(a0 + 0.02, Math.min(pv, t) - 1.2, bF - (i + 1) * 0.3, a1 - 0.02, t - 0.05, b1));
+      K.add('stone', box(a0 + 0.02, t - 0.05, bF - (i + 1) * 0.3 - 0.02, a1 - 0.02, t, b1 + 0.03));
+    }
+    // the east cheek: a wall as high as the boundary wall, with its coping, down the side of the flight
+    const bC = bMax(a1) + 0.7;   // the cheek runs right out to the street wall at its own end
+    K.add('sand', box(a1, -7, bTop - 0.3, a1 + 0.45, H0 + 0.9, bC)); K.add('stone', box(a1 - 0.04, H0 + 0.9, bTop - 0.34, a1 + 0.49, H0 + 1.05, bC + 0.04));
+    // capped piers either side of the way in, at the street
+    for (const [pa, pb] of [[a0 - 0.35, bMax(a0) + 0.7], [a1 + 0.22, bC]]) { const bF2 = pb - 0.7; K.add('sand', box(pa - 0.42, pv - 0.3, bF2 - 0.15, pa + 0.42, H0 + 1.65, bF2 + 0.65)); K.add('stone', box(pa - 0.5, H0 + 1.65, bF2 - 0.23, pa + 0.5, H0 + 1.82, bF2 + 0.73)); K.add('stone', box(pa - 0.25, H0 + 1.82, bF2 + 0.0, pa + 0.25, H0 + 2.05, bF2 + 0.5)); }
+    // black handrails up both sides
+    for (const ra of [a0 + 0.12, a1 - 0.12]) {
+      const p0 = new THREE.Vector3(ra, pv + 0.95, bF + 0.2), p1 = new THREE.Vector3(ra, H0 + 0.9, bTop - 0.1), L2 = p0.distanceTo(p1);
+      const rail = new THREE.CylinderGeometry(0.025, 0.025, L2, 8); rail.rotateX(Math.PI / 2);
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), p1.clone().sub(p0).normalize()); rail.applyQuaternion(q); rail.translate((p0.x + p1.x) / 2, (p0.y + p1.y) / 2, (p0.z + p1.z) / 2); K.add('clockBlack', rail);
+      for (let k = 0; k <= 4; k++) { const f = k / 4, px = p0.clone().lerp(p1, f); K.add('clockBlack', box(ra - 0.02, px.y - 0.9, px.z - 0.02, ra + 0.02, px.y, px.z + 0.02)); }
     }
   }
   const bEast = bMax(A1), bWest = bMax(A0);

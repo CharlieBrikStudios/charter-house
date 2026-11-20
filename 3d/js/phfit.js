@@ -4,17 +4,17 @@
 // Built in the Print House model's plan frame (x = u, z = -v), so the group sits inside the model's transform.
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1795189300';
-import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1795189300';
-import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug, pot } from './furniture.js?v=1795189300';
-import { phTopY, phSide, PH_SIDE, PH_PLAN } from './ph_data.js?v=1795189300';
+import { CUT } from './materials.js?v=1795200000';
+import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1795200000';
+import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug, pot } from './furniture.js?v=1795200000';
+import { phTopY, phSide, PH_SIDE, PH_PLAN } from './ph_data.js?v=1795200000';
 
 // which side of each main-block slot its kitchen runs along (kitchens pair back to back across the party walls)
 const KSIDE = { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1 };
 
 // wall rectangles [L0, W0, L1, W1]; rooms; furniture in the type's frame (face = [dL, dW] the way the piece looks)
 const TYPES = {
-  '1B': { len: 10.2, wid: 3.8,
+  '1B': { len: 10.2, wid: 3.8, gal: [{ L: 4.95, s0: 1.2, s1: 3.72, f: -1 }, { W: 3.74, s0: 0.45, s1: 4.95, f: -1, frames: false }],
     walls: [[4.95, 1.1, 5.05, 3.8], [5.0, 1.05, 5.5, 1.15], [6.3, 1.05, 7.2, 1.15], [6.45, 1.1, 6.55, 3.8], [7.15, 1.1, 7.25, 3.8]],
     tile: [[5.05, 1.15, 6.45, 3.8], [6.55, 1.15, 7.15, 3.8]], carpet: [[7.25, 0, 10.2, 3.8]],
     bath: { r: [5.05, 1.15, 6.45, 3.8], shower: 'W1' },
@@ -24,7 +24,7 @@ const TYPES = {
   // depth from the street face (v), W runs from the party wall towards the gable (u - 20.592), both at true scale. Living-kitchen
   // along the party wall; bedroom 2 behind the second street window; bedroom 1 in the wing with its narrow window; ensuite and
   // a lobby between; the bathroom and hall by the front door on the walkway; the plant room (tanks) in the south-east corner
-  '2A': { len: 11.57, wid: 7.924,
+  '2A': { len: 11.57, wid: 7.924, gal: [{ W: 3.85, s0: 3.15, s1: 5.4, f: -1 }],
     floors: [[0.02, 0.02, 8.5, 3.9], [8.5, 0.02, 11.55, 3.9], [0.02, 3.9, 6.12, 7.9], [2.62, 7.9, 6.12, 9.92]],
     walls: [[0.35, 3.85, 2.25, 3.95], [3.1, 3.85, 5.45, 3.95], [6.05, 3.85, 11.4, 3.95], [3.1, 3.95, 3.2, 7.92],
       [3.2, 5.05, 4.25, 5.15], [5.05, 5.05, 5.3, 5.15], [5.2, 3.95, 5.3, 5.15], [6.05, 3.95, 6.15, 9.95],
@@ -34,14 +34,14 @@ const TYPES = {
     kitchen: [3.6, 7.7], dining: [6.7, 2.45], sofa: { at: [3.7, 2.0], face: [-1, 0], len: 2.0, back: 0.5 }, coffee: [2.65, 2.0], rug: [2.7, 2.0, 1.9, 2.3],
     beds: [{ at: [1.75, 7.05], face: [0, -1], w: 1.4 }, { at: [4.6, 8.95], face: [0, -1], w: 1.5 }], wardrobe: { at: [3.55, 6.3], face: [1, 0], len: 1.6 },
     plant: [[6.2, 4.0, 11.5, 7.88, 0.02], [6.5, 4.4, 8.3, 7.5, 1.6], [8.7, 4.4, 9.7, 5.4, 1.4], [9.9, 6.1, 11.2, 7.5, 1.2]] },
-  '1C': { len: 10.2, wid: 5.2,
+  '1C': { len: 10.2, wid: 5.2, gal: [{ W: 4.84, s0: 0.75, s1: 3.3, f: -1, c: 2.5 }],   // the end wall's inside face (0.36 m thick)
     walls: [[3.35, 3.0, 3.45, 5.2], [4.4, 2.95, 6.2, 3.05], [6.15, 1.8, 6.25, 5.2], [5.35, 1.8, 5.45, 3.0], [5.4, 1.75, 6.2, 1.85], [7.2, 1.75, 9.3, 1.85], [9.25, 1.8, 9.35, 5.2]],
     tile: [[3.45, 3.05, 6.15, 5.2]], carpet: [[6.25, 1.85, 9.25, 5.2]],
     bath: { r: [3.45, 3.05, 6.15, 5.2], shower: 'L1' },
     kitchen: [0.6, 4.2], dining: [1.25, 2.2], sofa: { at: [2.5, 4.7], face: [0, -1], len: 2.0, back: 0.48 }, coffee: [2.5, 3.7], rug: [2.5, 3.7, 1.9, 1.7],
     beds: [{ at: [7.75, 4.17], face: [0, -1], w: 1.5 }], wardrobe: { at: [8.6, 2.2], face: [0, 1], len: 1.2 },
     arm: { at: [1.24, 4.11], face: [0.7, -0.7] }, fig: [0.67, 3.48] },   // the armchair and the fig stand clear of the 45° chamfer at the street corner
-  '1A': { len: 9.6, wid: 4.3,
+  '1A': { len: 9.6, wid: 4.3, gal: [{ endW: true, s0: 0.5, s1: 4.8, f: -1, c: 3.2 }],   // W set per flat: the end wall (Plot 1 slot) or the party wall
     walls: [[4.85, 0, 4.95, 0.9], [4.85, 1.6, 4.95, 3.05], [4.9, 3.0, 5.3, 3.1], [6.0, 3.0, 6.5, 3.1], [6.45, 0, 6.55, 3.1], [4.9, 0.85, 6.5, 0.95], [6.5, 3.05, 8.6, 3.15]],
     tile: [[4.95, 0.95, 6.45, 3.0]], carpet: [[6.55, 0, 9.6, 3.05]],
     bath: { r: [4.95, 0.95, 6.45, 3.0], shower: 'W1' },
@@ -74,7 +74,11 @@ function mats() {
     shag: m('#ffffff', 1, 0, { map: weaveTexture({ base: '#ece3d3', size: 0.06, carpet: true }) }), doorB: m('#17181a', 0.42), arch: m('#252a28', 0.55),
     led: new THREE.MeshStandardMaterial({ color: '#fff3dc', emissive: new THREE.Color('#ffd9a3'), emissiveIntensity: 1.8, clippingPlanes: [CUT] }),
     glow: new THREE.MeshStandardMaterial({ color: '#fff7ea', emissive: new THREE.Color('#ffe3bb'), emissiveIntensity: 1.1, clippingPlanes: [CUT] }),
-    bw0: bwMat(0), bw1: bwMat(1), bw2: bwMat(2) };
+    bw0: bwMat(0), bw1: bwMat(1), bw2: bwMat(2),
+    // the Specification & Finishes mood boards (A817): near-black painted wall below a black dado rail, white mounts in black frames,
+    // a jute rug, black enamel pendants with filament bulbs
+    darkWall: m('#262b2f', 0.88), mount: m('#f2efe8', 0.85), jute: m('#ffffff', 1, 0, { map: weaveTexture({ base: '#b59c76', size: 0.05, carpet: true }) }), enamel: m('#1b1c1e', 0.32, 0.25),
+    bulb: new THREE.MeshStandardMaterial({ color: '#fff4e0', emissive: new THREE.Color('#ffc978'), emissiveIntensity: 2.2, clippingPlanes: [CUT] }) };
   return MATS;
 }
 
@@ -178,18 +182,49 @@ export function buildPHFitout(units, F, FH, FM) {
       for (const dl of [-0.28, 0.28]) { at(L + dl, W - 0.58, [0, 1]); wishbone(K); at(L + dl, W + 0.58, [0, -1]); wishbone(K); }
     } else { const [L, W] = T.dining; at(L, W, [1, 0]); diningTable(K, { w: 0.8, d: 0.8, round: true, top: 'oakPale' }); at(L, W - 0.62, [0, 1]); chair(K, { fab: 'charcoalF' }); at(L, W + 0.62, [0, -1]); chair(K, { fab: 'charcoalF' }); }
     if (TOP) { const [L, W, w, d] = T.rug; box(L - w / 2, W - d / 2, L + w / 2, W + d / 2, y0, y0 + 0.028, 'shag'); }
-    else { const [L, W, w, d] = T.rug; at(L, W, [1, 0]); rug(K, { w: d, d: w, m: 'rug1' }); }
+    else { const [L, W, w, d] = T.rug; box(L - w / 2 - 0.1, W - d / 2 - 0.1, L + w / 2 + 0.1, W + d / 2 + 0.1, y0, y0 + 0.02, 'jute'); }   // a jute rug (A817 mood board)
     { const s = T.sofa; at(s.at[0], s.at[1], s.face); sofa(K, { len: s.len, fab: TOP ? 'dove' : u.plot % 2 ? 'boucle' : 'oatmeal', cushions: TOP ? ['linen', 'oatmeal'] : ['charcoalF', 'linenGrey'] });
       piece('sofa', s.at[0], s.at[1], s.face, { len: s.len, ...(TOP ? { fab: 'grey' } : {}) });
       if (T.art3) {   // three black-and-white prints in black frames over the sofa
-        const wf = s.at[1] - s.face[1] * (s.back + 0.12);
+        // on the party wall's face behind the sofa; frame then print stand out from the wall towards the room (they were the
+        // wrong way round, so the frames hid the prints: black squares in the 360s)
+        const wf = s.face[1] < 0 ? T.wid - 0.06 / sW : 0.06 / sW;
         T.art3.forEach((L, i) => {
-          box(L - 0.28, wf - 0.03 * s.face[1], L + 0.28, wf, y0 + 1.32, y0 + 2.08, 'blackM');
-          box(L - 0.25, wf - 0.034 * s.face[1], L + 0.25, wf - 0.03 * s.face[1], y0 + 1.35, y0 + 2.05, 'bw' + ((u.plot + i) % 3));
+          box(L - 0.28, wf, L + 0.28, wf + 0.03 * s.face[1], y0 + 1.32, y0 + 2.08, 'blackM');
+          box(L - 0.25, wf + 0.03 * s.face[1], L + 0.25, wf + 0.034 * s.face[1], y0 + 1.35, y0 + 2.05, 'bw' + ((u.plot + i) % 3));
           piece('art', L, wf, s.face, { w: 0.5, h: 0.7, yc: 1.7, bw: (u.plot + i) % 3 });
         });
-      } else piece('art', s.at[0] - s.face[0] * s.back, s.at[1] - s.face[1] * s.back, s.face, { w: 1.1, h: 0.8, yc: 1.55 });
+      } else if (!(T.gal || []).some(g => g.frames !== false)) piece('art', s.at[0] - s.face[0] * s.back, s.at[1] - s.face[1] * s.back, s.face, { w: 1.1, h: 0.8, yc: 1.55 });
       const pa = T.fig || { '1B': [4.62, 3.45], '1C': [1.0, 4.8], '1A': [4.55, 3.95] }[u.type]; if (pa) { piece('plant', pa[0], pa[1], [0, 1], { big: true }); if (TOP) { at(pa[0], pa[1], [0, 1]); pot(K, { big: true }); } } }
+    // ---- character (Charlie, 19 Nov: "so plain and white... give it more character, make it feel more homely"), from the A817
+    // Specification & Finishes mood boards: a near-black wall below a black dado rail with a gallery of black-framed prints above,
+    // black enamel pendants with filament bulbs over the table and the bed, black skirting
+    const ceilAt = (L, W) => { if (TOP) { const [pu, pv] = P(L, W); return topAt(pu, pv) - 0.02; } return y0 + FH - 0.3; };
+    const wallBox = (g, s0, s1, d0, d1, ya, yb, k) => { const a = g.f * d0, b2 = g.f * d1;
+      if (g.L != null) box(g.L + Math.min(a, b2), s0, g.L + Math.max(a, b2), s1, ya, yb, k); else box(s0, g.W + Math.min(a, b2), s1, g.W + Math.max(a, b2), ya, yb, k); };
+    for (const g0 of T.gal || []) {
+      const g = g0.endW ? { ...g0, W: T.wid - (u.slot === 0 ? 0.36 : 0.06) / sW } : g0;   // the side block: its end wall is 0.36 m thick, the party wall 0.12
+      wallBox(g, g.s0, g.s1, 0, 0.012, y0, y0 + 0.92, 'darkWall'); wallBox(g, g.s0, g.s1, 0, 0.035, y0 + 0.9, y0 + 0.96, 'doorB');
+      if (g.frames === false) continue;
+      const c = g.c ?? (g.s0 + g.s1) / 2, span = g.s1 - g.s0, k = Math.min(1, (span - 0.2) / 2.2);
+      const FR = span > 1.6 ? [[-0.85, 1.66, 0.45, 0.6], [-0.27, 1.76, 0.55, 0.76], [0.33, 1.92, 0.5, 0.4], [0.33, 1.45, 0.5, 0.42], [0.88, 1.7, 0.4, 0.55]] : [[-0.32, 1.7, 0.42, 0.56], [0.24, 1.84, 0.46, 0.36], [0.24, 1.42, 0.46, 0.36]];
+      FR.forEach(([dx, yc, w, h], i) => {
+        const sc = c + dx * k, top = Math.min(yc + h / 2, ceilAt(g.L ?? sc, g.W ?? sc) - y0 - 0.12), yc2 = top - h / 2;
+        wallBox(g, sc - w / 2, sc + w / 2, 0, 0.03, y0 + yc2 - h / 2, y0 + yc2 + h / 2, 'blackM');
+        wallBox(g, sc - w / 2 + 0.025, sc + w / 2 - 0.025, 0.03, 0.033, y0 + yc2 - h / 2 + 0.025, y0 + yc2 + h / 2 - 0.025, 'mount');
+        wallBox(g, sc - w / 2 + 0.08, sc + w / 2 - 0.08, 0.033, 0.036, y0 + yc2 - h / 2 + 0.08, y0 + yc2 + h / 2 - 0.08, 'bw' + ((u.plot + i) % 3));
+      });
+    }
+    const pendant = (L, W, drop) => {   // a black enamel shade on a black cord, a warm filament bulb under it
+      const [px, pz] = X(L, W), yc = ceilAt(L, W), yb = Math.max(y0 + 1.75, yc - drop);
+      const cord = new THREE.CylinderGeometry(0.005, 0.005, yc - yb, 6); cord.translate(px, (yc + yb) / 2, pz); add('blackM', cord);
+      const sh = new THREE.CylinderGeometry(0.03, 0.19, 0.12, 24, 1, true); sh.translate(px, yb - 0.06, pz); add('enamel', sh);
+      const cap = new THREE.CylinderGeometry(0.03, 0.03, 0.05, 12); cap.translate(px, yb, pz); add('enamel', cap);
+      const bl = new THREE.SphereGeometry(0.045, 14, 10); bl.scale(1, 1.3, 1); bl.translate(px, yb - 0.13, pz); add('bulb', bl);
+    };
+    { const [L, W] = T.diningR || T.dining; pendant(L, W, 0.85); }
+    for (const b of T.beds) pendant(b.at[0], b.at[1], 0.7);
+    for (const w of T.walls) box(w[0] - 0.012, w[1] - 0.012, w[2] + 0.012, w[3] + 0.012, y0, y0 + 0.12, 'doorB');   // black skirting on the partitions
     if (T.tv) {   // the long pale-oak TV bench on the feature wall, the TV, a glowing egg lamp
       const [ta, tb] = T.tv; box(ta, w0 + 0.01, tb, w0 + 0.43, y0 + 0.1, y0 + 0.44, 'oakP'); box(ta + 0.08, w0 + 0.05, tb - 0.08, w0 + 0.39, y0, y0 + 0.1, 'oakP');
       const tm = (ta + tb) / 2; box(tm - 0.62, w0 + 0.14, tm + 0.62, w0 + 0.17, y0 + 0.52, y0 + 1.22, 'tvB'); box(tm - 0.15, w0 + 0.1, tm + 0.15, w0 + 0.26, y0 + 0.44, y0 + 0.455, 'blackM'); box(tm - 0.02, w0 + 0.15, tm + 0.02, w0 + 0.17, y0 + 0.44, y0 + 0.53, 'blackM');
