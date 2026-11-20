@@ -59,7 +59,8 @@ const SLOTS = [
   { type: '1B', fp: [P_.PW[2], 0, P_.PW[3], P_.D], facing: 'St Joseph’s Church' },
   { type: '1B', fp: [P_.PW[1], 0, P_.PW[2], P_.D], facing: 'St Joseph’s Church' },
   { type: '1B', fp: [P_.PW[0], 0, P_.PW[1], P_.D], facing: 'St Joseph’s School' },
-  { type: '1C', fp: [0, P_.C1, P_.PW[0], P_.D], facing: 'Fletcher Street and St Joseph’s', corner: true },
+  { type: '1C', fp: [0, P_.C1, P_.PW[0], P_.D], facing: 'Fletcher Street and St Joseph’s', corner: true,   // its real outline: the 45° chamfer at the street corner
+    polyPlan: [[0, P_.C1 + P_.CH], [P_.CH, P_.C1], [P_.PW[0], P_.C1], [P_.PW[0], P_.D], [0, P_.D]] },
 ];
 const SF = [[1,'G',1,414.2,182000,'Available'],[2,'G',1,414.2,182000,'Available'],[3,'G',2,650.7,293000,'Available'],[4,'G',1,432.5,188000,'Available'],[5,'G',1,432.5,188000,'Available'],[6,'G',1,432.5,188000,'Available'],[7,'G',1,429.8,188000,'Available'],[8,'G',1,411.2,182000,'Available'],
   [9,'1',1,414.2,185000,'Available'],[10,'1',1,414.2,185000,'Available'],[11,'1',2,650.7,296000,'Exchanged'],[12,'1',1,432.5,192000,'Exchanged'],[13,'1',1,432.5,192000,'Exchanged'],[14,'1',1,432.5,192000,'Exchanged'],[15,'1',1,429.8,192000,'In Legals'],[16,'1',1,411.2,186000,'Exchanged'],

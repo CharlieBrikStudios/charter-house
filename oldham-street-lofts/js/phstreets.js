@@ -5,11 +5,11 @@
 // ground (1 m LiDAR). Anything that would fall inside the Print House's walled plot, Seaton House or its forecourt is left out.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { makeFlora } from './flora.js?v=1795176500';
+import { makeFlora } from './flora.js?v=1795189300';
 
 const inPoly = (P, x, z) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) if ((P[i][1] > z) !== (P[j][1] > z) && x < (P[j][0] - P[i][0]) * (z - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) c = !c; return c; };
 
-export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOut = [], blds = [], lampHeads = [], names = /Fletcher Street|Wellington Street/, pave = false, yellows = true } = {}) {
+export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOut = [], blds = [], lampHeads = [], names = /Fletcher Street|Wellington Street/, pave = false, yellows = true, farPave = null } = {}) {
   const group = new THREE.Group(); group.name = 'phStreets';
   const G = {}; const add = (k, g) => (G[k] ||= []).push(g.index ? g.toNonIndexed() : g);
   const near = (x, z) => Math.hypot(x - centre[0], z - centre[1]) < radius;
@@ -25,10 +25,12 @@ export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOu
     let run = [];
     const flush = () => {
       if (run.length < 2) { run = []; return; }
-      const pos = [], uv = [], idx = [];
+      // wide strips get a vertex every 0.5 m across as well as along, each on the ground: with only the two edges sampled, the
+      // LiDAR ground's camber and humps poked up through the middle of the road as grey patches (Charlie, 19 Nov)
+      const pos = [], uv = [], idx = [], nc = Math.max(1, Math.ceil(w / 0.5)), rw = nc + 1;
       run.forEach((p, i) => {
-        for (const sd of [-1, 1]) { const o = off + sd * w / 2, x = p.x - p.tz * o, z = p.z + p.tx * o; pos.push(x, groundAt(x, z) + lift, z); uv.push((o - off + w / 2) / uvs, p.s / uvs); }
-        if (i < run.length - 1) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+        for (let c = 0; c <= nc; c++) { const o = off - w / 2 + w * c / nc, x = p.x - p.tz * o, z = p.z + p.tx * o; pos.push(x, groundAt(x, z) + lift, z); uv.push((o - off + w / 2) / uvs, p.s / uvs); }
+        if (i < run.length - 1) for (let c = 0; c < nc; c++) { const a = i * rw + c; idx.push(a, a + rw, a + 1, a + 1, a + rw, a + rw + 1); }
       });
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
       if (g.attributes.normal.getY(0) < 0) { const ix = g.index; for (let q = 0; q < ix.count; q += 3) { const t = ix.getX(q + 1); ix.setX(q + 1, ix.getX(q + 2)); ix.setX(q + 2, t); } g.computeVertexNormals(); }
@@ -73,7 +75,7 @@ export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOu
     for (const m of SM) for (const e of [m.r.c[0], m.r.c[m.r.c.length - 1]]) {
       if (!near(e[0], e[1]) || seen.some(q => Math.hypot(q[0] - e[0], q[1] - e[1]) < 1)) continue;
       const meet = SM.filter(o => [o.r.c[0], o.r.c[o.r.c.length - 1]].some(q => Math.hypot(q[0] - e[0], q[1] - e[1]) < 0.5)); if (meet.length < 2) continue;
-      seen.push(e); const R = Math.max(...meet.map(o => o.hw)) + 1.2, g = new THREE.CircleGeometry(R, 28); g.rotateX(-Math.PI / 2);
+      seen.push(e); const R = Math.max(...meet.map(o => o.hw)) + 1.2, g = new THREE.RingGeometry(0.02, R, 28, Math.ceil(R / 0.5)); g.rotateX(-Math.PI / 2);   // rings every 0.5 m, so it follows the ground
       const pp = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < pp.count; i++) { const x = pp.getX(i) + e[0], z = pp.getZ(i) + e[1]; pp.setXYZ(i, x, groundAt(x, z) + 0.011, z); uv.setXY(i, x / 7, z / 7); }
       g.computeVertexNormals(); add('tarmac', g);
     } }
@@ -87,6 +89,13 @@ export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOu
       kerb(S, sd * hw, sd, me);
       if (yellows) for (const o of [hw - 0.3, hw - 0.45]) strip(mk, sd * o, 0.08, 0.026, 'yellow', 1);
       if (pave) strip(S, sd * (hw + 1.15), 2.0, 0.11, 'pave', 2.4);   // freshly laid flags behind the kerb (Oldham Street Lofts, Charlie 19 Nov)
+      // one side only: the pavement across the street from a building, unbroken along a stretch (Charlie's video, 19 Nov, 8:22:
+      // "a continuous pavement down this side of the street here, opposite"); runs of samples on the far side within reach
+      if (farPave && farPave.names.test(r.n || '')) {
+        const far = (p) => { const s0 = (farPave.from[0] - p.x) * -p.tz + (farPave.from[1] - p.z) * p.tx; return (s0 > 0 ? -1 : 1) === sd && Math.hypot(p.x - farPave.at[0], p.z - farPave.at[1]) < farPave.reach; };
+        let run = []; for (const p of S) { if (far(p)) run.push(p); else { if (run.length > 1) strip(run, sd * (hw + 1.15), 2.0, 0.11, 'pave', 2.4); run = []; } }
+        if (run.length > 1) strip(run, sd * (hw + 1.15), 2.0, 0.11, 'pave', 2.4);
+      }
     }
     if (/Wellington/.test(r.n)) { const dash = []; let run = []; for (const p of mk) { if (Math.floor(p.s / 6) % 1 === 0 && (p.s % 6) < 3) run.push(p); else if (run.length) { dash.push(run); run = []; } } if (run.length) dash.push(run); dash.forEach(d => strip(d, 0, 0.1, 0.026, 'white', 1)); }
     // give-way lines across Fletcher Street where it meets Wellington Street (double dashed, 0.2 m)
@@ -110,12 +119,39 @@ export function buildPHStreets(M, roads, groundAt, { centre, radius = 85, keepOu
   }
   const tarmac = M.asphalt.clone(); tarmac.color = new THREE.Color('#a4a6ab'); tarmac.roughness = 0.88; tarmac.polygonOffset = true; tarmac.polygonOffsetFactor = -1;
   const pv = (M.paving || M.stone).clone(); pv.color = new THREE.Color('#d9d6cf'); pv.polygonOffset = true; pv.polygonOffsetFactor = -1;
-  const mats = { pave: pv, tarmac, kerb: M.kerb || M.stone, yellow: M.lineYellow, white: M.lineWhite, post: M.timberBlack || new THREE.MeshStandardMaterial({ color: '#1d1f21', roughness: 0.5, metalness: 0.4 }), glow: M.lampGlow };
+  // the lines sit 1.4 cm above the tarmac, and the tarmac is pulled forward to beat the ground: at low angles that hid them in
+  // dashes (Charlie, 19 Nov: "an error with the double yellow lines"), so the lines are pulled forward further still
+  const lineMat = (m) => { const c = m.clone(); c.polygonOffset = true; c.polygonOffsetFactor = -3; c.polygonOffsetUnits = -3; return c; };
+  const mats = { pave: pv, tarmac, kerb: M.kerb || M.stone, yellow: lineMat(M.lineYellow), white: lineMat(M.lineWhite), post: M.timberBlack || new THREE.MeshStandardMaterial({ color: '#1d1f21', roughness: 0.5, metalness: 0.4 }), glow: M.lampGlow };
   for (const [k, list] of Object.entries(G)) {
     const g = mergeGeometries(list.map(x => { if (!x.attributes.uv) x.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(x.attributes.position.count * 2), 2)); return x; }), false); if (!g) continue;
     const m = new THREE.Mesh(g, mats[k]); m.receiveShadow = true; m.castShadow = k === 'post' || k === 'kerb'; m.name = 'phst_' + k; group.add(m);
   }
   return group;
+}
+
+// The walls, the playground and the car park edge across Fletcher Street came right up to the kerb, so the pavement on that side
+// stopped and started (Charlie's video, 19 Nov, 8:22). Every corner of them within reach of a point is moved back from the
+// street's centre line to d, behind a 2 m flagged pavement; the walls then follow the line of the road. Returns a copy.
+export function setBackFromStreet(SP, roads, { names = /Fletcher Street/, d = 6.3, at, reach = 40 } = {}) {
+  const R = roads.filter(r => names.test(r.n || ''));
+  const push = (p) => {
+    if (at && Math.hypot(p[0] - at[0], p[1] - at[1]) > reach) return p;
+    let best = null;
+    for (const r of R) for (let i = 0; i + 1 < r.c.length; i++) {
+      const a = r.c[i], b = r.c[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz || 1;
+      const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / l2)), qx = a[0] + dx * t, qz = a[1] + dz * t, dd = Math.hypot(p[0] - qx, p[1] - qz);
+      if (!best || dd < best.d) best = { d: dd, qx, qz };
+    }
+    if (!best || best.d >= d || best.d < 1e-3) return p;
+    const k = d / best.d; return [+(best.qx + (p[0] - best.qx) * k).toFixed(2), +(best.qz + (p[1] - best.qz) * k).toFixed(2)];
+  };
+  const out = { ...SP };
+  if (SP.play) out.play = SP.play.map(push);
+  if (SP.walls_play) out.walls_play = SP.walls_play.map(L => L.map(push));
+  if (SP.parking) out.parking = SP.parking.map(L => L.map(push));
+  if (SP.divider) out.divider = SP.divider.map(push);
+  return out;
 }
 
 // Round the Print House (Charlie's video, 18 Nov): the mini car park across Fletcher Street gets brick piers and black gates

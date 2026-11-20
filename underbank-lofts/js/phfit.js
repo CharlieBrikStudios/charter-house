@@ -3,11 +3,11 @@
 // Each type is laid out in its own frame: L runs from the big window into the flat, W from the kitchen wall across.
 // Built in the Print House model's plan frame (x = u, z = -v), so the group sits inside the model's transform.
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CUT } from './materials.js?v=1795176500';
-import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1795176500';
-import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug, pot } from './furniture.js?v=1795176500';
-import { phTopY, phSide, PH_SIDE } from './ph_data.js?v=1795176500';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CUT } from './materials.js?v=1795189300';
+import { plankTexture, weaveTexture, tileTexture, finishUV } from './finishes.js?v=1795189300';
+import { Kit, sofa, armchair, bed, bedside, wardrobe, kitchen, chair, diningTable, coffeeTable, rug, pot } from './furniture.js?v=1795189300';
+import { phTopY, phSide, PH_SIDE, PH_PLAN } from './ph_data.js?v=1795189300';
 
 // which side of each main-block slot its kitchen runs along (kitchens pair back to back across the party walls)
 const KSIDE = { 2: 0, 3: 1, 4: 0, 5: 1, 6: 0, 7: 1 };
@@ -38,8 +38,9 @@ const TYPES = {
     walls: [[3.35, 3.0, 3.45, 5.2], [4.4, 2.95, 6.2, 3.05], [6.15, 1.8, 6.25, 5.2], [5.35, 1.8, 5.45, 3.0], [5.4, 1.75, 6.2, 1.85], [7.2, 1.75, 9.3, 1.85], [9.25, 1.8, 9.35, 5.2]],
     tile: [[3.45, 3.05, 6.15, 5.2]], carpet: [[6.25, 1.85, 9.25, 5.2]],
     bath: { r: [3.45, 3.05, 6.15, 5.2], shower: 'L1' },
-    kitchen: [0.6, 4.2], dining: [1.2, 2.5], sofa: { at: [2.5, 4.7], face: [0, -1], len: 2.0, back: 0.48 }, coffee: [2.5, 3.7], rug: [2.5, 3.7, 1.9, 1.7],
-    beds: [{ at: [7.75, 4.17], face: [0, -1], w: 1.5 }], wardrobe: { at: [8.6, 2.2], face: [0, 1], len: 1.2 }, arm: { at: [0.8, 4.3], face: [0.7, -0.7] } },
+    kitchen: [0.6, 4.2], dining: [1.25, 2.2], sofa: { at: [2.5, 4.7], face: [0, -1], len: 2.0, back: 0.48 }, coffee: [2.5, 3.7], rug: [2.5, 3.7, 1.9, 1.7],
+    beds: [{ at: [7.75, 4.17], face: [0, -1], w: 1.5 }], wardrobe: { at: [8.6, 2.2], face: [0, 1], len: 1.2 },
+    arm: { at: [1.24, 4.11], face: [0.7, -0.7] }, fig: [0.67, 3.48] },   // the armchair and the fig stand clear of the 45° chamfer at the street corner
   '1A': { len: 9.6, wid: 4.3,
     walls: [[4.85, 0, 4.95, 0.9], [4.85, 1.6, 4.95, 3.05], [4.9, 3.0, 5.3, 3.1], [6.0, 3.0, 6.5, 3.1], [6.45, 0, 6.55, 3.1], [4.9, 0.85, 6.5, 0.95], [6.5, 3.05, 8.6, 3.15]],
     tile: [[4.95, 0.95, 6.45, 3.0]], carpet: [[6.55, 0, 9.6, 3.05]],
@@ -126,7 +127,21 @@ export function buildPHFitout(units, F, FH, FM) {
     const piece = (t, L, W, face, o = {}) => { const [x, z] = X(L, W), [fx, fz] = D(face[0], face[1]); pcs.push({ t, x, y: y0, z, fx, fz, plot: u.plot, ...o }); };
     // partitions, floors
     for (const [L0, W0, L1, W1] of T.walls) box(L0, W0, L1, W1, y0, y0 + wallH, 'wall');
-    for (const r of T.floors || [[0.02, 0.02, T.len - 0.02, T.wid - 0.02]]) box(r[0], r[1], r[2], r[3], y0 - 0.012, y0 + 0.004, TOP ? 'lvtT' : 'lvt');   // pale oak boards through the flat (as the CGIs); tiles and carpet sit on top
+    // the 1C's living room has a 45° chamfer at its street corner: its boards stop at that wall (a plain box poked out past it)
+    const chamf = !side && u.type === '1C' ? PH_PLAN.C1 + PH_PLAN.CH : null;
+    const floorBox = (L0, W0, L1, W1, ya, yb, k) => {
+      if (chamf == null) return box(L0, W0, L1, W1, ya, yb, k);
+      const inside = (q) => q[0] + q[1] - chamf;   // >= 0 inside the flat
+      const ring = [P(L0, W0), P(L1, W0), P(L1, W1), P(L0, W1)], out = [];
+      ring.forEach((a, i) => { const b = ring[(i + 1) % 4], fa = inside(a), fb = inside(b); if (fa >= 0) out.push(a); if ((fa >= 0) !== (fb >= 0)) { const t = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); } });
+      if (out.length < 3) return;
+      const area = out.reduce((s2, q, i) => { const r2 = out[(i + 1) % out.length]; return s2 + q[0] * r2[1] - r2[0] * q[1]; }, 0);
+      const pts = (area < 0 ? out.slice().reverse() : out).map(([uu, vv]) => new THREE.Vector2(uu, vv));
+      const g = new THREE.ExtrudeGeometry(new THREE.Shape(pts), { depth: yb - ya, bevelEnabled: false, curveSegments: 1 });
+      g.rotateX(-Math.PI / 2); g.translate(0, ya, 0); g.clearGroups();   // (u, v, h) -> (x = u, y = h, z = -v)
+      add(k, mergeVertices(g));
+    };
+    for (const r of T.floors || [[0.02, 0.02, T.len - 0.02, T.wid - 0.02]]) floorBox(r[0], r[1], r[2], r[3], y0 - 0.012, y0 + 0.004, TOP ? 'lvtT' : 'lvt');   // pale oak boards through the flat (as the CGIs); tiles and carpet sit on top
     for (const r of T.tile) box(r[0], r[1], r[2], r[3], y0, y0 + 0.012, 'tile');
     for (const r of T.carpet) box(r[0], r[1], r[2], r[3], y0, y0 + 0.01, TOP ? 'sisal' : 'carpet');
     // kitchen along the W = 0 wall

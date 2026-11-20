@@ -3,8 +3,8 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1795176500';
-import { buildShopfronts } from './shopfronts.js?v=1795176500';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795189300';
+import { buildShopfronts } from './shopfronts.js?v=1795189300';
 
 // ------------------------------------------------------------------ terrain
 let TER = null, TH = null;
@@ -45,6 +45,13 @@ export function setTerrain(t, raw = false) {
     const xe = 0.5 + 11.5 * sm((z - 20.6) / 1.4);
     const w5 = sm((x + 13.5) / 2) * (1 - sm((x - xe) / 2.5)) * sm((z + 3) / 2.5) * (1 - sm((z - 24) / 12));
     if (w5 > 0) { const T = HV_PAVE(Math.max(0, Math.min(z, 21.3))) - 0.14 - G0; TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w5) + T * w5; }
+  }
+  // under Charter House itself the ground stays just below its ground floor: on the LiDAR the ground rises with Churchgate past
+  // the building and came up through the ground-floor flats as a grey slope in the cut-away (Charlie, 19 Nov). Both wings.
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell;
+    const inCG = x > 1 && x < 22 && z > 1 && z < 10.5, inHV = x > 1 && x < 11 && z > 1 && z < 21;   // grid points inside the walls only
+    if (inCG || inHV) TH[j * t.nx + i] = Math.min(TH[j * t.nx + i], -0.12 - G0);
   }
   // the play park sits level with Churchgate (no grass bank between the pavement and its railings)
   const jr = Math.round((-6.6 - t.z0) / t.cell);
@@ -483,7 +490,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795176500'), { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795189300'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {
