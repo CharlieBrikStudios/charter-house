@@ -3,13 +3,14 @@
 // Terrain heights are estimates relative to Charter House's ground floor (61.77 m AOD).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CG_PAVE, HV_PAVE } from './data.js?v=1795200000';
-import { buildShopfronts } from './shopfronts.js?v=1795200000';
+import { CG_PAVE, HV_PAVE } from './data.js?v=1795205000';
+import { buildShopfronts } from './shopfronts.js?v=1795205000';
 
 // ------------------------------------------------------------------ terrain
-let TER = null, TH = null;
+let TER = null, TH = null, TH_RAW = null;
 export function setTerrain(t, raw = false) {
   TER = t; TH = new Float32Array(t.h.length); for (let i = 0; i < t.h.length; i++) TH[i] = t.h[i] / 10;
+  TH_RAW = TH;
   if (raw) return;   // another town (Hyde): no Stockport street corrections
   // the ground is now the Environment Agency's 1 m LiDAR (Charlie, 18 Nov: true levels for the Underbanks, Market Place, Hillgate
   // and the Print House streets), so the two guessed Churchgate slopes below are not needed; the architect's levels round
@@ -91,7 +92,28 @@ export function setTerrain(t, raw = false) {
     const w2 = sm((x + 8) / 8) * sm((48 - x) / 8) * sm((z + 60) / 8) * sm((-8 - z) / 3);
     if (w2 > 0) TH[j * t.nx + i] = TH[j * t.nx + i] * (1 - w2) + TH[jr * t.nx + i] * w2;
   }
+  // The Print House plot (both blocks, the walkways and the residents' garden): the LiDAR rises towards Seaton House and the
+  // ground came up through the ground-floor flats by as much as 1.3 m (a pale floor in the Apt 1 360, 21 Nov) and through the
+  // garden paving. Kept 0.1 m under the plot's level here; the buildings still take their heights from the ground as it was
+  // (groundAtRaw), so nothing moves.
+  TH_RAW = TH.slice();
+  const PO = [-61.99, 195.59], PU = [-0.0993, 0.9951], PV = [0.9951, 0.0993], sa = -11.7 * Math.PI / 180;
+  const SX = [Math.cos(sa), Math.sin(sa)], SY = [-Math.sin(sa), Math.cos(sa)], SO = [-3.57, 16.71];
+  const COURT = [[6.1, 11.57], [31.12, 11.57], [31.12, 16.17], [17.38, 23.1], [12.0, 34.52], [9.86, 24.23], [7.82, 14.35]];
+  const SEATON = [[21.75, 14.82], [15.99, 16.16], [17.1, 21.09], [17.58, 23.35], [-1.03, 27.53], [1.78, 39.66], [26.0, 34.64]];   // under Seaton House too (hidden, and it keeps its own heights)
+  const inPoly = (P, u, v) => { let c = false; for (let a = 0, b = P.length - 1; a < P.length; b = a++) { const [ua, va] = P[a], [ub, vb] = P[b]; if ((va > v) !== (vb > v) && u < (ub - ua) * (v - va) / (vb - va) + ua) c = !c; } return c; };
+  const phLevel = -1.8 - G0;
+  for (let j = 0; j < t.nz; j++) for (let i = 0; i < t.nx; i++) {
+    const x = t.x0 + i * t.cell, z = t.z0 + j * t.cell, dx = x - PO[0], dz = z - PO[1];
+    if (Math.abs(dx) > 60 || Math.abs(dz) > 60) continue;
+    const u = dx * PU[0] + dz * PU[1], v = dx * PV[0] + dz * PV[1];
+    const s = (u - SO[0]) * SX[0] + (v - SO[1]) * SX[1], tt = (u - SO[0]) * SY[0] + (v - SO[1]) * SY[1];
+    const inMain = u > -1 && u < 32 && v > 0.3 && v < 15.5, inSide = s > 0.3 && s < 12.5 && tt > -2 && tt < 12.5;
+    if (inMain || inSide || inPoly(COURT, u, v) || inPoly(SEATON, u, v)) TH[j * t.nx + i] = Math.min(TH[j * t.nx + i], phLevel);
+  }
 }
+// the ground before the Print House plot was cut down to its level: the Print House and Seaton House set their heights from it
+export function groundAtRaw(x, z) { const T = TH; TH = TH_RAW; const g = terrainH(x, z) + G0; TH = T; return g; }
 // the 12 km mid-distance heightfield (far.json) continues the street-level grid out to the valleys and hills
 let MID = null, MH = null;
 export function setMid(m) {
@@ -521,7 +543,7 @@ export function buildWorld(W, M, base, forest, opts = {}) {
     const span = (nx - 1) * T.cell;
     for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, groundAt(x, z) - 0.035); uv.setXY(i, (x - T.x0) / span, (z - T.z0) / span); }
     g.computeVertexNormals();
-    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795200000'), { srgb: false, wrap: false });
+    const splat = tex(base + (opts.splat || 'world_splat.png?v=1795205000'), { srgb: false, wrap: false });
     splat.flipY = true;
     const mat = new THREE.MeshStandardMaterial({ map: M.paving.map, normalMap: M.paving.normalMap, roughness: 0.92, color: '#e6e0d8' });
     mat.onBeforeCompile = (sh) => {

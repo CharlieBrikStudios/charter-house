@@ -8,10 +8,11 @@
 // local z = -v (v runs east into the garden), so the plan coordinates read straight across.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795200000';
-import { roomBox } from './building.js?v=1795200000';
-import { roomMaterial, tex } from './materials.js?v=1795200000';
-import { makeFlora, floraMaterials } from './flora.js?v=1795200000';
+import { PH_SITE, PH_FH, PH_UNITS, PH_ROOF, PH_PLAN, PH_SIDE, phSide, phTopY } from './ph_data.js?v=1795205000';
+import { roomBox } from './building.js?v=1795205000';
+import { roomMaterial, tex } from './materials.js?v=1795205000';
+import { makeFlora, floraMaterials } from './flora.js?v=1795205000';
+import { groundAtRaw } from './world.js?v=1795205000';
 
 const FH = PH_FH, NF = 5;
 const WS = 0.515, WH = 2.035, WW = 2.372;  // window: bottom above the floor (450 brick + 65 sill), height, width (A817_T_302A)
@@ -23,6 +24,7 @@ export function phBasis() {
 }
 
 export function phBaseY(groundAt) {
+  groundAt = groundAtRaw;   // the ground before the plot was cut to its level (world.js), so the blocks stay where they were
   const B = phBasis();
   let yr = 0, nr = 0; for (const u of [6, 12, 18, 24]) { yr += groundAt(...B.toWorld(u, -3.2)); nr++; }
   let y0 = yr / nr + 1.85; for (const [u, v] of [[0, 3.6], [5.02, 0], [28.5, 0], phSide(0, 0), phSide(0, 9.69)]) y0 = Math.max(y0, groundAt(...B.toWorld(u, v)) + 0.15);

@@ -5,7 +5,7 @@
 // ground (1 m LiDAR). Anything that would fall inside the Print House's walled plot, Seaton House or its forecourt is left out.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { makeFlora } from './flora.js?v=1795200000';
+import { makeFlora } from './flora.js?v=1795205000';
 
 const inPoly = (P, x, z) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) if ((P[i][1] > z) !== (P[j][1] > z) && x < (P[j][0] - P[i][0]) * (z - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) c = !c; return c; };
 
