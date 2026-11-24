@@ -3300,7 +3300,7 @@ function returnsTab(){const u=defaultCalc(),c=calc(u);
   <div class="cols2">
   <section class="sec"><div class="cap"><span>Monthly cash flow</span></div>
    <div class="rows big"><div><span>Rent</span><span>${gbp(u.rent)}</span></div>
-    <div><span>Mortgage, 75% at 4% interest only (5-year fix)</span><span>−£${c.mort.toFixed(2)}</span></div>
+    <div><span>Mortgage, 75% interest only at the average mortgage rate (5-year fix)</span><span>−£${c.mort.toFixed(2)}</span></div>
     <div><span>Service charge, est.</span><span>−${gbp(u.sc)}</span></div><div><span>Ground rent</span><span>£0</span></div>
     <div><span>Letting management, 10%</span><span>−${gbp(c.mg)}</span></div>
     <div class="tot hlrow"><span>Net monthly cash flow</span><span>£${c.net.toFixed(2)}</span></div></div></section>
@@ -3468,7 +3468,7 @@ CH.heritage=()=>`<section class="ch" id="heritage">${chh("09","The building's he
 
 CH.returns=()=>{return `<section class="ch" id="returns">${chh("07","Return on investment","Worked through on the example one bed at £189,000, with a 75% buy-to-let mortgage.")}
  <div class="tl2" style="margin-top:56px"><div class="tbox"><div class="cap">Monthly cash flow</div><h4>${gbp(M.rent)} rent, £${M.net.toFixed(2)} net</h4>
-   <div class="rows big"><div><span>Rent</span><span>${gbp(M.rent)}</span></div><div><span>Mortgage, 5-year fix at 4%, interest only</span><span>−£${M.mort.toFixed(2)}</span></div><div><span>Service charge, est. £2.50 per sq ft</span><span>−£${EX.sc.toFixed(2)}</span></div><div><span>Ground rent</span><span>£0</span></div><div><span>Letting management, 10%</span><span>−${gbp(M.fee)}</span></div><div class="tot hlrow"><span>Net per month</span><span>£${M.net.toFixed(2)}</span></div></div>
+   <div class="rows big"><div><span>Rent</span><span>${gbp(M.rent)}</span></div><div><span>Mortgage, 5-year fix at the average mortgage rate, interest only</span><span>−£${M.mort.toFixed(2)}</span></div><div><span>Service charge, est. £2.50 per sq ft</span><span>−£${EX.sc.toFixed(2)}</span></div><div><span>Ground rent</span><span>£0</span></div><div><span>Letting management, 10%</span><span>−${gbp(M.fee)}</span></div><div class="tot hlrow"><span>Net per month</span><span>£${M.net.toFixed(2)}</span></div></div>
    <p class="fine">That's ${gbp(M.net*12)} a year.</p></div>
   <div class="tbox"><div class="cap">Rental growth</div><h4>Forecast at 4% a year</h4>${rentChart()}<p class="fine">Gross yield on the £189,000 price rises from 8.3% in year 1 to 9.7% in year 5.</p></div></div>
  <div class="sec"><div class="cap"><span>Capital growth and overall return</span></div>
@@ -3543,7 +3543,7 @@ function longView(){return `<section class="sec lvsec"><div class="cap"><span>Th
    <tr class="hi"><td>North West</td><td>3.5%</td><td>6.5%</td><td>6.5%</td><td>6.5%</td><td>25.0%</td></tr><tr><td>UK</td><td>2.5%</td><td>5.0%</td><td>6.0%</td><td>6.0%</td><td>18.5%</td></tr><tr><td>London</td><td>1.0%</td><td>3.5%</td><td>5.0%</td><td>5.0%</td><td>10.6%</td></tr></tbody></table></div></div>
  <div class="tl2"><div class="tbox"><div class="cap">Rental growth</div><h4>Forecast at 4% a year</h4>${rentChart()}<p class="fine">Gross yield on £189,000 rises from 8.3% in year 1 to 9.7% in year 5.</p></div>
  <div class="tbox"><div class="cap">Capital growth and overall return</div><div class="seg2" role="group" aria-label="Exit year">${[5,10,15,20].map(y=>`<button data-yr="${y}" aria-pressed="${S.yr===y}">Year ${y}</button>`).join("")}</div>${capChart()}${roiBlock()}</div></div>
- <p class="fine">Capital growth assumes the apartment is worth £195,000 on completion and then rises 5% a year, as in our return on investment breakdown. Rental income assumes 4% rent growth, 10% management, a 75% interest-only mortgage at 4% and the service charge. Average annual return is the total return divided by the years held; it is not compounded.</p></section>`}
+ <p class="fine">Capital growth assumes the apartment is worth £195,000 on completion and then rises 5% a year, as in our return on investment breakdown. Rental income assumes 4% rent growth, 10% management, a 75% interest-only mortgage at the average mortgage rate and the service charge. Average annual return is the total return divided by the years held; it is not compounded.</p></section>`}
 function howBlocks(){return `<section class="sec"><div class="handsoff"><i class="mask hoscout" aria-hidden="true"></i><div><div class="cap">After completion</div><h3 class="big-h" style="color:#fff">We take care of it all.</h3><p>Tenant find, referencing, rent collection and day-to-day management, for 10% of the rent. You don't need to live nearby or lift a finger. And we're two minutes away at The Print House.</p></div></div>
 </section>`}
 function chooseTab(){return `<div class="pane"><section class="sec first tourcta"><button class="tourimg" data-img="model3d" data-cap="Charter House, from our 3D model" aria-label="View the 3D model still full screen"><span class="tbadge"><i></i>Live on the call</span></button>
