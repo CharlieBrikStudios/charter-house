@@ -3339,6 +3339,53 @@ body.oo-locked{overflow-x:hidden}
 .oog-amt span{font-size:14.5px;color:var(--muted)}
 .oog-note{font-size:15px;line-height:1.5;color:var(--text);margin:0 0 12px;padding:10px 14px;background:var(--paper);border-left:2px solid var(--brick)}
 
+/* ---------- the check on one page: four yes/no rows (James, 25 Nov) ---------- */
+.oog1{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(24px,4.5vw,72px);align-items:center}
+.oog1 .oog-h{max-width:12ch}
+.oog1 .oog-how{grid-template-columns:minmax(0,1fr);border-top:0;margin-top:clamp(14px,2.6dvh,28px)}
+.oog1 .oog-how li{padding:10px 0;border-top:1px solid var(--v4rule)}
+.oog1 .oog-how li+li{padding-left:0;border-left:0}
+.oog1 .oog-how li:last-child{border-bottom:1px solid var(--v4rule)}
+.oog1 .oog-how b{font:500 16px/1.3 var(--sans);color:var(--ink)}
+.oog1 .oog-how .n{font:600 18px/1 var(--sans);font-variant-numeric:tabular-nums}
+.oog1 .oog-help{font-size:15px}
+.oogc{list-style:none;margin:0;padding:0;border-top:1px solid var(--ink)}
+.oogc-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 16px;align-items:center;padding:clamp(12px,2dvh,18px) 0;border-bottom:1px solid var(--v4rule);transition:background .15s var(--oo-ease)}
+.oogc-row .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--v4rule);font:600 13px/1 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums;transition:background .15s var(--oo-ease),color .15s var(--oo-ease),border-color .15s var(--oo-ease)}
+.oogc-row.is-y .n{background:var(--forest,#1F4A38);border-color:var(--forest,#1F4A38);color:#fff}
+.oogc-row.is-n .n{background:var(--oo-no);border-color:var(--oo-no);color:#fff}
+.oogc-row .q b{display:block;font:600 clamp(17px,1.45vw,20px)/1.25 var(--sans);color:var(--ink)}
+.oogc-row .q small{display:block;margin-top:3px;font-size:14px;line-height:1.4;color:var(--muted)}
+.oogc-row .yn{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink)}
+.oogc-b{min-width:72px;min-height:46px;padding:0 16px;border:0;background:transparent;color:var(--ink);font:600 15px var(--sans);cursor:pointer;transition:background .12s var(--oo-ease),color .12s var(--oo-ease)}
+.oogc-b+.oogc-b{border-left:1px solid var(--ink)}
+.oogc-b:hover{background:rgb(29 27 26 / .06)}
+.oogc-b:active{transform:scale(.96)}
+.oogc-b:focus-visible{outline:2px solid var(--v4gold);outline-offset:2px}
+.oogc-b.ob-y[aria-pressed="true"]{background:var(--forest,#1F4A38);color:#fff}
+.oogc-b.ob-n[aria-pressed="true"]{background:var(--oo-no);color:#fff}
+.oog-go{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;margin-top:clamp(14px,2.6dvh,26px)}
+.oog-go .b{min-height:56px;height:auto;padding:0 30px;font-size:15px}
+.oog-go .b:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.4)}
+.oog-go .b.pulse{animation:oogpulse .45s var(--oo-ease)}
+@keyframes oogpulse{0%{transform:scale(1)}40%{transform:scale(1.045)}100%{transform:scale(1)}}
+.oog-go small{font-size:14px;color:var(--muted)}
+.oog-res.low{border-color:var(--v4gold);background:linear-gradient(180deg in oklch,var(--v4warm),var(--paper) 70%)}
+.oog-res.low .tag{color:var(--v4gold)}
+@media (max-width:900px){
+  .oog1{grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+  .oog1 .oog-how,.oog1 .oog-help{display:none}
+  .oog1 .oog-h{max-width:none;margin-bottom:6px!important}
+  .oogc-row{grid-template-columns:minmax(0,1fr) auto;padding:11px 0}
+  .oogc-row .n{display:none}
+  .oogc-row .q b{font-size:16px}
+  .oogc-row .q small{font-size:13px}
+  .oogc-b{min-width:58px;min-height:44px;padding:0 12px;font-size:14.5px}
+  .oog-go .b{width:100%;justify-content:center;min-height:54px}
+  .oog-go small{width:100%;text-align:center}
+}
+@media (max-width:900px) and (max-height:700px){.oogc-row .q small{display:none}.oogc-row{padding:9px 0}}
+
 /* result pages */
 .oog-res{padding:clamp(22px,3.4vw,44px);border:1px solid var(--ink)}
 .oog-res .tag{display:inline-flex;align-items:center;gap:9px;font:500 11px/1 var(--wide);letter-spacing:.26em;text-transform:uppercase;margin-bottom:14px}
@@ -3507,6 +3554,74 @@ div.oog-pic{cursor:default}
 .smgnav .tparr{position:static!important;transform:none!important}
 @media (max-width:760px){.smg{flex-basis:88%}.smg figcaption b{font-size:16px}}
 @media (prefers-reduced-motion:reduce){.smgtrack{scroll-behavior:auto}.smgpic img{transition:none}}
+
+/* =====================================================================
+   James's feedback, 25 Nov: no italics, fewer orange blocks, green for the
+   hard numbers, icons and photos to break up text, numbered move steps,
+   a live stamp duty calculator.
+   ===================================================================== */
+:root{--ital:"Besley",Georgia,serif}
+body.rep *,body.rep *::before,body.rep *::after{font-style:normal!important}
+
+/* track record card: light, so it doesn't sit orange-on-orange with the block below */
+.hqtop .hq.own{background:var(--v4warm,#F3ECE3)!important;color:var(--ink)!important;border:1px solid var(--v4rule);box-shadow:none!important}
+.hqtop .hq.own::before,.hqtop .hq.own::after{border-color:var(--v4rule)!important}
+.hqtop .hq.own .cap{color:var(--brick)!important}
+.hqtop .hq.own .sh{color:var(--ink)!important}
+.hqtop .hq.own .lead{color:var(--text)!important}
+.hqtop .hq.own .ownby{color:var(--muted)!important;font-family:var(--sans)!important;font-size:14px}
+.hqtop .hq.own .ownv .stamp{background:var(--forest,#1F4A38)!important;color:#fff!important}
+.oohq .sh{font-size:clamp(28px,3.2vw,42px)!important;line-height:1.08!important;margin:6px 0 14px!important;max-width:18ch}
+.oohqf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:20px 0 0;border-top:1px solid var(--ink)}
+.oohqf>div{padding:14px 16px 4px 0}
+.oohqf>div+div{padding-left:16px;border-left:1px solid var(--v4rule)}
+.oohqf dt{font:600 clamp(26px,2.6vw,36px)/1.05 var(--sans);letter-spacing:-.02em;color:var(--forest,#1F4A38);font-variant-numeric:tabular-nums}
+.oohqf dd{margin:6px 0 0;font-size:14px;line-height:1.4;color:var(--muted)}
+@media (max-width:620px){.oohqf{grid-template-columns:minmax(0,1fr)}.oohqf>div+div{padding-left:0;border-left:0;border-top:1px solid var(--v4rule)}}
+
+/* green for the hard numbers */
+.growband{background:var(--forest,#1F4A38)!important;box-shadow:0 30px 60px -38px rgba(24,58,44,.65)!important}
+.dcard .stat{color:var(--forest,#1F4A38)!important}
+
+/* local favourites: a photo per list */
+.oofavpic{aspect-ratio:16/7;background-size:cover;background-position:center;margin-bottom:14px;outline:1px solid var(--v4rule);outline-offset:-1px}
+
+/* the everyday: an icon per item */
+.ooni{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:color-mix(in oklch,var(--forest,#1F4A38) 10%,transparent);color:var(--forest,#1F4A38);margin-bottom:12px}
+.ooni svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* your move: numbered steps on a line, so the order is clear */
+.ootl{border-top:0!important;margin-top:14px!important}
+.ootl li{grid-template-columns:44px minmax(140px,.3fr) minmax(0,1fr)!important;gap:14px 24px!important;padding:18px 0!important;border-bottom:1px solid var(--v4rule)}
+.ootl li .tn{align-self:start!important;margin:2px 0 0!important;position:relative;z-index:1;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--paper);border:1.5px solid var(--forest,#1F4A38);font:600 15px/1 var(--sans);color:var(--forest,#1F4A38);font-variant-numeric:tabular-nums}
+.ootl li.k1 .tn{background:var(--forest,#1F4A38);color:#fff}
+.ootl li::before{content:"";position:absolute;left:18px;top:0;bottom:0;width:1.5px;background:color-mix(in oklch,var(--forest,#1F4A38) 35%,transparent)}
+.ootl li:first-child::before{top:36px}
+.ootl li:last-child::before{bottom:calc(100% - 36px)}
+.ootl li{align-items:start!important}
+.ootl li .cap{padding-top:10px!important;margin:0!important;min-height:0!important}
+.ootl li>div{padding-top:5px}
+@media (max-width:620px){.ootl li{grid-template-columns:44px minmax(0,1fr)!important;gap:2px 14px!important}.ootl li .tn{grid-row:1/span 2}.ootl li .cap{grid-column:2;grid-row:1;padding-top:10px!important}.ootl li>div{grid-column:2;grid-row:2;padding-top:0}}
+
+/* live stamp duty calculator */
+.oosdc{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);margin-top:26px;border:1px solid var(--ink)}
+.oosdc .sdl{padding:clamp(18px,2.4vw,28px)}
+.oosdc h4{font:600 22px/1.2 var(--serif);color:var(--ink);margin:6px 0 14px}
+.sdin{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);max-width:280px}
+.sdbox{display:flex;align-items:center;border:1px solid var(--ink);background:var(--paper)}
+.sdbox i{padding:0 4px 0 14px;font:600 18px var(--sans);color:var(--ink)}
+.sdbox input{flex:1;min-width:0;min-height:48px;border:0;background:transparent;font:600 18px var(--sans);color:var(--ink);padding:0 12px 0 2px;font-variant-numeric:tabular-nums}
+.sdbox input:focus{outline:none}
+.sdbox:focus-within{outline:2px solid var(--v4gold);outline-offset:2px}
+.sdchips,.sdwho{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.sdchips button,.sdwho button{min-height:44px;padding:0 14px;border:1px solid var(--v4rule);background:transparent;font:500 14px var(--sans);color:var(--ink);cursor:pointer;transition:background .12s var(--oo-ease),color .12s var(--oo-ease),border-color .12s var(--oo-ease)}
+.sdchips button[aria-pressed="true"],.sdwho button[aria-checked="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.oosdc .sdr{padding:clamp(18px,2.4vw,28px);background:var(--forest,#1F4A38);color:#EFE9E1;display:flex;flex-direction:column;justify-content:center}
+.oosdc .sdr .cap{color:#CFE0D4!important}
+.oosdc .sdr b{font:600 clamp(40px,4.4vw,60px)/1 var(--sans);letter-spacing:-.02em;color:#fff;margin:10px 0 12px;font-variant-numeric:tabular-nums}
+.oosdc .sdr p{margin:0!important;font-size:15px;line-height:1.5;color:#E3ECE5!important}
+.growband .cap{display:flex!important;justify-content:space-between;flex-wrap:wrap;gap:4px 16px}
+@media (max-width:760px){.oosdc{grid-template-columns:minmax(0,1fr)}.sdin{max-width:none}}
 </style>
 </head>
 <body class="rep v4 oo-locked">
@@ -3553,43 +3668,21 @@ div.oog-pic{cursor:default}
 
 <main class="wrap">
 
-  <!-- Home buyer check: an intro page, then one question per page; each page fits one screen -->
+  <!-- Home buyer check: four yes/no questions on one page (James, 25 Nov) -->
   <section class="oogate" id="ooGate" aria-labelledby="oogH">
-    <div class="oog-top"><button class="oog-backb" data-gback hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button><span class="v4lab" id="oogLab">Before you start</span><span class="oog-live" id="oogLive"><i aria-hidden="true"></i><span>We're averaging <b class="oog-n" data-count="47" data-dur="1200">47</b> enquiries a day at the moment</span></span><span class="oog-dots" id="oogDots" hidden><span id="oogStep">Question 1 of 4</span><i></i><i></i><i></i><i></i></span></div>
-    <div class="oogp" id="oogP0">
-      <h2 class="oog-h" id="oogH" tabindex="-1">First, let's make sure this is suitable for you.</h2>
-      <p class="oog-lead">We're doing our best to get round to everyone. Here's how buying works.</p>
-      <ol class="oog-how" id="oogHow"><li><span class="n">1</span><b>You buy off plan</b></li><li><span class="n">2</span><b>20% deposit in the next six weeks</b></li><li><span class="n">3</span><b>Complete with a mortgage in Feb 2028</b></li></ol>
-      <p class="oog-help"><b>We help with every step.</b> It's easy and straightforward. But you will need a 20% deposit.</p>
-      <div class="oog-start"><button class="b solid" id="oogStart">Check it suits you <svg viewBox="0 0 24 24" class="li arr" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><small>4 quick questions</small></div>
-    </div>
-    
-    <div class="oogp" id="oogP1" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Timing</span><h2 tabindex="-1">Charter House completes in February 2028. Are you happy to wait?</h2>
-        <div class="oog-yn"><button class="oogb yes" data-a="time:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="time:n" aria-pressed="false"><span>No, that doesn't work for me</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
-      <div class="oogq-r"><div class="oog-ev"><span class="cap">However you live now</span>
-          <ul class="oog-sit"><li><b>Renting</b><span>We give you two months' notice before completion. Give your landlord the same.</span></li><li><b>Selling a home</b><span>Sell nearer completion, or sell sooner and rent in between.</span></li><li><b>Living with family</b><span>Stay where you are until you get your keys.</span></li></ul>
-          <hr><p><b>You buy at a discount to the market.</b> It's the last site in the Underbanks. Buy once it's finished and you'd pay a big premium.</p></div></div></div></div>
-    <div class="oogp" id="oogP2" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Choosing your home</span><h2 tabindex="-1">You can choose your home from our state-of-the-art 3D model. Is that OK?</h2>
-        <div class="oog-yn"><button class="oogb yes" data-a="model:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="model:n" aria-pressed="false"><span>No, I need a show home</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
-      <div class="oogq-r"><div class="oog-pic" style="background-image:var(--model3d)" role="img" aria-label="Charter House, a still from our 3D model"><span class="ccap">Churchgate corner · 8K render</span></div>
-        <p class="oog-pcap">There's no show home yet. Our 3D model shows you inside and out, so you won't need one.</p></div></div></div>
-    <div class="oogp" id="oogP3" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Parking</span><h2 tabindex="-1">There's no parking. Is that OK for you?</h2>
-        <div class="oog-yn"><button class="oogb yes" data-a="park:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="park:n" aria-pressed="false"><span>No, I need parking</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
-      <div class="oogq-r"><div class="oog-ev"><span class="cap">No parking</span>
-          <p>No block in the town centre has it, including sites like Capital &amp; Centric's Weir Mill.</p>
-          <p>The area is very walkable, and the council is spending over £1 billion on transport.</p>
-          <ul class="oog-walk"><li><span>Stockport station</span><b>10 min walk</b></li><li><span>Manchester Piccadilly</span><b>8 min by train</b></li></ul>
-          <p class="sm">Permits for nearby streets: first come, first served, not guaranteed.</p></div></div></div></div>
-    <div class="oogp" id="oogP4" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Deposit</span><h2 tabindex="-1">Last one. Do you have a 20% deposit?</h2>
-        <div class="oog-yn"><button class="oogb yes" data-a="dep:y" aria-pressed="false"><span>Yes, I have it</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="dep:n" aria-pressed="false"><span>No, not yet</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><p class="oog-inl" id="oogLow" hidden></p></div>
-      <div class="oogq-r"><div class="oog-ev"><span class="cap">Standard for off-plan</span>
-          <div class="oog-beds" role="group" aria-label="1 bed or 2 bed"><button data-beds="one" aria-pressed="true">1 bed</button><button data-beds="two" aria-pressed="false">2 bed</button></div>
-          <div id="oogAmt"></div>
-          <p class="sm">£3,000 reserves your home. Lifetime ISA and Help to Buy ISA money can't be used. Figures are a guide.</p></div></div></div></div>
+    <div class="oog-top"><button class="oog-backb" data-gback hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button><span class="v4lab" id="oogLab">Before you start</span><span class="oog-live" id="oogLive"><i aria-hidden="true"></i><span>We're averaging <b class="oog-n" data-count="47" data-dur="1200">47</b> enquiries a day at the moment</span></span></div>
+    <div class="oogp" id="oogP0"><div class="oog1">
+      <div class="oog1-l">
+        <h2 class="oog-h" id="oogH" tabindex="-1">Is Charter House right for you?</h2>
+        <p class="oog-lead">Four quick checks, then your guide opens.</p>
+        <ol class="oog-how" id="oogHow"><li><span class="n">1</span><b>You buy off plan</b></li><li><span class="n">2</span><b>20% deposit in the next six weeks</b></li><li><span class="n">3</span><b>Complete with a mortgage in Feb 2028</b></li></ol>
+        <p class="oog-help"><b>We help with every step.</b> It's straightforward, but you will need a 20% deposit.</p>
+      </div>
+      <div class="oog1-r">
+        <ol class="oogc"><li class="oogc-row" data-k="time"><span class="n">1</span><div class="q"><b id="oogQ1">Happy to wait until February 2028?</b><small>You choose your home now and move in when it's finished.</small></div><div class="yn" role="group" aria-labelledby="oogQ1"><button class="oogc-b ob-y" data-a="time:y" aria-pressed="false">Yes</button><button class="oogc-b ob-n" data-a="time:n" aria-pressed="false">No</button></div></li><li class="oogc-row" data-k="model"><span class="n">2</span><div class="q"><b id="oogQ2">Happy to choose from our 3D model?</b><small>There's no show home yet. The 3D model shows you inside and out.</small></div><div class="yn" role="group" aria-labelledby="oogQ2"><button class="oogc-b ob-y" data-a="model:y" aria-pressed="false">Yes</button><button class="oogc-b ob-n" data-a="model:n" aria-pressed="false">No</button></div></li><li class="oogc-row" data-k="park"><span class="n">3</span><div class="q"><b id="oogQ3">OK with no parking?</b><small>No block in the town centre has it. The station is a 10-minute walk.</small></div><div class="yn" role="group" aria-labelledby="oogQ3"><button class="oogc-b ob-y" data-a="park:y" aria-pressed="false">Yes</button><button class="oogc-b ob-n" data-a="park:n" aria-pressed="false">No</button></div></li><li class="oogc-row" data-k="dep"><span class="n">4</span><div class="q"><b id="oogQ4">Do you have a 20% deposit?</b><small>About £38,000 on a typical one bed, £60,000 on a two bed.</small></div><div class="yn" role="group" aria-labelledby="oogQ4"><button class="oogc-b ob-y" data-a="dep:y" aria-pressed="false">Yes</button><button class="oogc-b ob-n" data-a="dep:n" aria-pressed="false">No</button></div></li></ol>
+        <div class="oog-go"><button class="b solid" id="oogGo" disabled>See your guide <svg viewBox="0 0 24 24" class="li arr" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><small id="oogLeft" aria-live="polite">Answer all four</small></div>
+      </div>
+    </div></div>
     <div class="oogp" id="oogP5" hidden><div class="oog-res" id="oogRes" aria-live="polite"></div></div>
   </section>
   <div class="oo-ok" id="ooOk" hidden><span class="oo-okt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><div><b>Great. Based on your answers, Charter House is suitable for you.</b><span>Here's everything you need to know, and how to choose your new home.</span></div><button class="b solid sm" data-goto="units">Choose your new home</button></div>
@@ -3699,7 +3792,7 @@ const U=[
 ];
 const ONE=U.length===1;
 const AG={"first": "Andy", "full": "Andy Davies", "short": "Senior Consultant", "wa": "447760462489", "email": "andy@brik-studios.com", "tel": "07760 462489"};
-const OO={"site": "ch", "Comp": "Early 2028", "comp": "early 2028", "gateComp": "February 2028", "beds": {"one": {"n": 24, "from": 186000, "to": 196000, "mid": 191000}, "two": {"n": 3, "from": 300000, "to": 303000, "mid": 302000}}, "email": "andy@brik-studios.com", "noTwo": "", "earlyTag": "Private pre-launch", "earlyLine": "<b>You're early.</b> Charter House isn't on the open market yet.", "livingSub": "Right next to Stockport's Market Hall and a minute from the Underbanks: independents, coffee, food and a proper community, all on foot.", "days": [["Weekday mornings", "Coffee, then the train", "Coffee on Little Underbank or a loaf from Yellowhammer, then a ten-minute walk to the station and eight minutes to Manchester."], ["Working from home", "Desks on the doorstep", "Co-working at Mustard on Little Underbank or ProFolk in Bank Chambers when you want a change of scene."], ["Evenings", "Dinner on foot", "Where The Light Gets In, the Produce Hall or pizza at Social, then a drink at The White Lion, Stockport's oldest tavern."], ["Weekends", "Market Hall to Edgeley Park", "The Market Hall next door, records and vintage on the Underbanks, Hat Works, or Stockport County at Edgeley Park."]], "cats": [["Coffee and breakfast", [["Yellowhammer", "Lower Hillgate", "Bakery and pottery studio from chef Sam Buckley: sourdough and seasonal pastries"], ["Rhode Island Coffee", "Little Underbank", "Speciality coffee in the middle of the Underbanks"], ["Dilly Deli", "Little Underbank", "Your neighbourhood favourite, from the BRIK family"], ["Convene", "The Underbanks", "A neighbourhood café focused on seasonal cooking"], ["MOB6B", "St Petersgate", "Coffee and pastries by day, wine bar later on"], ["Hillgate Cakery", "Lower Hillgate", "Cakes and bakes"]]], ["Eating out", [["Where The Light Gets In", "Rostron Brow", "Green Michelin star restaurant in a former coffee warehouse above the market"], ["Produce Hall", "Market Place", "Food hall on the Market Place"], ["Social", "Little Underbank", "Pizza"], ["The Mekong Cat", "Lower Hillgate", "Vietnamese"], ["La Capilla", "Market Place", "Mexican"], ["Little Cantaloupe", "Great Underbank", "Neighbourhood restaurant"]]], ["A drink", [["The White Lion", "Great Underbank", "Stockport's oldest tavern, now a busy bar"], ["Wineboy", "Market Place", "Wine shop and bar"], ["Arden Arms", "Millgate", "A proper old pub"]]], ["Shops and things to do", [["Stockport Market Hall", "Market Place", "The Victorian market hall"], ["Rare Mags", "Lower Hillgate", "Independent magazine shop"], ["Still Life Story", "Market Place", "Homewares"], ["SK1 Records", "The Underbanks", "Record shop"], ["Hat Works", "Wellington Road South", "The UK's only museum of hatting, in a restored mill"], ["The Plaza", "Mersey Square", "1932 Art Deco cinema and theatre"]]]], "community": "The Underbanks has come back to life street by street: independent businesses, Foodie Friday street food bringing people into the Old Town, and murals turning the area into an open-air gallery. Stockport was named Foodie Neighbourhood of the Year at the Manchester Food and Drink Awards, and The Sunday Times called it the best place to live in the North West.", "near": [["Groceries", "Asda Superstore is four minutes' walk, with M&S Foodhall and Aldi nearby and fresh produce at the Market Hall next door."], ["Shopping", "Merseyway Shopping Centre is three minutes away for the high street names."], ["Getting about", "Stockport station is a ten-minute walk, with the bus interchange alongside and the Metrolink on the way."], ["Parking", "There's no parking, which is the case for all the blocks in Stockport town centre and the Underbanks. The council is spending more than £1 billion on transport links, and the area is very walkable. Permits for the surrounding streets are available, first come, first served, but they're not guaranteed."], ["Bikes", "Every apartment has its own secure bike store in the building."], ["Schools", "St Joseph's Primary School is four minutes' walk."]], "tips": [["Lift-up storage", "Go for an ottoman bed. The base lifts up for suitcases, spare bedding and winter coats: the single biggest storage win in an apartment."], ["Use the walls", "Tall wardrobes, shelves above the desk and a slim hallway rail use the height of the room instead of the floor."], ["Laundry sorted", "The washer dryer goes in the utility cupboard, not the kitchen, so your kitchen cupboards stay free for the food shop."], ["Bikes downstairs", "Every apartment has its own secure bike store, so the bike doesn't live in your hallway."], ["Flexible dining", "A drop-leaf or extending table seats two day to day and four when friends come round."], ["Room to work", "A slim wall desk in the living space works well, and folds away at the weekend."]], "included": ["Fully fitted kitchen with integrated dishwasher, built-in electric oven, ceramic hob and extractor", "Marble-effect quartz worktop, tiled splashback and LED lighting behind the cabinets", "Premium LVT flooring", "Fully fitted bathroom with glass shower screen, wall-hung toilet and basin, and a backlit mirrored cabinet", "A washer dryer plinth, plumbed and wired, in the utility cupboard", "Your own secure bike store"], "bring": ["A washer dryer: the space is plumbed and wired, ready to go", "A fridge freezer for the space in the kitchen run", "Your furniture"], "faq": [["Can I see it before I buy?", "There's no show home until further down the line. But our 3D model is better than one: you can look inside the apartments, see the view out of the windows and what the street's like, on a 30-minute video call. You're welcome to walk the site and the Underbanks with Andy too."], ["How much deposit do I need?", "20%, on every home. £3,000 reserves it, and £2,500 of that counts towards your deposit. The rest of your 20% is due when contracts exchange, within 28 days of reserving."], ["Can I use my Lifetime ISA or Help to Buy ISA?", "Not for the 20% deposit. Completion is more than six months away, and that money can only be used close to completion. Ask our broker whether it can help towards the balance when you complete."], ["When do I apply for my mortgage?", "About six months before completion. Our brokers will tell you when to start. You can get an agreement in principle now, so you know what you can borrow."], ["I'm renting. How do I time my move?", "Since 1 May 2026, renters in England can end their tenancy with two months' notice. We'll give you notice two months before completion. You serve notice on your rental, then move straight in, with little or no overlap."], ["Is there parking?", "There's no parking, which is the case for all the blocks in Stockport town centre and the Underbanks. The council is spending more than £1 billion on transport links, and the area is very walkable. Permits for the surrounding streets are available, first come, first served, but they're not guaranteed."], ["What will it cost each month?", "Your mortgage, the service charge (about £86 a month on a typical one bed), nil ground rent, and the usual council tax and bills. With an EPC rating expected to be A, your energy bills should be low."], ["Is the price fixed?", "Yes. You agree the price when you reserve, and it's fixed when you exchange contracts."], ["What if the completion date moves?", "Build dates are estimates. We'll keep you updated throughout, and you'll get formal notice before completion. Your solicitor will take you through what the contract says about timing."]], "newItems": [["1st", "Nobody's lived there before you", "A brand-new kitchen, bathroom, floors and fittings. Everything is new, and yours first."], ["10 yrs", "Under warranty", "A 10-year build warranty on the building, and brand-new appliances with their own warranties."], ["A", "EPC rating expected A", "The top energy rating. A modern build with double glazing and good insulation, so it's cheap to heat and run."], ["New", "Modern luxury", "Quartz worktops, matt black fittings, premium LVT floors and backlit mirrored cabinets, behind a heritage brick front."], ["£", "Today's price, fixed", "You agree the price now. It's fixed when you exchange, and you pay the balance when you get your keys."], ["Time", "Time to plan", "Save for furniture, sort your mortgage nearer the time, and rent month to month while it's built."]], "plans": [["ch_plan_201", "One bedroom apartment", "Example shown: a typical one bed, 412 sq ft", [["Layout", "Living space at one end, bedroom at the other, both with windows"], ["Kitchen", "Hob and oven on the side wall. Space for your fridge freezer, then the sink and dishwasher, along the dividing wall"], ["Bathroom", "In the middle, with a bath and shower screen"], ["Laundry", "Utility cupboard for the hot water cylinder and your washer dryer"], ["Bedroom", "A double, with wardrobe space by the door"], ["Front door", "On the gallery walkway over the courtyard"]]]], "planHead": "A typical layout, what goes where, and the full specification.", "smg": [["smg_living", "Open-plan living", 1], ["smg_kitchen", "Kitchen", 1], ["smg_bed", "Bedroom", 1], ["smg_bath", "Bathroom", 0], ["smg_bed2", "Bedroom", 1], ["smg_ext", "The building, on Churchgate", 0], ["smg_entry", "The entrance", 0], ["smg_court", "Residents' courtyard", 0]], "keysCap": "Your keys, early 2028.", "ovSub": "A very limited number of new homes in the Underbanks, Stockport's historic conservation area, where strict planning means new homes almost never get built.", "sc": 86, "case": [["A brand-new home, yours first.", "Be the first to live there. Everything is new and under warranty, the EPC rating is expected to be A, and it's built to modern standards, so it's cheap to run.", [["1st", "resident: nobody's lived there before you"], ["10 years", "build warranty"], ["A", "EPC rating expected"]], "Your new home"], ["Stockport has it all.", "A historic market town with real character, eight minutes from Manchester. Heritage streets full of independents, parks and green space, well-regarded schools, and a town centre you can walk end to end.", [["8 min", "to Manchester by train"], ["Under 2 hrs", "to London Euston"], ["Metrolink", "extension on the way"], ["Airport", "a short drive away"]], "Why Stockport"], ["Eight minutes to Manchester.", "Stockport sits on the West Coast Main Line: Manchester Piccadilly in 8 minutes, eleven trains an hour, and London Euston in under two hours. Work in the city, and come home to a town with real character.", [["11", "trains an hour to Manchester"]], "Why Stockport"], ["The UK's largest town-centre regeneration.", "", [], "Why Stockport"], ["The Underbanks is where Stockport comes alive.", "Cobbled lanes of independents, bars, restaurants and events, and the youngest average age in Stockport. It's where young professionals want to live, and where we've built our own businesses.", [["36.8", "youngest average age in Stockport"], ["1974", "conservation area since"]], "Location"], ["A hard cap on supply.", "The Underbanks is a conservation area full of listed buildings, and nothing over four storeys can be built. That's why so few homes ever come up here, and it helps protect what yours is worth.", [["4 storeys", "height limit"], ["Listed", "buildings all round"], ["Limited", "land plots, all already accounted for"]], "A smart buy"], ["The last site in the Underbanks. Choose yours.", "Charter House is the last site to be developed in the Underbanks. When these homes are gone, there's nothing like them coming.", [], "Next steps"]], "A": "../../assets/"};
+const OO={"site": "ch", "Comp": "Early 2028", "comp": "early 2028", "gateComp": "February 2028", "beds": {"one": {"n": 24, "from": 186000, "to": 196000, "mid": 191000}, "two": {"n": 3, "from": 300000, "to": 303000, "mid": 302000}}, "email": "andy@brik-studios.com", "noTwo": "", "earlyTag": "Private pre-launch", "earlyLine": "<b>You're early.</b> Charter House isn't on the open market yet.", "livingSub": "Right next to Stockport's Market Hall and a minute from the Underbanks: independents, coffee, food and a proper community, all on foot.", "days": [["Weekday mornings", "Coffee, then the train", "Coffee on Little Underbank or a loaf from Yellowhammer, then a ten-minute walk to the station and eight minutes to Manchester."], ["Working from home", "Desks on the doorstep", "Co-working at Mustard on Little Underbank or ProFolk in Bank Chambers when you want a change of scene."], ["Evenings", "Dinner on foot", "Where The Light Gets In, the Produce Hall or pizza at Social, then a drink at The White Lion, Stockport's oldest tavern."], ["Weekends", "Market Hall to Edgeley Park", "The Market Hall next door, records and vintage on the Underbanks, Hat Works, or Stockport County at Edgeley Park."]], "cats": [["Coffee and breakfast", [["Yellowhammer", "Lower Hillgate", "Bakery and pottery studio from chef Sam Buckley: sourdough and seasonal pastries"], ["Rhode Island Coffee", "Little Underbank", "Speciality coffee in the middle of the Underbanks"], ["Dilly Deli", "Little Underbank", "Your neighbourhood favourite, from the BRIK family"], ["Convene", "The Underbanks", "A neighbourhood café focused on seasonal cooking"], ["MOB6B", "St Petersgate", "Coffee and pastries by day, wine bar later on"], ["Hillgate Cakery", "Lower Hillgate", "Cakes and bakes"]]], ["Eating out", [["Where The Light Gets In", "Rostron Brow", "Green Michelin star restaurant in a former coffee warehouse above the market"], ["Produce Hall", "Market Place", "Food hall on the Market Place"], ["Social", "Little Underbank", "Pizza"], ["The Mekong Cat", "Lower Hillgate", "Vietnamese"], ["La Capilla", "Market Place", "Mexican"], ["Little Cantaloupe", "Great Underbank", "Neighbourhood restaurant"]]], ["A drink", [["The White Lion", "Great Underbank", "Stockport's oldest tavern, now a busy bar"], ["Wineboy", "Market Place", "Wine shop and bar"], ["Arden Arms", "Millgate", "A proper old pub"]]], ["Shops and things to do", [["Stockport Market Hall", "Market Place", "The Victorian market hall"], ["Rare Mags", "Lower Hillgate", "Independent magazine shop"], ["Still Life Story", "Market Place", "Homewares"], ["SK1 Records", "The Underbanks", "Record shop"], ["Hat Works", "Wellington Road South", "The UK's only museum of hatting, in a restored mill"], ["The Plaza", "Mersey Square", "1932 Art Deco cinema and theatre"]]]], "community": "The Underbanks has come back to life street by street: independent businesses, Foodie Friday street food bringing people into the Old Town, and murals turning the area into an open-air gallery. Stockport was named Foodie Neighbourhood of the Year at the Manchester Food and Drink Awards, and The Sunday Times called it the best place to live in the North West.", "near": [["Groceries", "Asda Superstore is four minutes' walk, with M&S Foodhall and Aldi nearby and fresh produce at the Market Hall next door."], ["Shopping", "Merseyway Shopping Centre is three minutes away for the high street names."], ["Getting about", "Stockport station is a ten-minute walk, with the bus interchange alongside and the Metrolink on the way."], ["Parking", "There's no parking, which is the case for all the blocks in Stockport town centre and the Underbanks. The council is spending more than £1 billion on transport links, and the area is very walkable. Permits for the surrounding streets are available, first come, first served, but they're not guaranteed."], ["Bikes", "Every apartment has its own secure bike store in the building."], ["Schools", "St Joseph's Primary School is four minutes' walk."]], "tips": [["Lift-up storage", "Go for an ottoman bed. The base lifts up for suitcases, spare bedding and winter coats: the single biggest storage win in an apartment."], ["Use the walls", "Tall wardrobes, shelves above the desk and a slim hallway rail use the height of the room instead of the floor."], ["Laundry sorted", "The washer dryer goes in the utility cupboard, not the kitchen, so your kitchen cupboards stay free for the food shop."], ["Bikes downstairs", "Every apartment has its own secure bike store, so the bike doesn't live in your hallway."], ["Flexible dining", "A drop-leaf or extending table seats two day to day and four when friends come round."], ["Room to work", "A slim wall desk in the living space works well, and folds away at the weekend."]], "included": ["Fully fitted kitchen with integrated dishwasher, built-in electric oven, ceramic hob and extractor", "Marble-effect quartz worktop, tiled splashback and LED lighting behind the cabinets", "Premium LVT flooring", "Fully fitted bathroom with glass shower screen, wall-hung toilet and basin, and a backlit mirrored cabinet", "A washer dryer plinth, plumbed and wired, in the utility cupboard", "Your own secure bike store"], "bring": ["A washer dryer: the space is plumbed and wired, ready to go", "A fridge freezer for the space in the kitchen run", "Your furniture"], "faq": [["Can I see it before I buy?", "There's no show home until further down the line. But our 3D model is better than one: you can look inside the apartments, see the view out of the windows and what the street's like, on a 30-minute video call. You're welcome to walk the site and the Underbanks with Andy too."], ["How much deposit do I need?", "20%, on every home. £3,000 reserves it, and £2,500 of that counts towards your deposit. The rest of your 20% is due when contracts exchange, within 28 days of reserving."], ["Can I use my Lifetime ISA or Help to Buy ISA?", "Not for the 20% deposit. Completion is more than six months away, and that money can only be used close to completion. Ask our broker whether it can help towards the balance when you complete."], ["When do I apply for my mortgage?", "About six months before completion. Our brokers will tell you when to start. You can get an agreement in principle now, so you know what you can borrow."], ["I'm renting. How do I time my move?", "Since 1 May 2026, renters in England can end their tenancy with two months' notice. We'll give you notice two months before completion. You serve notice on your rental, then move straight in, with little or no overlap."], ["Is there parking?", "There's no parking, which is the case for all the blocks in Stockport town centre and the Underbanks. The council is spending more than £1 billion on transport links, and the area is very walkable. Permits for the surrounding streets are available, first come, first served, but they're not guaranteed."], ["What will it cost each month?", "Your mortgage, the service charge (about £86 a month on a typical one bed), nil ground rent, and the usual council tax and bills. With an EPC rating expected to be A, your energy bills should be low."], ["Is the price fixed?", "Yes. You agree the price when you reserve, and it's fixed when you exchange contracts."], ["What if the completion date moves?", "Build dates are estimates. We'll keep you updated throughout, and you'll get formal notice before completion. Your solicitor will take you through what the contract says about timing."]], "newItems": [["1st", "Nobody's lived there before you", "A brand-new kitchen, bathroom, floors and fittings. Everything is new, and yours first."], ["10 yrs", "Under warranty", "A 10-year build warranty on the building, and brand-new appliances with their own warranties."], ["A", "EPC rating expected A", "The top energy rating. A modern build with double glazing and good insulation, so it's cheap to heat and run."], ["New", "Modern luxury", "Quartz worktops, matt black fittings, premium LVT floors and backlit mirrored cabinets, behind a heritage brick front."], ["£", "Today's price, fixed", "You agree the price now. It's fixed when you exchange, and you pay the balance when you get your keys."], ["Time", "Time to plan", "Save for furniture, sort your mortgage nearer the time, and rent month to month while it's built."]], "plans": [["ch_plan_201", "One bedroom apartment", "Example shown: a typical one bed, 412 sq ft", [["Layout", "Living space at one end, bedroom at the other, both with windows"], ["Kitchen", "Hob and oven on the side wall. Space for your fridge freezer, then the sink and dishwasher, along the dividing wall"], ["Bathroom", "In the middle, with a bath and shower screen"], ["Laundry", "Utility cupboard for the hot water cylinder and your washer dryer"], ["Bedroom", "A double, with wardrobe space by the door"], ["Front door", "On the gallery walkway over the courtyard"]]]], "planHead": "A typical layout, what goes where, and the full specification.", "smg": [["smg_living", "Open-plan living", 1], ["smg_kitchen", "Kitchen", 1], ["smg_bed", "Bedroom", 1], ["smg_bath", "Bathroom", 0], ["smg_bed2", "Bedroom", 1], ["smg_ext", "The building, on Churchgate", 0], ["smg_entry", "The entrance", 0], ["smg_court", "Residents' courtyard", 0]], "keysCap": "Your keys, early 2028.", "ovSub": "A very limited number of new homes in the Underbanks, Stockport's historic conservation area, where strict planning means new homes almost never get built.", "sc": 86, "scft": "2.50", "favImg": ["b_dilly", "b_convene", "skunderbanks", "market"], "case": [["A brand-new home, yours first.", "Be the first to live there. Everything is new and under warranty, the EPC rating is expected to be A, and it's built to modern standards, so it's cheap to run.", [["1st", "resident: nobody's lived there before you"], ["10 years", "build warranty"], ["A", "EPC rating expected"]], "Your new home"], ["Stockport has it all.", "A historic market town with real character, eight minutes from Manchester. Heritage streets full of independents, parks and green space, well-regarded schools, and a town centre you can walk end to end.", [["8 min", "to Manchester by train"], ["Under 2 hrs", "to London Euston"], ["Metrolink", "extension on the way"], ["Airport", "a short drive away"]], "Why Stockport"], ["Eight minutes to Manchester.", "Stockport sits on the West Coast Main Line: Manchester Piccadilly in 8 minutes, eleven trains an hour, and London Euston in under two hours. Work in the city, and come home to a town with real character.", [["11", "trains an hour to Manchester"]], "Why Stockport"], ["The UK's largest town-centre regeneration.", "", [], "Why Stockport"], ["The Underbanks is where Stockport comes alive.", "Cobbled lanes of independents, bars, restaurants and events, and the youngest average age in Stockport. It's where young professionals want to live, and where we've built our own businesses.", [["36.8", "youngest average age in Stockport"], ["1974", "conservation area since"]], "Location"], ["A hard cap on supply.", "The Underbanks is a conservation area full of listed buildings, and nothing over four storeys can be built. That's why so few homes ever come up here, and it helps protect what yours is worth.", [["4 storeys", "height limit"], ["Listed", "buildings all round"], ["Limited", "land plots, all already accounted for"]], "A smart buy"], ["The last site in the Underbanks. Choose yours.", "Charter House is the last site to be developed in the Underbanks. When these homes are gone, there's nothing like them coming.", [], "Next steps"]], "A": "../../assets/"};
 const SC_RATE=2.50; // £ per sq ft per year (estimate)
 U.forEach(u=>{u.sc=u.area*SC_RATE/12;u.dep=u.price*.2;u.num=u.name.replace(/\D/g,"");u.ref=(u.num||"CH")+"-CHARTER"});
 /* Worked example from the ROI breakdown: unit selection happens on the 3D video tour */
@@ -3924,10 +4017,11 @@ const IC={
  build:'<svg viewBox="0 0 24 24" class="li"><path d="M3 21h18M5 21V9h14v12M9 21v-6h6v6M4 9l8-6 8 6"/></svg>'};
 function roofline(cls=""){return `<svg class="roof ${cls}" viewBox="0 0 400 200" role="img" aria-label="Charter House"><polyline class="rl" pathLength="1" points="10,190 10,70 46.7,30 83.3,70 120,30 156.7,70 193.3,30 230,70 230,40 390,40 390,190"/><path class="rl" pathLength="1" d="M282 190V150a18 18 0 0 1 36 0v40"/></svg>`}
 function hqStamp(cls=""){return `<div class="stamp ${cls}" aria-hidden="true"><svg viewBox="0 0 200 200"><defs><path id="sc${cls}" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs><text><textPath href="#sc${cls}" startOffset="0" textLength="486" lengthAdjust="spacing">SOLD EVERY BLOCK — SAME DEVELOPER — SAME ARCHITECT —</textPath></text></svg><span class="logo mask"></span></div>`}
-function hqHTML(){return `<div class="hq own"><div class="hqv ownv"><div class="ownpic" role="img" aria-label="Andy Davies, Senior Consultant"></div>${hqStamp("a")}</div>
-   <div><div class="cap">Track record</div><h3 class="sh" style="margin:6px 0 14px">I've sold this developer's last buildings.</h3>
-    <p class="lead">I've been heavily involved in Hall &amp; Co's previous Underbanks launches, including St Marys Gate and Albion House, and I've personally sold a significant share of the apartments in every one of their blocks. Same developer, same architect. I also own property in Stockport myself, so I know this market as an owner, not just as an agent.</p>
-    <div class="ownby">Andy Davies, Senior Consultant</div><div class="credline"><span class="c1">Track record</span><b>Every previous Hall &amp; Co launch</b><i>in the Underbanks</i><em>Stockport property owner</em></div></div></div>`}
+function hqHTML(){return `<div class="hq own oohq"><div class="hqv ownv"><div class="ownpic" role="img" aria-label="${AG.full}, ${AG.short}"></div>${hqStamp("a")}</div>
+   <div><div class="cap">Track record</div><h3 class="sh">I know this market as an owner, not just an agent.</h3>
+    <p class="lead">I own property in Stockport myself. I've been heavily involved in every Hall &amp; Co launch in the Underbanks, including St Marys Gate and Albion House. Same developer, same architect.</p>
+    <dl class="oohqf"><div><dt>£50m+</dt><dd>of homes we've sold in Stockport</dd></div><div><dt>Every</dt><dd>Hall &amp; Co launch in the Underbanks</dd></div><div><dt>Owner</dt><dd>of property in Stockport</dd></div></dl>
+    <div class="ownby">${AG.full}, ${AG.short}</div></div></div>`}
 const SK=[["var(--skunderbanks)","The Underbanks"],["var(--skbridge)","Underbank bridge"],["var(--skmarket)","Stockport Market"],["var(--skviaduct)","The viaduct"],["var(--skhat)","Hat Works"],["var(--skarch)","Under the arches"],["var(--skroofs)","Old Town rooftops"],["var(--skpyramid)","The Pyramid"]];
 function skStrip(){return `<section class="sec skwrap"><div class="cap"><span>Stockport, through our lens</span><span>Our own photography</span></div>
   <div class="sk">${SK.map(([s,c],i)=>`<button class="skt ${i===0?"big":""}" style="background-image:${s}" data-sk="${i}" aria-label="${c}"><span>${c}</span></button>`).join("")}</div></section>`}
@@ -3980,7 +4074,7 @@ const FILM=`<section class="filmsec"><button class="film" data-film="78I9H4xnRO8
 const HOWREAD=`<section class="howread"><i class="hrscroll" aria-hidden="true"><b></b></i><div><div class="cap">How to read this guide</div><h3 class="hrh">Just keep scrolling.</h3><p>It's in the order you'll need it: your home, the area, then how buying works. Buying off plan is a big step, so take your time.</p><p>By the end you'll know exactly what you're getting at ${B.name}, what it's like to live here, what you'll pay and when, and how the move works.</p></div></section>`;
 const BRIEF=()=>`<section class="brief"><div class="partlab"><span class="pno">Part one</span><span class="pnm">The short version</span><span class="ptime">2-minute read</span></div><div class="urgent"><div class="cap">Private pre-launch · Why now</div><h2 class="urh">Our Underbanks launches sell out in days, not months.</h2><div class="urstats"><div><b>Under 2 weeks</b><span>Underbank Lofts, our last launch, sold out</span></div><div><b>5 and 7 days</b><span>The Print House, phases one and two</span></div><div><b>Sold out</b><span>St Marys Gate next door, off-plan</span></div></div><p>Charter House is the last site to be developed in the Underbanks: 27 apartments, and it isn't on the open market yet. The best homes always go first, so book your 3D tour and choose yours before it launches.</p><div class="row"><button class="b solid" data-call>Book a 3D virtual tour</button><a class="b line" href="${WA_}${encodeURIComponent("Hi Andy, I've been looking at Charter House. Could we set up a 3D video tour?")}" target="_blank" rel="noopener">WhatsApp me</a></div></div>${HOWREAD}<div class="bknums"><div class="bkh"><div class="cap">The essentials</div><h3 class="bkt">For home buyers.</h3></div><div class="kpis"><div><div class="cap">One beds from</div><div class="v" data-count="${OO.beds.one.from}" data-pre="£" data-comma="1">${gbp(OO.beds.one.from)}</div><small>one bed</small></div>
   <div><div class="cap">20% deposit</div><div class="v" data-count="${Math.round(OO.beds.one.mid*.2/1000)*1000}" data-pre="£" data-comma="1">${gbp(Math.round(OO.beds.one.mid*.2/1000)*1000)}</div><small>about, on a typical one bed</small></div>
-  <div><div class="cap">Service charge</div><div class="v" data-count="${OO.sc}" data-pre="£">£${OO.sc}</div><small>a month, typical one bed</small></div>
+  <div><div class="cap">Service charge</div><div class="v" data-count="${OO.sc}" data-pre="£">£${OO.sc}</div><small>a month on a typical one bed: £${OO.scft} per sq ft a year</small></div>
   <div><div class="cap">EPC rating</div><div class="v g">A</div><small>expected: cheap to run</small></div>
   <div><div class="cap">Your keys</div><div class="v">${OO.Comp}</div><small>expected completion</small></div></div></div>${CASEMAP}${TP}<div class="bktour"><button class="bkimg" data-img="model3d" data-cap="Charter House, from our 3D model" aria-label="View the 3D model still"></button><div><h3 class="bkt">See it in 3D, then choose yours.</h3><p>A 30-minute video call round our 3D model of the finished building: every floor, the view from each, and inside the apartments. There's no show home yet, and this is better than one.</p><div class="row"><button class="b solid" data-call>Book a 3D virtual tour</button></div></div></div><div class="partlab deep" id="deepdive"><span class="pno">Part two</span><span class="pnm">The deep dive</span><span class="ptime">The full guide, chapter by chapter</span></div><div class="ddlist">${GROUPS.filter(g=>g[0]!=="brief").flatMap(g=>g[2]).map((id,k)=>`<button data-goto="${id}"><span>${String(k+1).padStart(2,"0")}</span>${TABS[id]}</button>`).join("")}</div></section>`;
 
@@ -4151,13 +4245,22 @@ CH.inside=()=>`<section class="ch" id="inside">${chh("03","Inside your home","Yo
  ${SEE3D()}
  </section>`;
 
+/* ---- icons for the everyday (stroke matched to the text weight) ---- */
+const NI={"Groceries":'<path d="M4 9h16l-1.6 10.2a1 1 0 0 1-1 .8H6.6a1 1 0 0 1-1-.8z"/><path d="M8.5 9 12 4l3.5 5M9.5 13v3M14.5 13v3"/>',
+ "Shopping":'<path d="M5.5 8h13l-1 12h-11z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
+ "Getting about":'<rect x="6" y="3.5" width="12" height="13" rx="2.5"/><path d="M6 10.5h12M9.5 13.5h.01M14.5 13.5h.01M9 20l1.5-3.5M15 20l-1.5-3.5"/>',
+ "Parking":'<circle cx="12" cy="12" r="8.5"/><path d="M10 16.5v-9h2.8a2.6 2.6 0 0 1 0 5.2H10"/>',
+ "Bikes":'<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l3.5-7h6L18 16M9.5 9 12.5 16H6M13.5 5.5H16l-.5 3.5"/>',
+ "Schools":'<path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.8V16c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3v-4.2M21.5 9.5v5"/>'};
+const nIcon=t=>NI[t]?`<span class="ooni" aria-hidden="true"><svg viewBox="0 0 24 24">${NI[t]}</svg></span>`:"";
+
 /* ---- 06 The neighbourhood ---- */
 CH.living=()=>`<section class="ch" id="living">${chh("06","The neighbourhood",OO.livingSub)}
  <div class="oodays">${OO.days.map(([a,b,c])=>`<div><span class="cap">${a}</span><b>${b}</b><p>${c}</p></div>`).join("")}</div>
  <div class="sec"><div class="cap"><span>Local favourites</span><span>All a few minutes' walk</span></div>
-  <div class="oofav">${OO.cats.map(([t,l])=>`<div><h3>${t}</h3><ul class="oolist">${l.map(([n,w,d])=>`<li><b>${n}${w?`<small>${w}</small>`:""}</b><span>${d}</span></li>`).join("")}</ul></div>`).join("")}</div></div>
+  <div class="oofav">${OO.cats.map(([t,l],i)=>`<div>${OO.favImg&&OO.favImg[i]?`<div class="oofavpic" style="background-image:url('${OO.A}img/${OO.favImg[i]}.webp')" role="img" aria-label="${t}"></div>`:""}<h3>${t}</h3><ul class="oolist">${l.map(([n,w,d])=>`<li><b>${n}${w?`<small>${w}</small>`:""}</b><span>${d}</span></li>`).join("")}</ul></div>`).join("")}</div></div>
  ${skStrip()}
- <div class="sec"><div class="cap"><span>The everyday</span></div><div class="oonear">${OO.near.map(([t,p])=>`<div><b>${t}</b><p>${p}</p></div>`).join("")}</div></div>
+ <div class="sec"><div class="cap"><span>The everyday</span></div><div class="oonear">${OO.near.map(([t,p])=>`<div>${nIcon(t)}<b>${t}</b><p>${p}</p></div>`).join("")}</div></div>
  <div class="sec"><div class="cap"><span>A real community</span></div><div class="duo w"><div><h3 class="big-h">Neighbours, not just a postcode.</h3><p class="lead">${OO.community}</p></div>${IMG("tenant","An Underbanks street party","pic tall2")}</div></div>
  </section>`;
 
@@ -4170,7 +4273,7 @@ CH.move=()=>{const e1=OOEX("one"),e2=OOEX("two"),c1=calcOO(e1),c2=e2?calcOO(e2):
   ["About six months before","Apply for your mortgage","Our brokers tell you when to start. You can get an agreement in principle now, so you know what you can borrow."],
   ["Two months before","Line up your move","We give you notice two months before completion. Renting? Serve your two months' notice on your rental at the same time, so there's little or no overlap."],
   [OO.Comp,"Collect your keys","Your mortgage pays the other 80%. You pick up your keys and move straight in."]
- ].map(([a,b,c],i)=>`<li class="${i===0||i===5?"k1":""}"><span class="cap">${a}</span><div><b>${b}</b><p>${c}</p></div></li>`).join("")}</ol>
+ ].map(([a,b,c],i)=>`<li class="${i===0||i===5?"k1":""}"><span class="tn" aria-hidden="true">${i+1}</span><span class="cap">${a}</span><div><b>${b}</b><p>${c}</p></div></li>`).join("")}</ol>
  <div class="oocall"><div><span class="cap">Renting now?</span><h3>You're not stuck in a 12-month tenancy.</h3></div><div>
   <p>The Renters' Rights Act came into force on 1 May 2026. Fixed-term tenancies in England have gone, and renters can end their tenancy with two months' notice.</p>
   <p>That used to be the big problem with buying off plan to live in. Now you can rent month to month while your home is built, then give notice when completion is in sight.</p>
@@ -4179,9 +4282,12 @@ CH.move=()=>{const e1=OOEX("one"),e2=OOEX("two"),c1=calcOO(e1),c2=e2?calcOO(e2):
   <div><span class="cap">At exchange</span><h4>20% deposit, in cash</h4><p>It's due within 28 days of reserving, so it needs to be cash or savings you can get to now. Family helping? A gifted deposit can count: our broker and solicitor will tell you what they need.</p></div>
   <div><span class="cap">Lifetime ISA and Help to Buy ISA</span><h4>Not for the deposit</h4><p>Completion is more than six months away, and that money can only be used close to completion. So it can't go towards your 20% deposit.</p><p>Ask our broker whether it can help towards the balance when you complete.</p></div>
   <div><span class="cap">On completion</span><h4>80% from your mortgage</h4><p>A residential mortgage pays the rest when you get your keys. Our brokers can check what lenders will offer on a new-build apartment before you reserve.</p></div></div>
-  <div class="rows big oosd"><div><span><b style="color:var(--ink)">Stamp duty</b><br><small>First-time buyers pay nothing on the first £300,000</small></span><span></span></div>
-   ${[[e1,c1],[e2,c2]].filter(x=>x[0]).map(([u,c])=>`<div><span>${u.name[0].toUpperCase()+u.name.slice(1)}, ${gbp(u.price)}<br><small>If you've owned a home before: ${gbp(c.stS)}</small></span><span>${c.stF?gbp(c.stF):"£0"} as a first-time buyer</span></div>`).join("")}</div>
-  <p class="fine">Stamp duty at current England rates from GOV.UK. Higher rates apply if you'll still own another property when you complete. This is a guide, not financial or legal advice: please speak to our broker and solicitor.</p></div>
+  <div class="oosdc" data-p1="${e1.price}"><div class="sdl"><span class="cap">Stamp duty calculator</span><h4>What will I pay?</h4>
+   <label class="sdin"><span>Price</span><span class="sdbox"><i>£</i><input id="sdP" inputmode="numeric" autocomplete="off" value="${e1.price.toLocaleString("en-GB")}" aria-describedby="sdHelp"></span></label>
+   <div class="sdchips"><button type="button" data-sdp="${e1.price}" aria-pressed="true">Typical one bed</button>${e2?`<button type="button" data-sdp="${e2.price}" aria-pressed="false">Typical two bed</button>`:""}</div>
+   <div class="sdwho" role="radiogroup" aria-label="Your situation"><button type="button" role="radio" data-sdw="ftb" aria-checked="true">First-time buyer</button><button type="button" role="radio" data-sdw="mover" aria-checked="false">I've owned a home before</button><button type="button" role="radio" data-sdw="extra" aria-checked="false">I'll still own another home</button></div></div>
+   <div class="sdr"><span class="cap">Your stamp duty</span><b id="sdOut">£0</b><p id="sdHelp">First-time buyers pay nothing on the first £300,000.</p></div></div>
+  <p class="fine">Stamp duty at current England rates from GOV.UK, including first-time buyers' relief and the 5% higher rate if you'll still own another home when you complete. This is a guide, not financial or legal advice: please speak to our broker and solicitor.</p></div>
  <div class="sec"><div class="cap"><span>Selling a home first?</span></div><div class="body two"><p>You've got time on your side. You can sell nearer completion, or sell sooner and rent month to month in between.</p><p>Just remember the 20% is due at exchange. If your deposit is tied up in your current home, you'd need to free that up first. ${AG.first} can talk you through the timing.</p></div></div>
  </section>`};
 
@@ -4772,25 +4878,22 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
 </script>
 
 <script>
-/* ============ HOME BUYER CHECK: an intro page, then one question per page ============ */
+/* ============ HOME BUYER CHECK: four yes/no questions on one page, then the guide ============ */
 (function(){
  const root=$("#ooGate");if(!root)return;
  const GK=KEY+"-gate",RM2=matchMedia("(prefers-reduced-motion: reduce)").matches;
- let G={p:0,time:null,model:null,park:null,dep:null,beds:"one",open:false};
+ let G={p:0,time:null,model:null,park:null,dep:null,open:false};
  try{Object.assign(G,JSON.parse(localStorage.getItem(GK)||"{}"))}catch(e){}
  const sv=()=>{try{localStorage.setItem(GK,JSON.stringify(G))}catch(e){}};
  const Q=["time","model","park","dep"];
  const passed=()=>Q.every(k=>G[k]==="y");
  const failed=()=>["time","model","park"].find(k=>G[k]==="n");
+ const answered=()=>Q.filter(k=>G[k]).length;
  const locked=()=>document.body.classList.contains("oo-locked");
- const dep=k=>{const d=OO.beds[k];return d?Math.round(d.mid*.2/1000)*1000:0};
  const NAME={time:"happy to wait for completion",model:"happy to choose off the plans and 3D model",park:"happy with no parking",dep:"has a 20% deposit"};
  const WHY={time:`You'd need to be happy to wait for completion in ${OO.gateComp}.`,model:"You'd need to be happy to choose off the plans and our 3D model, as there's no show home yet.",park:`There's no parking at ${B.name}.`};
  const LOW=`We do have the flexibility to request a lower deposit on a select few homes. Please get in touch with ${AG.full}, your consultant, to ask whether this is possible.`;
-
- function amt(){const el=$("#oogAmt");if(!el)return;const d=OO.beds[G.beds];
-  root.querySelectorAll("[data-beds]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.beds===G.beds)));
-  el.innerHTML=d?`<div class="oog-amt"><b data-count="${dep(G.beds)}" data-pre="£" data-comma="1" data-dur="450">${gbp(dep(G.beds))}</b><span>about 20% on a ${G.beds==="one"?"one":"two"} bed from ${gbp(d.from)}</span></div>`:`<p class="oog-note">${OO.noTwo}</p>`}
+ const BACK=`<div class="row"><button class="b line oog-goback" data-gback><svg viewBox="0 0 24 24" class="li" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Change my answers</button></div>`;
 
  function res(){const r=$("#oogRes"),f=failed();
   if(f){const yn=k=>G[k]==null?"-":G[k]==="y"?"yes":"no";
@@ -4798,9 +4901,19 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
    r.className="oog-res no";
    r.innerHTML=`<span class="tag"><i></i>Not the right fit</span><h2 tabindex="-1">Unfortunately, this isn't suitable for you.</h2><p class="why">${WHY[f]}</p>
     <p>If your needs are different, email us. We'll put you first for anything that's complete.</p>
-    <div class="row"><a class="b solid" id="ooMail" href="mailto:${AG.email}?subject=${encodeURIComponent("Home buyer: "+B.name)}&body=${encodeURIComponent(body)}">Email ${AG.first}</a></div>
-    <div class="row"><button class="b line oog-goback" data-gback><svg viewBox="0 0 24 24" class="li" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Go back</button></div>`;return "no"}
+    <div class="row"><a class="b solid" id="ooMail" href="mailto:${AG.email}?subject=${encodeURIComponent("Home buyer: "+B.name)}&body=${encodeURIComponent(body)}">Email ${AG.first}</a></div>${BACK}`;return "no"}
+  if(G.dep==="n"){r.className="oog-res low";
+   r.innerHTML=`<span class="tag"><i></i>Deposit</span><h2 tabindex="-1">Need a lower deposit?</h2><p>${LOW}</p>
+    <div class="row"><a class="b solid" href="https://wa.me/${AG.wa}?text=${encodeURIComponent(`Hi ${AG.first}, I'm interested in ${B.name} as a home. Is a lower deposit possible on any of the apartments?`)}" target="_blank" rel="noopener" id="ooLowWa">WhatsApp ${AG.first}</a><a class="b line" href="tel:+44${AG.tel.replace(/\s/g,"").slice(1)}">${AG.tel}</a></div>${BACK}`;return "low"}
   return ""}
+
+ function paint(){
+  root.querySelectorAll("[data-a]").forEach(b=>{const[k,v]=b.dataset.a.split(":");b.setAttribute("aria-pressed",String(G[k]===v))});
+  root.querySelectorAll(".oogc-row").forEach(r=>{const v=G[r.dataset.k];r.classList.toggle("is-y",v==="y");r.classList.toggle("is-n",v==="n")});
+  const n=answered(),go=$("#oogGo"),left=$("#oogLeft");
+  go.disabled=n<4;
+  left.textContent=n<4?(n===0?"Answer all four":`${4-n} to go`):passed()?"All set":"See what this means";
+  go.firstChild.nodeValue=passed()||n<4?"See your guide ":"Continue "}
 
  function go(p,dir,quiet){
   const cur=root.querySelector(".oogp:not([hidden])"),nx=$("#oogP"+p);if(!nx)return;
@@ -4810,35 +4923,27 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
   nx.hidden=false;
   if(!RM2&&!quiet){nx.classList.add(dir==="back"?"back":"enter");requestAnimationFrame(()=>requestAnimationFrame(()=>nx.classList.remove("enter","back")))}
   if(kind==="no"&&!quiet&&!RM2){const r=$("#oogRes");r.classList.remove("shake");void r.offsetWidth;r.classList.add("shake")}
-  root.querySelectorAll("[data-a]").forEach(b=>{const[k,v]=b.dataset.a.split(":");b.setAttribute("aria-pressed",String(G[k]===v))});
-  const low=$("#oogLow");if(low){low.hidden=G.dep!=="n";low.textContent=LOW}
-  const q=p>=1&&p<=4;$("#oogLive").hidden=p!==0;$("#oogDots").hidden=!q;$("#oogLab").hidden=q;root.querySelector(".oog-top [data-gback]").hidden=p===0;
-  if(q){$("#oogStep").textContent=`${p} of 4`;$("#oogDots").querySelectorAll("i").forEach((d,i)=>{d.className=i+1<p?"on":i+1===p?"cur":""})}
-  if(p===4)amt();
+  $("#oogLive").hidden=p!==0;root.querySelector(".oog-top [data-gback]").hidden=p===0;
+  paint();
   if(!quiet){scrollTo({top:0,behavior:"auto"});
    setTimeout(()=>{const h=nx.querySelector("h2");h&&h.focus({preventScroll:true})},RM2?0:240)}}
 
- function unlock(how){G.open=true;sv();document.body.classList.remove("oo-locked");
+ function unlock(){G.open=true;sv();document.body.classList.remove("oo-locked");
   track("Passed the home buyer check and went into the guide","guide.check.pass");
   const ok=$("#ooOk");if(ok)ok.hidden=false;
   scrollTo({top:0,behavior:"auto"});dispatchEvent(new Event("resize"));
   setTimeout(()=>{const t=document.querySelector(".gtabs [data-tab]");t&&t.focus({preventScroll:true})},80)}
 
- function lowDlg(){dialog(`${dh("Need a lower deposit?")}<div class="bb oodlg" style="padding-bottom:26px"><p>${LOW}</p><a class="ln" href="tel:+44${AG.tel.replace(/\s/g,"").slice(1)}">${AG.tel}</a><a class="ln" href="mailto:${AG.email}">${AG.email}</a></div>`,"Need a lower deposit?")}
-
  root.addEventListener("click",e=>{
   const b=e.target.closest("[data-a]");
-  if(b){const[k,v]=b.dataset.a.split(":");const p=Q.indexOf(k)+1;G[k]=v;sv();
-   b.setAttribute("aria-pressed","true");const o=b.parentElement.querySelector(`[data-a="${k}:${v==="y"?"n":"y"}"]`);o&&o.setAttribute("aria-pressed","false");
-   track(`Home buyer check, ${NAME[k]}: ${v==="y"?"yes":"no"}`,"guide.check");
-   if(v==="y"){const low=$("#oogLow");if(k==="dep"&&low)low.hidden=true;setTimeout(()=>{if(p===4&&passed())unlock("read");else go(p===4?(failed()?5:1):p+1)},RM2?0:260)}
-   else if(k==="dep"){const low=$("#oogLow");low.textContent=LOW;low.hidden=false;lowDlg()}
-   else setTimeout(()=>go(5),RM2?0:220);
+  if(b){const[k,v]=b.dataset.a.split(":");G[k]=G[k]===v?null:v;sv();paint();
+   if(G[k])track(`Home buyer check, ${NAME[k]}: ${v==="y"?"yes":"no"}`,"guide.check");
+   if(G[k]&&answered()===4&&!RM2){const g=$("#oogGo");g.classList.remove("pulse");void g.offsetWidth;g.classList.add("pulse")}
    return}
-  const bd=e.target.closest("[data-beds]");if(bd){G.beds=bd.dataset.beds;sv();amt();track("Home buyer check, prefers a "+(G.beds==="one"?"1":"2")+" bed","guide.check");return}
-  if(e.target.closest("#oogStart")){track("Started the home buyer check","guide.check");go(1);return}
-  if(e.target.closest("[data-gback]")){const f=failed();go(G.p===5?(f?Q.indexOf(f)+1:4):Math.max(0,G.p-1),"back");return}
+  if(e.target.closest("#oogGo")){if(answered()<4)return;if(passed())unlock();else go(5);return}
+  if(e.target.closest("[data-gback]")){go(0,"back");return}
   if(e.target.closest("#ooMail")){track("Not suitable: opened an email to "+AG.first,"guide.check.email");return}
+  if(e.target.closest("#ooLowWa")){track("Lower deposit: opened WhatsApp to "+AG.first,"guide.check.lowdeposit");return}
  });
 
  window.gateFocus=function(){scrollTo({top:0,behavior:RM2?"auto":"smooth"});setTimeout(()=>{const h=root.querySelector(".oogp:not([hidden]) h2");h&&h.focus({preventScroll:true})},320)};
@@ -4850,7 +4955,7 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
  fit();addEventListener("resize",fit);addEventListener("load",fit);
  setTimeout(()=>{const hw=$("#oogHow");hw&&hw.classList.add("in")},350);
  if(G.open&&passed()){document.body.classList.remove("oo-locked");const ok=$("#ooOk");if(ok)ok.hidden=false}
- else{G.open=false;const p=(G.p>=0&&G.p<=5)?G.p:0;go(p===5&&!failed()&&!passed()?0:p,null,true)}
+ else{G.open=false;go(G.p===5&&answered()===4&&!passed()?5:0,null,true)}
 })();
 /* ============ St Marys Gate photo slider: arrows, counter, arrow keys ============ */
 (function(){
@@ -4866,6 +4971,25 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
   let r;t.addEventListener("scroll",()=>{cancelAnimationFrame(r);r=requestAnimationFrame(()=>upd(w))},{passive:true});upd(w)})}
  new MutationObserver(()=>{clearTimeout(init.t);init.t=setTimeout(init,60)}).observe(document.body,{childList:true,subtree:true});init();
  addEventListener("resize",()=>document.querySelectorAll(".smgslider").forEach(upd));
+})();
+/* ============ Live stamp duty calculator in Your move (James, 25 Nov) ============ */
+(function(){
+ let who="ftb";
+ const num=v=>{v=String(v).toLowerCase().replace(/[£,\s]/g,"");const m=v.match(/^(\d*\.?\d+)(k|m)?$/);if(!m)return NaN;return Math.round(parseFloat(m[1])*(m[2]==="m"?1e6:m[2]==="k"?1e3:1))};
+ function calc(box){const inp=box.querySelector("#sdP"),out=box.querySelector("#sdOut"),help=box.querySelector("#sdHelp");const p=num(inp.value);
+  if(!(p>0)){out.textContent="–";help.textContent="Type a price, for example 186,000.";return}
+  let t,h;
+  if(who==="ftb"){if(p>500000){t=sdltStd(p);h="Over £500,000, first-time buyers' relief doesn't apply, so standard rates are used."}else{t=sdltFTB(p);h=p<=300000?"First-time buyers pay nothing on the first £300,000.":"Nothing on the first £300,000, then 5% on the rest, up to £500,000."}}
+  else if(who==="mover"){t=sdltStd(p);h="Standard rates: nothing up to £125,000, 2% to £250,000, then 5%."}
+  else{t=sdltStd(p)+(p>=40000?p*.05:0);h="Standard rates plus 5% on the whole price, as you'll still own another home."}
+  out.textContent=gbp(Math.round(t));help.textContent=h;
+  box.querySelectorAll("[data-sdp]").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.sdp===p)))}
+ document.addEventListener("input",e=>{const box=e.target.closest(".oosdc");if(box&&e.target.id==="sdP")calc(box)});
+ document.addEventListener("focusout",e=>{if(e.target.id!=="sdP")return;const p=num(e.target.value);if(p>0)e.target.value=p.toLocaleString("en-GB")});
+ document.addEventListener("click",e=>{const box=e.target.closest(".oosdc");if(!box)return;
+  const c=e.target.closest("[data-sdp]");if(c){box.querySelector("#sdP").value=(+c.dataset.sdp).toLocaleString("en-GB");calc(box);return}
+  const w=e.target.closest("[data-sdw]");if(w){who=w.dataset.sdw;box.querySelectorAll("[data-sdw]").forEach(b=>b.setAttribute("aria-checked",String(b===w)));calc(box)}});
+ new MutationObserver(()=>{document.querySelectorAll(".oosdc:not([data-on])").forEach(b=>{b.dataset.on=1;calc(b)})}).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 </body>
