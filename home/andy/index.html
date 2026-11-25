@@ -3244,10 +3244,13 @@ body.v4 .bktour .b.solid{background:var(--forest)!important;border-color:var(--f
 body.oo-locked main.wrap>*:not(#ooGate){display:none!important}
 body.oo-locked .prelaunch,body.oo-locked .ctabar{display:none!important}
 body:not(.oo-locked) #ooGate{display:none}
+body.oo-locked main.wrap{padding-bottom:0!important;margin-bottom:0!important}
+body.oo-locked{padding-bottom:0!important}
 
-/* ---------- the check: one page at a time ---------- */
-.oogate{max-width:1120px;margin:clamp(10px,2.4vw,32px) auto clamp(56px,7vw,96px);scroll-margin-top:96px}
-.oog-top{display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--ink)}
+/* ---------- the check: one page at a time, each fits one screen ---------- */
+body.oo-locked{overflow-x:hidden}
+.oogate{display:flex;flex-direction:column;max-width:1120px;margin:0 auto;min-height:calc(100dvh - var(--oo-hdr,76px));padding-block:clamp(10px,2dvh,24px);box-sizing:border-box;scroll-margin-top:96px}
+.oog-top{display:flex;justify-content:space-between;align-items:center;gap:8px 20px;flex-wrap:wrap;min-height:44px;padding-bottom:10px;border-bottom:1px solid var(--ink)}
 .oog-top .v4lab{margin:0}
 .oog-top [hidden]{display:none!important}
 .oog-live{display:inline-flex;align-items:center;gap:10px;font:500 14px/1.35 var(--sans);color:var(--brick)}
@@ -3255,43 +3258,42 @@ body:not(.oo-locked) #ooGate{display:none}
 .oog-live i{position:relative;width:8px;height:8px;border-radius:50%;background:var(--brick);flex:none}
 .oog-live i::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid var(--brick);opacity:0;animation:oolive 2.4s var(--oo-ease) infinite}
 @keyframes oolive{0%{transform:scale(.4);opacity:.7}100%{transform:scale(1.6);opacity:0}}
-.oog-dots{display:flex;align-items:center;gap:8px;font:500 11px/1 var(--wide);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
-.oog-dots i{width:26px;height:3px;background:var(--v4rule);transition:background .2s var(--oo-ease)}
+.oog-dots{display:flex;align-items:center;gap:8px;margin-left:auto;font:500 11px/1 var(--wide);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.oog-dots i{width:22px;height:3px;background:var(--v4rule);transition:background .2s var(--oo-ease)}
 .oog-dots i.on{background:var(--v4gold)}
 .oog-dots i.cur{background:var(--ink)}
+.oog-backb{background:none;border:0;padding:0 10px 0 0;min-height:44px;font:500 14px var(--sans);color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.oog-backb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.oog-backb:hover{color:var(--ink)}
 
-.oogp{padding-top:clamp(24px,3.4vw,44px);transition:opacity .22s var(--oo-ease),transform .22s var(--oo-ease)}
+.oogp{flex:1;display:flex;flex-direction:column;justify-content:center;padding-block:clamp(14px,3dvh,40px);transition:opacity .22s var(--oo-ease),transform .22s var(--oo-ease)}
 .oogp[hidden]{display:none}
 .oogp.enter{opacity:0;transform:translateX(18px)}
 .oogp.back{opacity:0;transform:translateX(-18px)}
 
 /* intro page */
-.oog-h{font:600 clamp(34px,4.6vw,62px)/1.03 var(--serif)!important;letter-spacing:-.015em;margin:0 0 18px!important;color:var(--ink);text-wrap:balance;max-width:19ch}
-.oog-h .oog-n{color:var(--brick);font-variant-numeric:tabular-nums}
-.oog-lead{font-size:clamp(17px,1.4vw,19px);line-height:1.6;color:var(--text);max-width:60ch;margin:0}
-.oog-how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:clamp(28px,3.6vw,44px) 0 0;border-top:1px solid var(--v4rule)}
-.oog-how>div{position:relative;padding:22px 22px 4px 0}
-.oog-how>div+div{padding-left:22px;border-left:1px solid var(--v4rule)}
-.oog-how .n{display:block;font:500 11px/1 var(--wide);letter-spacing:.28em;color:var(--v4label);margin-bottom:12px}
-.oog-how b{display:block;font:600 clamp(20px,1.7vw,24px)/1.18 var(--serif);color:var(--ink);margin-bottom:8px}
-.oog-how p{margin:0;font-size:15px;line-height:1.55;color:var(--muted)}
-.oog-how>div::before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--v4gold);transform:scaleX(0);transform-origin:left;transition:transform .9s var(--oo-ease)}
-.oog-how.in>div::before{transform:scaleX(1)}
-.oog-how.in>div:nth-child(2)::before{transition-delay:.25s}.oog-how.in>div:nth-child(3)::before{transition-delay:.5s}
-.oog-help{margin:24px 0 0;padding:18px 20px;background:var(--v4warm);border:1px solid var(--v4rule);font-size:16px;line-height:1.6;color:var(--text)}
+.oog-h{font:600 clamp(32px,min(4.6vw,7dvh),62px)/1.03 var(--serif)!important;letter-spacing:-.015em;margin:0 0 14px!important;color:var(--ink);text-wrap:balance;max-width:17ch}
+.oog-lead{font-size:clamp(16px,1.4vw,19px);line-height:1.5;color:var(--text);max-width:52ch;margin:0}
+.oog-how{list-style:none;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:clamp(18px,3.4dvh,36px) 0 0;border-top:1px solid var(--v4rule)}
+.oog-how li{position:relative;display:flex;align-items:baseline;gap:12px;padding:16px 18px 4px 0}
+.oog-how li+li{padding-left:18px;border-left:1px solid var(--v4rule)}
+.oog-how .n{font:600 clamp(22px,2vw,28px)/1 var(--serif);color:var(--v4gold);flex:none}
+.oog-how b{font:600 clamp(18px,1.6vw,22px)/1.2 var(--serif);color:var(--ink)}
+.oog-how li::before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--v4gold);transform:scaleX(0);transform-origin:left;transition:transform .9s var(--oo-ease)}
+.oog-how.in li::before{transform:scaleX(1)}
+.oog-how.in li:nth-child(2)::before{transition-delay:.25s}.oog-how.in li:nth-child(3)::before{transition-delay:.5s}
+.oog-help{margin:clamp(14px,2.6dvh,26px) 0 0;padding:14px 18px;background:var(--v4warm);border:1px solid var(--v4rule);font-size:16px;line-height:1.5;color:var(--text);max-width:62ch}
 .oog-help b{color:var(--ink)}
-.oog-start{display:flex;align-items:center;flex-wrap:wrap;gap:14px 20px;margin-top:28px}
+.oog-start{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;margin-top:clamp(16px,3dvh,30px)}
 .oog-start .b{min-height:56px;height:auto;padding:0 30px;font-size:14px}
 .oog-start small{font-size:14px;color:var(--muted)}
 
-/* question pages: question on the left, the evidence on the right */
-.oogq{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:clamp(22px,4vw,64px);align-items:start}
-.oogq-l{position:sticky;top:110px}
-.oogq .qn{display:block;font:500 11px/1 var(--wide);letter-spacing:.28em;text-transform:uppercase;color:var(--v4label);margin-bottom:16px}
-.oogq h2{font:600 clamp(30px,3.4vw,46px)/1.06 var(--serif)!important;margin:0 0 14px!important;color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
-.oogq .qs{margin:0 0 26px;font-size:17px;line-height:1.55;color:var(--text);max-width:44ch}
-.oog-yn{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;max-width:420px}
-.oogb{min-height:58px;padding:14px 20px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:500 15px/1.25 var(--sans);letter-spacing:.01em;cursor:pointer;
+/* question pages: question on the left, one piece of evidence on the right */
+.oogq{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(20px,4vw,64px);align-items:center}
+.oogq .qn{display:block;font:500 11px/1 var(--wide);letter-spacing:.28em;text-transform:uppercase;color:var(--v4label);margin-bottom:14px}
+.oogq h2{font:600 clamp(26px,min(3.3vw,5.2dvh),46px)/1.06 var(--serif)!important;margin:0 0 clamp(18px,3dvh,28px)!important;color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
+.oog-yn{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;max-width:420px}
+.oogb{min-height:54px;padding:12px 18px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:500 15px/1.25 var(--sans);cursor:pointer;
   display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;transition:background .15s var(--oo-ease),color .15s var(--oo-ease),border-color .15s var(--oo-ease),transform .12s var(--oo-ease)}
 .oogb:hover{background:rgb(29 27 26 / .05)}
 .oogb:active{transform:scale(.97)}
@@ -3299,52 +3301,47 @@ body:not(.oo-locked) #ooGate{display:none}
 .oogb.yes{background:var(--forest,#1F4A38);border-color:var(--forest,#1F4A38);color:#fff}
 .oogb.yes:hover{background:var(--forest,#1F4A38);filter:brightness(1.12)}
 .oogb[aria-pressed="true"].no{background:var(--oo-no);border-color:var(--oo-no);color:#fff}
-.oogb svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:none;transition:opacity .15s var(--oo-ease),filter .15s var(--oo-ease),transform .2s var(--oo-ease)}
+.oogb svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .oogb .ar{opacity:.55}
 .oogb .tk{display:none}
 .oogb[aria-pressed="true"] .ar{display:none}
 .oogb[aria-pressed="true"] .tk{display:block;animation:ootk .25s var(--oo-ease)}
 @keyframes ootk{from{opacity:0;filter:blur(4px);transform:scale(.6)}to{opacity:1;filter:none;transform:none}}
-.oog-backb{margin-top:18px;background:none;border:0;padding:10px 0;min-height:44px;font:500 14px var(--sans);color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.oog-backb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.oog-backb:hover{color:var(--ink)}
-.oog-inl{margin:16px 0 0;max-width:420px;font-size:15px;line-height:1.55;color:var(--text);padding:12px 14px;background:var(--oo-no-soft);border-left:2px solid var(--oo-no)}
+.oog-inl{margin:14px 0 0;max-width:420px;font-size:15px;line-height:1.5;color:var(--text);padding:10px 14px;background:var(--oo-no-soft);border-left:2px solid var(--oo-no)}
 .oog-inl[hidden]{display:none}
 
 /* the evidence */
-.oogq-r{display:flex;flex-direction:column;gap:14px}
-.oog-ev{padding:clamp(20px,2.4vw,28px);background:var(--v4warm);border:1px solid var(--v4rule)}
-.oog-ev .cap{margin-bottom:10px}
-.oog-ev h3{font:600 clamp(21px,1.9vw,26px)/1.15 var(--serif)!important;margin:0 0 10px!important;color:var(--ink)}
-.oog-ev p{margin:0 0 10px;font-size:15.5px;line-height:1.6;color:var(--text)}
+.oogq-r{display:flex;flex-direction:column;gap:10px;min-width:0}
+.oog-ev{padding:clamp(18px,2.2vw,26px);background:var(--v4warm);border:1px solid var(--v4rule)}
+.oog-ev .cap{display:block;margin-bottom:10px}
+.oog-ev p{margin:0 0 8px;font-size:15.5px;line-height:1.5;color:var(--text)}
 .oog-ev p:last-child{margin-bottom:0}
+.oog-ev p.sm{font-size:13.5px;color:var(--muted)}
 .oog-ev b{color:var(--ink)}
-.oog-tl{list-style:none;margin:14px 0 2px;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--v4gold)}
-.oog-tl li{position:relative;padding:16px 12px 0 0;font-size:14px;line-height:1.45;color:var(--muted)}
+.oog-ev hr{border:0;border-top:1px solid var(--v4rule);margin:14px 0}
+.oog-tl{list-style:none;margin:12px 0 14px;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--v4gold)}
+.oog-tl li{position:relative;padding:14px 10px 0 0;font-size:14px;line-height:1.4;color:var(--muted)}
 .oog-tl li::before{content:"";position:absolute;top:-5px;left:0;width:9px;height:9px;border-radius:50%;background:var(--paper);border:1px solid var(--v4gold)}
 .oog-tl li:last-child::before{background:var(--v4gold)}
-.oog-tl b{display:block;font:600 15px/1.25 var(--sans);color:var(--ink);margin-bottom:4px}
-.oog-pic{position:relative;display:block;width:100%;border:0;padding:0;cursor:zoom-in;background-size:cover;background-position:center;outline:1px solid var(--v4rule);outline-offset:-1px}
-.oog-pic.big{aspect-ratio:16/10}
-.oog-pic.sm{aspect-ratio:16/8}
+.oog-tl b{display:block;font:600 15px/1.25 var(--sans);color:var(--ink);margin-bottom:3px}
+.oog-pic{position:relative;display:block;width:100%;aspect-ratio:16/10;max-height:58dvh;border:0;padding:0;cursor:zoom-in;background-size:cover;background-position:center;outline:1px solid var(--v4rule);outline-offset:-1px}
 .oog-pic .ccap{transform:none}
-.oog-pics{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
-.oog-walk{list-style:none;margin:12px 0 0;padding:0;border-top:1px solid var(--v4rule)}
-.oog-walk li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--v4rule);font-size:15px;color:var(--text)}
-.oog-walk li b{color:var(--ink);font-weight:600;white-space:nowrap}
-.oog-beds{display:inline-grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);margin:6px 0 16px}
-.oog-beds button{min-height:46px;min-width:96px;padding:0 18px;border:0;background:transparent;font:500 14px var(--sans);color:var(--ink);cursor:pointer;transition:background .15s var(--oo-ease),color .15s var(--oo-ease)}
+.oog-pcap{margin:0;font-size:15.5px;line-height:1.5;color:var(--text)}
+.oog-walk{list-style:none;margin:10px 0;padding:0;border-top:1px solid var(--v4rule)}
+.oog-walk li{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid var(--v4rule);font-size:15px;color:var(--text)}
+.oog-walk li b{white-space:nowrap}
+.oog-beds{display:inline-grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);margin:2px 0 14px}
+.oog-beds button{min-height:44px;min-width:92px;padding:0 18px;border:0;background:transparent;font:500 14px var(--sans);color:var(--ink);cursor:pointer;transition:background .15s var(--oo-ease),color .15s var(--oo-ease)}
 .oog-beds button+button{border-left:1px solid var(--ink)}
 .oog-beds button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
-.oog-amt{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
-.oog-amt b{font:600 clamp(36px,3.6vw,50px)/1 var(--serif);color:var(--ink);font-variant-numeric:tabular-nums}
+.oog-amt{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:12px}
+.oog-amt b{font:600 clamp(34px,3.4vw,48px)/1 var(--serif);color:var(--ink);font-variant-numeric:tabular-nums}
 .oog-amt span{font-size:14.5px;color:var(--muted)}
-.oog-note{font-size:14.5px;line-height:1.55;color:var(--text);margin:0;padding:12px 14px;background:var(--paper);border-left:2px solid var(--brick)}
-.oog-note a{color:var(--ink);font-weight:600}
+.oog-note{font-size:15px;line-height:1.5;color:var(--text);margin:0 0 12px;padding:10px 14px;background:var(--paper);border-left:2px solid var(--brick)}
 
 /* result pages */
-.oog-res{padding:clamp(24px,3.4vw,44px);border:1px solid var(--ink)}
-.oog-res .tag{display:inline-flex;align-items:center;gap:9px;font:500 11px/1 var(--wide);letter-spacing:.26em;text-transform:uppercase;margin-bottom:16px}
+.oog-res{padding:clamp(22px,3.4vw,44px);border:1px solid var(--ink)}
+.oog-res .tag{display:inline-flex;align-items:center;gap:9px;font:500 11px/1 var(--wide);letter-spacing:.26em;text-transform:uppercase;margin-bottom:14px}
 .oog-res .tag i{width:8px;height:8px;border-radius:50%;background:currentColor}
 .oog-res.ok{border-color:var(--oo-ok);background:linear-gradient(180deg in oklch,var(--oo-ok-soft),var(--paper) 70%)}
 .oog-res.ok .tag{color:var(--oo-ok)}
@@ -3352,25 +3349,40 @@ body:not(.oo-locked) #ooGate{display:none}
 .oog-res.no .tag{color:var(--oo-no)}
 .oog-res.no.shake{animation:ooshake .38s var(--oo-ease)}
 @keyframes ooshake{0%,100%{transform:none}20%{transform:translateX(-7px)}45%{transform:translateX(6px)}70%{transform:translateX(-3px)}}
-.oog-res h2{font:600 clamp(30px,3.4vw,46px)/1.05 var(--serif)!important;margin:0 0 14px!important;color:var(--ink);text-wrap:balance}
-.oog-res p{margin:0 0 10px;font-size:17px;line-height:1.6;color:var(--text);max-width:62ch}
+.oog-res h2{font:600 clamp(28px,3.4vw,46px)/1.05 var(--serif)!important;margin:0 0 12px!important;color:var(--ink);text-wrap:balance}
+.oog-res p{margin:0 0 8px;font-size:17px;line-height:1.5;color:var(--text);max-width:58ch}
 .oog-res .why{font-weight:600;color:var(--ink)}
-.oog-res .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.oog-res .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
 .oog-res .row .b{min-height:52px;height:auto;padding:0 26px}
-.oog-chg{background:none;border:0;padding:12px 0 0;min-height:44px;font:500 14px var(--sans);color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.oog-fine{margin:22px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.oog-chg{background:none;border:0;padding:10px 0 0;min-height:44px;font:500 14px var(--sans);color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .oodlg p{font-size:16px;line-height:1.6;color:var(--text);margin:0 0 12px}
 .oodlg .ln{display:block;font-size:15px;color:var(--ink);margin:4px 0}
 @media (max-width:900px){
-  .oogq{grid-template-columns:minmax(0,1fr)}
-  .oogq-l{position:static}
+  .oogq{grid-template-columns:minmax(0,1fr);align-items:start;gap:16px}
   .oog-yn{max-width:none}
   .oog-how{grid-template-columns:minmax(0,1fr)}
-  .oog-how>div+div{padding-left:0;border-left:0;border-top:1px solid var(--v4rule)}
-  .oog-how>div{padding-right:0}
+  .oog-how li{padding:12px 0 10px}
+  .oog-how li+li{padding-left:0;border-left:0;border-top:1px solid var(--v4rule)}
+  .oog-how li::before{display:none}
+  .oogp{justify-content:flex-start}
+  .oogq h2{margin-bottom:16px!important}
+  .oogb{min-height:50px}
+  .oog-ev{padding:16px}
+  .oog-tl li{font-size:13px}
 }
-@media (max-width:480px){.oog-tl{grid-template-columns:minmax(0,1fr)}.oog-tl li{padding:14px 0 6px 18px;border-left:1px solid var(--v4gold)}.oog-tl li::before{top:18px;left:-5px}.oog-tl{border-top:0}}
-@media (prefers-reduced-motion:reduce){.oog-live i::after,.oog-res.no.shake,.oogb[aria-pressed="true"] .tk{animation:none}.oogp,.oog-how>div::before{transition:none}}
+@media (max-width:900px) and (max-height:760px){.oog-ev p.sm,.oog-walk{display:none}.oog-pic{aspect-ratio:16/9}}
+@media (max-width:600px){.oog-dots{letter-spacing:.14em;gap:6px}.oog-dots i{width:14px}.oog-dots .qw{display:none}.oog-top{flex-wrap:nowrap}}
+@media (max-width:900px) and (max-height:700px){
+  .oogate{padding-block:4px}.oogp{padding-block:6px}
+  .oog-h{font-size:27px!important;margin-bottom:8px!important}.oog-lead{font-size:15px}
+  .oog-how{margin-top:12px}.oog-how li{padding:8px 0}.oog-how b{font-size:17px}
+  .oog-help{padding:10px 12px;font-size:14px;margin-top:10px}.oog-start{margin-top:12px}.oog-start .b{min-height:50px}
+  .oogq .qn{margin-bottom:8px}.oogq h2{font-size:23px!important;margin-bottom:12px!important}
+  .oogb{min-height:46px;padding:10px 14px;font-size:14.5px}.oog-yn{gap:8px}.oogq{gap:12px}
+  .oog-ev{padding:12px 14px}.oog-ev p{font-size:14px;margin:0 0 5px}.oog-ev hr{margin:8px 0}.oog-tl{margin:8px 0 10px}.oog-tl li{font-size:12.5px;padding-top:12px}
+  .oog-pcap{font-size:14px}.oog-amt b{font-size:32px}
+}
+@media (prefers-reduced-motion:reduce){.oog-live i::after,.oog-res.no.shake,.oogb[aria-pressed="true"] .tk{animation:none}.oogp,.oog-how li::before{transition:none}}
 
 /* ---------- guide blocks ---------- */
 .oonew6{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--ink);margin-top:22px}
@@ -3496,57 +3508,45 @@ body:not(.oo-locked) #ooGate{display:none}
 
 <main class="wrap">
 
-  <!-- Home buyer check: an intro page, then one question per page -->
+  <!-- Home buyer check: an intro page, then one question per page; each page fits one screen -->
   <section class="oogate" id="ooGate" aria-labelledby="oogH">
-    <div class="oog-top"><span class="v4lab">Before you start</span><span class="oog-live" id="oogLive"><i aria-hidden="true"></i><span>We're averaging <b class="oog-n" data-count="47" data-dur="1200">47</b> enquiries a day at the moment</span></span><span class="oog-dots" id="oogDots" hidden><span id="oogStep">Question 1 of 4</span><i></i><i></i><i></i><i></i></span></div>
+    <div class="oog-top"><button class="oog-backb" data-back hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button><span class="v4lab" id="oogLab">Before you start</span><span class="oog-live" id="oogLive"><i aria-hidden="true"></i><span>We're averaging <b class="oog-n" data-count="47" data-dur="1200">47</b> enquiries a day at the moment</span></span><span class="oog-dots" id="oogDots" hidden><span><span class="qw">Question </span><span id="oogStep">1 of 4</span></span><i></i><i></i><i></i><i></i></span></div>
     <div class="oogp" id="oogP0">
       <h2 class="oog-h" id="oogH" tabindex="-1">First, let's make sure this is suitable for you.</h2>
-      <p class="oog-lead">We're doing our best to get round to everyone. In the meantime, here's the full information on Charter House. Things are moving quickly, so which homes are left changes day to day. Here's how it works.</p>
-      <div class="oog-how" id="oogHow">
-        <div><span class="n">01</span><b>You buy off plan</b><p>You choose your home now, before it's finished.</p></div>
-        <div><span class="n">02</span><b>20% deposit in the next six weeks</b><p>£3,000 reserves it. The rest of your 20% is due when contracts exchange.</p></div>
-        <div><span class="n">03</span><b>Complete with a mortgage in February 2028</b><p>Your mortgage pays the other 80%, and you get your keys.</p></div>
-      </div>
-      <p class="oog-help"><b>We help with every step.</b> We're very experienced, and we hold your hand through the whole process. It's easy and straightforward. But you will need a 20% deposit.</p>
-      <div class="oog-start"><button class="b solid" id="oogStart">Check it suits you <svg viewBox="0 0 24 24" class="li arr" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><small>Four quick questions, under a minute.</small></div>
+      <p class="oog-lead">We're doing our best to get round to everyone. Here's how buying works.</p>
+      <ol class="oog-how" id="oogHow"><li><span class="n">1</span><b>You buy off plan</b></li><li><span class="n">2</span><b>20% deposit in the next six weeks</b></li><li><span class="n">3</span><b>Complete with a mortgage in Feb 2028</b></li></ol>
+      <p class="oog-help"><b>We help with every step.</b> It's easy and straightforward. But you will need a 20% deposit.</p>
+      <div class="oog-start"><button class="b solid" id="oogStart">Check it suits you <svg viewBox="0 0 24 24" class="li arr" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><small>4 quick questions</small></div>
     </div>
     
     <div class="oogp" id="oogP1" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Timing</span><h2 tabindex="-1">Charter House completes in February 2028. Are you happy to wait?</h2><p class="qs">You choose your home now, and move in when it's finished.</p>
-        <div class="oog-yn"><button class="oogb yes" data-a="time:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="time:n" aria-pressed="false"><span>No, that doesn't work for me</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-        <button class="oog-backb" data-back><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>
-      <div class="oogq-r"><div class="oog-ev"><span class="cap">Rent in the meantime</span><h3>Line up your move with your keys.</h3>
-          <p>A lot of our clients rent while it's built. Under the new Renters' Rights Act, you can end a tenancy with two months' notice.</p>
-          <p>We'll give you notice two months before completion. You serve notice on your rental, then move straight in. It's actually perfect for lining up the timings.</p>
-          <ol class="oog-tl"><li><b>Now</b>Rent month to month while it's built</li><li><b>Two months before</b>We give you notice, and you give your landlord notice</li><li><b>February 2028</b>Get your keys and move in</li></ol></div>
-        <div class="oog-ev"><span class="cap">Buy now, not when it's finished</span><h3>You're buying at a discount to the market.</h3><p>Charter House is the last site to be developed in the Underbanks. Buy somewhere that's already finished and you'll pay a big premium, so you'd miss out on a lot of the gain in your home's value.</p></div></div></div></div>
+      <div class="oogq-l"><span class="qn">Timing</span><h2 tabindex="-1">Charter House completes in February 2028. Are you happy to wait?</h2>
+        <div class="oog-yn"><button class="oogb yes" data-a="time:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="time:n" aria-pressed="false"><span>No, that doesn't work for me</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
+      <div class="oogq-r"><div class="oog-ev"><span class="cap">Rent until then</span>
+          <ol class="oog-tl"><li><b>Now</b>Rent month to month</li><li><b>Two months before</b>We give you notice. You give notice on your rental.</li><li><b>February 2028</b>Move in</li></ol>
+          <p>Under the Renters' Rights Act, two months' notice is all you need.</p>
+          <hr><p><b>You buy at a discount to the market.</b> It's the last site in the Underbanks. Buy once it's finished and you'd pay a big premium.</p></div></div></div></div>
     <div class="oogp" id="oogP2" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Choosing your home</span><h2 tabindex="-1">You'll choose your home off the plans and our 3D model. Is that OK?</h2><p class="qs">There's no show home until further down the line.</p>
-        <div class="oog-yn"><button class="oogb yes" data-a="model:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="model:n" aria-pressed="false"><span>No, I need to see a show home</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-        <button class="oog-backb" data-back><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>
-      <div class="oogq-r"><div class="oog-pics"><button class="oog-pic big" style="background-image:var(--oo_inside)" data-img="oo_inside" data-cap="Inside, from our 3D model" aria-label="View the inside render full screen"><span class="ccap">Inside · from our 3D model, 8K render</span></button>
-          <button class="oog-pic sm" style="background-image:var(--model3d)" data-img="model3d" data-cap="Charter House, from our 3D model" aria-label="View the 3D model full screen"><span class="ccap">Outside · from our 3D model</span></button></div>
-        <div class="oog-ev"><span class="cap">Our 3D model</span><h3>See inside and out.</h3><p>It's amazing. You can see inside the apartments, the finish, the view out of the windows and what it's like on the street. You don't need a show home.</p><p>We go round it together on a 30-minute video call, and you choose your home there and then.</p></div></div></div></div>
+      <div class="oogq-l"><span class="qn">Choosing your home</span><h2 tabindex="-1">You'll choose your home off the plans and our 3D model. Is that OK?</h2>
+        <div class="oog-yn"><button class="oogb yes" data-a="model:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="model:n" aria-pressed="false"><span>No, I need a show home</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
+      <div class="oogq-r"><button class="oog-pic" style="background-image:var(--oo_inside)" data-img="oo_inside" data-cap="Inside, from our 3D model" aria-label="View the inside render full screen"><span class="ccap">Inside · our 3D model, 8K render</span></button>
+        <p class="oog-pcap">See inside and out: the finish, the views and the street. It's better than a show home.</p></div></div></div>
     <div class="oogp" id="oogP3" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Parking</span><h2 tabindex="-1">There's no parking. Is that OK for you?</h2><p class="qs">If parking is a must for you, it simply won't work.</p>
-        <div class="oog-yn"><button class="oogb yes" data-a="park:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="park:n" aria-pressed="false"><span>No, I need parking</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-        <button class="oog-backb" data-back><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>
-      <div class="oogq-r"><button class="oog-pic sm" style="background-image:var(--t_inter)" data-img="t_inter" data-cap="Stockport Interchange" aria-label="View Stockport Interchange full screen"><span class="ccap">Stockport Interchange</span></button>
-        <div class="oog-ev"><span class="cap">Parking</span><h3>None of the town-centre blocks have it.</h3>
-          <p>That's the case for all the blocks in Stockport town centre and the Underbanks, including Capital, Centrix and Weir Mill.</p>
-          <p>The council is spending more than £1 billion on transport links, and the area is very walkable. Permits for the surrounding streets are available, first come, first served, but they're not guaranteed.</p>
-          <ul class="oog-walk"><li><span>The Underbanks</span><b>under 1 min walk</b></li><li><span>Merseyway Shopping Centre</span><b>3 min walk</b></li><li><span>Asda Superstore</span><b>4 min walk</b></li><li><span>Stockport station</span><b>10 min walk</b></li><li><span>Manchester Piccadilly</span><b>8 min by train</b></li></ul></div></div></div></div>
+      <div class="oogq-l"><span class="qn">Parking</span><h2 tabindex="-1">There's no parking. Is that OK for you?</h2>
+        <div class="oog-yn"><button class="oogb yes" data-a="park:y" aria-pressed="false"><span>Yes, that's fine</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="park:n" aria-pressed="false"><span>No, I need parking</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
+      <div class="oogq-r"><div class="oog-ev"><span class="cap">No parking</span>
+          <p>No block in the town centre has it, including Capital, Centrix and Weir Mill.</p>
+          <p>The area is very walkable, and the council is spending over £1 billion on transport.</p>
+          <ul class="oog-walk"><li><span>Stockport station</span><b>10 min walk</b></li><li><span>Manchester Piccadilly</span><b>8 min by train</b></li></ul>
+          <p class="sm">Permits for nearby streets: first come, first served, not guaranteed.</p></div></div></div></div>
     <div class="oogp" id="oogP4" hidden><div class="oogq">
-      <div class="oogq-l"><span class="qn">Deposit</span><h2 tabindex="-1">Last one. Do you have a 20% deposit?</h2><p class="qs">From cash or savings, due when contracts exchange.</p>
-        <div class="oog-yn"><button class="oogb yes" data-a="dep:y" aria-pressed="false"><span>Yes, I have it</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="dep:n" aria-pressed="false"><span>No, not yet</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><p class="oog-inl" id="oogLow" hidden></p>
-        <button class="oog-backb" data-back><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>
-      <div class="oogq-r"><div class="oog-ev"><span class="cap">Your deposit</span><h3>This is standard for off-plan purchases.</h3>
-          <p>Your 20% on a:</p><div class="oog-beds" role="group" aria-label="1 bed or 2 bed"><button data-beds="one" aria-pressed="true">1 bed</button><button data-beds="two" aria-pressed="false">2 bed</button></div>
+      <div class="oogq-l"><span class="qn">Deposit</span><h2 tabindex="-1">Last one. Do you have a 20% deposit?</h2>
+        <div class="oog-yn"><button class="oogb yes" data-a="dep:y" aria-pressed="false"><span>Yes, I have it</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button><button class="oogb no" data-a="dep:n" aria-pressed="false"><span>No, not yet</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><svg class="tk" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><p class="oog-inl" id="oogLow" hidden></p></div>
+      <div class="oogq-r"><div class="oog-ev"><span class="cap">Standard for off-plan</span>
+          <div class="oog-beds" role="group" aria-label="1 bed or 2 bed"><button data-beds="one" aria-pressed="true">1 bed</button><button data-beds="two" aria-pressed="false">2 bed</button></div>
           <div id="oogAmt"></div>
-          <p style="margin-top:16px">£3,000 reserves your home, and £2,500 of that counts towards the 20%. The rest is due when contracts exchange.</p>
-          <p><small>Lifetime ISA and Help to Buy ISA money can't be used for it, as completion is more than six months away.</small></p></div></div></div></div>
+          <p class="sm">£3,000 reserves your home. Lifetime ISA and Help to Buy ISA money can't be used. Figures are a guide.</p></div></div></div></div>
     <div class="oogp" id="oogP5" hidden><div class="oog-res" id="oogRes" aria-live="polite"></div></div>
-    <p class="oog-fine">Prices and availability change day to day. Deposit figures are a guide, rounded to the nearest £1,000.</p>
   </section>
   <section class="intro">
     <div>
@@ -4738,19 +4738,19 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
 
  function amt(){const el=$("#oogAmt");if(!el)return;const d=OO.beds[G.beds];
   root.querySelectorAll("[data-beds]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.beds===G.beds)));
-  el.innerHTML=d?`<div class="oog-amt"><b data-count="${dep(G.beds)}" data-pre="£" data-comma="1" data-dur="450">${gbp(dep(G.beds))}</b><span>on a typical ${G.beds==="one"?"one":"two"} bed. ${G.beds==="one"?"One":"Two"} beds from ${gbp(d.from)}.</span></div>`:`<p class="oog-note">${OO.noTwo}</p>`}
+  el.innerHTML=d?`<div class="oog-amt"><b data-count="${dep(G.beds)}" data-pre="£" data-comma="1" data-dur="450">${gbp(dep(G.beds))}</b><span>about 20% on a ${G.beds==="one"?"one":"two"} bed from ${gbp(d.from)}</span></div>`:`<p class="oog-note">${OO.noTwo}</p>`}
 
  function res(){const r=$("#oogRes"),f=failed();
   if(f){const yn=k=>G[k]==null?"-":G[k]==="y"?"yes":"no";
    const body=`Hi ${AG.first},\n\nI looked at ${B.name} as a home, but it isn't right for me at the moment.\n\nWhat I'm looking for:\n\n\n(My answers: happy to wait for ${OO.gateComp}: ${yn("time")}; happy to buy off the plans and 3D model: ${yn("model")}; OK with no parking: ${yn("park")}; 20% deposit: ${yn("dep")})`;
    r.className="oog-res no";
    r.innerHTML=`<span class="tag"><i></i>Not the right fit</span><h2 tabindex="-1">Unfortunately, this isn't suitable for you.</h2><p class="why">${WHY[f]}</p>
-    <p>We'll keep an eye out for anything that suits you in future. If you've got different requirements, email us and let us know. We'll prioritise you for anything that's complete.</p>
+    <p>If your needs are different, email us. We'll put you first for anything that's complete.</p>
     <div class="row"><a class="b solid" id="ooMail" href="mailto:${AG.email}?subject=${encodeURIComponent("Home buyer: "+B.name)}&body=${encodeURIComponent(body)}">Email ${AG.first}</a></div>
     <button class="oog-chg" id="ooChange">Change my answers</button>`;return "no"}
   r.className="oog-res ok";
   r.innerHTML=`<span class="tag"><i></i>Looks like a good fit</span><h2 tabindex="-1">Great. ${B.name} could suit you.</h2>
-    <p>Next, choose your home on a 30-minute 3D video tour with ${AG.first}. Or read the full guide first: your home, the area, and how buying works.</p>
+    <p>Choose your home on a 30-minute 3D video tour with ${AG.first}, or read the full guide first.</p>
     <div class="row"><button class="b solid" id="ooBook">Book a 3D video tour</button><button class="b line" id="ooGo">Read the full guide ${ARROW}</button></div>
     <button class="oog-chg" id="ooChange">Change my answers</button>`;return "ok"}
 
@@ -4764,10 +4764,10 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
   if(kind==="no"&&!quiet&&!RM2){const r=$("#oogRes");r.classList.remove("shake");void r.offsetWidth;r.classList.add("shake")}
   root.querySelectorAll("[data-a]").forEach(b=>{const[k,v]=b.dataset.a.split(":");b.setAttribute("aria-pressed",String(G[k]===v))});
   const low=$("#oogLow");if(low){low.hidden=G.dep!=="n";low.textContent=LOW}
-  const q=p>=1&&p<=4;$("#oogLive").hidden=p!==0;$("#oogDots").hidden=!q;
-  if(q){$("#oogStep").textContent=`Question ${p} of 4`;$("#oogDots").querySelectorAll("i").forEach((d,i)=>{d.className=i+1<p?"on":i+1===p?"cur":""})}
+  const q=p>=1&&p<=4;$("#oogLive").hidden=p!==0;$("#oogDots").hidden=!q;$("#oogLab").hidden=q;root.querySelector(".oog-top [data-back]").hidden=!q;
+  if(q){$("#oogStep").textContent=`${p} of 4`;$("#oogDots").querySelectorAll("i").forEach((d,i)=>{d.className=i+1<p?"on":i+1===p?"cur":""})}
   if(p===4)amt();
-  if(!quiet){const t=root.getBoundingClientRect().top;if(t<0||t>innerHeight*.5)root.scrollIntoView({behavior:RM2?"auto":"smooth",block:"start"});
+  if(!quiet){scrollTo({top:0,behavior:"auto"});
    setTimeout(()=>{const h=nx.querySelector("h2");h&&h.focus({preventScroll:true})},RM2?0:240)}}
 
  function unlock(how){G.open=true;sv();document.body.classList.remove("oo-locked");
@@ -4796,11 +4796,13 @@ setH();addEventListener('resize',setH);addEventListener('load',setH);if(document
   if(e.target.closest("#ooChange")){Q.forEach(k=>G[k]=null);sv();go(1,"back");return}
  });
 
- window.gateFocus=function(){root.scrollIntoView({behavior:RM2?"auto":"smooth",block:"start"});setTimeout(()=>{const h=root.querySelector(".oogp:not([hidden]) h2");h&&h.focus({preventScroll:true})},320)};
+ window.gateFocus=function(){scrollTo({top:0,behavior:RM2?"auto":"smooth"});setTimeout(()=>{const h=root.querySelector(".oogp:not([hidden]) h2");h&&h.focus({preventScroll:true})},320)};
  /* while locked, buttons outside the check lead back to it */
  document.addEventListener("click",e=>{if(!locked())return;const t=e.target.closest("[data-call],#ctaRes,#ctaCall,[data-goto]");if(t&&!root.contains(t)){e.preventDefault();e.stopPropagation();gateFocus()}},true);
  const en=$("#enter");if(en)en.addEventListener("click",()=>{if(locked())setTimeout(()=>{const h=root.querySelector(".oogp:not([hidden]) h2");h&&h.focus({preventScroll:true})},60)});
 
+ const fit=()=>{if(!locked())return;const top=root.getBoundingClientRect().top+scrollY;document.documentElement.style.setProperty("--oo-hdr",Math.round(top)+"px")};
+ fit();addEventListener("resize",fit);addEventListener("load",fit);
  setTimeout(()=>{const hw=$("#oogHow");hw&&hw.classList.add("in")},350);
  if(G.open&&passed()){document.body.classList.remove("oo-locked")}
  else{G.open=false;const p=(G.p>=0&&G.p<=5)?G.p:0;go(p===5&&!failed()&&!passed()?0:p,null,true)}
